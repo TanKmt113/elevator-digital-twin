@@ -24,3 +24,15 @@ paths:
       responses:
         '200':
           description: Health status including Twin bootstrap and realtime readiness
+  /analytics/risk:
+    get:
+      summary: List predictive risk warnings with model traceability metadata
+      responses:
+        '200':
+          description: Risk warnings including modelVersion, validationRunId, and modelTrace when verified
+  /analytics/risk/readiness:
+    get:
+      summary: Report analytics ingestion readiness and rejected warning state
+      responses:
+        '200':
+          description: Analytics readiness status with accepted/rejected warning counts and last model version

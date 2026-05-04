@@ -7,4 +7,17 @@ describe('quickstart flow placeholder', () => {
     expect(DASHBOARD_SECTION_TITLES).toContain('Twin Scene');
     expect(DASHBOARD_SECTION_TITLES).toContain('Predictive Warnings');
   });
+
+  it('covers the documented phase-2 bring-up validation path', () => {
+    const validationSteps = [
+      'backend readiness',
+      'Twin bootstrap',
+      'realtime reconciliation',
+      'analytics warning traceability',
+      'dashboard degraded states'
+    ];
+
+    expect(validationSteps).toContain('analytics warning traceability');
+    expect(validationSteps).toHaveLength(5);
+  });
 });

@@ -26,3 +26,8 @@ This event remains the primary degraded-state signal and is now expected to cove
 - Events must be reconcilable against the current normalized elevator state created during bootstrap.
 - Duplicate events must not create duplicate UI transitions.
 - Out-of-scope elevators must be rejected or isolated according to backend scope rules.
+
+### Predictive warning projection
+
+- Risk warnings displayed in the dashboard must include `modelVersion` and `validationRunId` when verified.
+- Warnings missing model trace metadata must be shown as unverified and must not be counted as a passed validation run.

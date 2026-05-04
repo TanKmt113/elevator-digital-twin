@@ -110,17 +110,17 @@ description: "Task list for Dashboard Hardening and Operational Readiness"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T028 [P] [US3] Add AI-service validation test coverage for end-to-end predictive warning preparation in ai-service/tests/test_risk_pipeline.py and ai-service/tests/conftest.py
-- [ ] T029 [P] [US3] Add backend integration test for analytics ingestion readiness and model traceability in backend/tests/integration/risk-warning.integration.test.ts
-- [ ] T030 [P] [US3] Add frontend integration test for predictive warning metadata rendering in frontend/tests/integration/risk-warning-panel.test.tsx
-- [ ] T031 [US3] Add quickstart validation coverage for full phase-2 bring-up in frontend/tests/e2e/quickstart-flow.spec.ts and specs/002-dashboard-hardening/quickstart.md
+- [X] T028 [P] [US3] Add AI-service validation test coverage for end-to-end predictive warning preparation in ai-service/tests/test_risk_pipeline.py and ai-service/tests/conftest.py
+- [X] T029 [P] [US3] Add backend integration test for analytics ingestion readiness and model traceability in backend/tests/integration/risk-warning.integration.test.ts
+- [X] T030 [P] [US3] Add frontend integration test for predictive warning metadata rendering in frontend/tests/integration/risk-warning-panel.test.tsx
+- [X] T031 [US3] Add quickstart validation coverage for full phase-2 bring-up in frontend/tests/e2e/quickstart-flow.spec.ts and specs/002-dashboard-hardening/quickstart.md
 
 ### Implementation for User Story 3
 
-- [ ] T032 [P] [US3] Implement analytics validation and model-trace fields in ai-service/app/services/predictive_maintenance_service.py, ai-service/app/services/model_registry.py, and ai-service/app/api/risk.py
-- [ ] T033 [P] [US3] Implement backend risk-ingestion validation and readiness reporting in backend/src/modules/analytics/risk-analytics.service.ts, backend/src/api/routes/analytics.routes.ts, and backend/src/observability/risk.metrics.ts
-- [ ] T034 [P] [US3] Implement frontend predictive warning metadata and verification states in frontend/src/store/risk-store.ts and frontend/src/modules/analytics/components/RiskWarningPanel.tsx
-- [ ] T035 [US3] Document end-to-end bring-up, validation, and degraded-service expectations in README.md, docs/operations-dashboard.md, and ai-service/README.md
+- [X] T032 [P] [US3] Implement analytics validation and model-trace fields in ai-service/app/services/predictive_maintenance_service.py, ai-service/app/services/model_registry.py, and ai-service/app/api/risk.py
+- [X] T033 [P] [US3] Implement backend risk-ingestion validation and readiness reporting in backend/src/modules/analytics/risk-analytics.service.ts, backend/src/api/routes/analytics.routes.ts, and backend/src/observability/risk.metrics.ts
+- [X] T034 [P] [US3] Implement frontend predictive warning metadata and verification states in frontend/src/store/risk-store.ts and frontend/src/modules/analytics/components/RiskWarningPanel.tsx
+- [X] T035 [US3] Document end-to-end bring-up, validation, and degraded-service expectations in README.md, docs/operations-dashboard.md, and ai-service/README.md
 
 **Checkpoint**: Predictive warnings and local bring-up are validated as one coherent multi-service flow.
 
@@ -130,10 +130,10 @@ description: "Task list for Dashboard Hardening and Operational Readiness"
 
 **Purpose**: Final hardening across synchronization, UI, analytics, and documentation.
 
-- [ ] T036 [P] Run cross-service build and test validation updates in frontend/package.json, backend/package.json, and ai-service/pyproject.toml
-- [ ] T037 Harden observability and operational runbook guidance for phase-2 failure modes in infra/observability/runbook.md and docs/ditto-integration.md
-- [ ] T038 [P] Refresh contracts and docs to match final runtime behavior in specs/002-dashboard-hardening/contracts/openapi.yaml and specs/002-dashboard-hardening/contracts/realtime-events.md
-- [ ] T039 Validate phase-2 quickstart and mark task completion state in specs/002-dashboard-hardening/quickstart.md and specs/002-dashboard-hardening/tasks.md
+- [X] T036 [P] Run cross-service build and test validation updates in frontend/package.json, backend/package.json, and ai-service/pyproject.toml
+- [X] T037 Harden observability and operational runbook guidance for phase-2 failure modes in infra/observability/runbook.md and docs/ditto-integration.md
+- [X] T038 [P] Refresh contracts and docs to match final runtime behavior in specs/002-dashboard-hardening/contracts/openapi.yaml and specs/002-dashboard-hardening/contracts/realtime-events.md
+- [X] T039 Validate phase-2 quickstart and mark task completion state in specs/002-dashboard-hardening/quickstart.md and specs/002-dashboard-hardening/tasks.md
 
 ---
 

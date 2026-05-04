@@ -7,6 +7,14 @@ export interface RiskWarningViewModel {
   predictedWindowHours: number;
   generatedAt: string;
   drivers?: string[];
+  modelVersion?: string;
+  validationRunId?: string;
+  verificationStatus?: 'verified' | 'unverified' | 'failed';
+  modelTrace?: {
+    featureSet: string;
+    scoredAt: string;
+    validationStatus: 'passed' | 'failed';
+  };
 }
 
 interface RiskStoreState {

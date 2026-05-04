@@ -11,5 +11,9 @@ export function createAnalyticsRoutes(service: RiskAnalyticsService): Router {
     res.json({ items: service.list() });
   });
 
+  router.get('/analytics/risk/readiness', (_req, res) => {
+    res.json(service.readiness());
+  });
+
   return router;
 }

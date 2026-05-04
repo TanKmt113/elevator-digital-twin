@@ -19,6 +19,7 @@ This guide validates the phase-2 completion path for the Smart Building Operatio
 4. Induce delayed or missing Twin delivery and confirm stale or degraded indicators appear.
 5. Review alert and risk panels in desktop and tablet-sized layouts and confirm the main monitoring workflow remains legible and usable.
 6. Run the predictive validation path and confirm a warning is ingested, visible, and traceable to a model version.
+7. Query analytics readiness and confirm rejected warnings are reported when model trace fields are missing.
 
 ## Expected Outputs
 
@@ -26,3 +27,10 @@ This guide validates the phase-2 completion path for the Smart Building Operatio
 - Dashboard surfaces explicit loading, empty, ready, and degraded states.
 - Realtime updates reconcile against bootstrapped state without duplicate UI transitions.
 - Predictive warnings appear in the authorized dashboard flow with verifiable model metadata.
+- Backend analytics readiness reports accepted and rejected warning counts.
+
+## Validation Commands
+
+- Backend: `cd backend && npm run validate:phase2`
+- Frontend: `cd frontend && npm run validate:phase2`
+- AI service: `cd ai-service && python3 -m pytest tests/test_risk_pipeline.py`
