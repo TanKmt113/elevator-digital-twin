@@ -98,21 +98,21 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T032 [P] [US2] Add contract test for POST /commands in backend/tests/contract/commands.contract.test.ts
-- [ ] T033 [P] [US2] Add backend integration test for command validation and lifecycle transitions in backend/tests/integration/command-lifecycle.integration.test.ts
-- [ ] T034 [P] [US2] Add frontend integration test for command submission and acknowledgement rendering in frontend/tests/integration/elevator-commands.test.tsx
-- [ ] T035 [US2] Add resilience test for downstream command failure and policy rejection handling in backend/tests/integration/command-failure.integration.test.ts
+- [X] T032 [P] [US2] Add contract test for POST /commands in backend/tests/contract/commands.contract.test.ts
+- [X] T033 [P] [US2] Add backend integration test for command validation and lifecycle transitions in backend/tests/integration/command-lifecycle.integration.test.ts
+- [X] T034 [P] [US2] Add frontend integration test for command submission and acknowledgement rendering in frontend/tests/integration/elevator-commands.test.tsx
+- [X] T035 [US2] Add resilience test for downstream command failure and policy rejection handling in backend/tests/integration/command-failure.integration.test.ts
 
 ### Implementation for User Story 2
 
-- [ ] T036 [P] [US2] Implement control command domain model and audit record mapping in backend/src/modules/elevators/control-command.model.ts and backend/src/modules/elevators/command-audit.model.ts
-- [ ] T037 [US2] Implement command policy and authorization service in backend/src/modules/elevators/command-policy.service.ts
-- [ ] T038 [US2] Implement command execution orchestration and downstream correlation handling in backend/src/modules/elevators/command-execution.service.ts
-- [ ] T039 [US2] Implement commands API route in backend/src/api/routes/commands.routes.ts
-- [ ] T040 [US2] Implement command status realtime publisher in backend/src/modules/realtime/publishers/command-status.publisher.ts
-- [ ] T041 [P] [US2] Implement frontend command action panel in frontend/src/modules/elevator/components/ElevatorCommandPanel.tsx
-- [ ] T042 [US2] Implement frontend command mutation and optimistic acknowledgement state in frontend/src/modules/elevator/services/submit-command.ts and frontend/src/store/command-store.ts
-- [ ] T043 [US2] Add command audit logging and command outcome metrics in backend/src/observability/command.metrics.ts and backend/src/modules/elevators/command-audit.repository.ts
+- [X] T036 [P] [US2] Implement control command domain model and audit record mapping in backend/src/modules/elevators/control-command.model.ts and backend/src/modules/elevators/command-audit.model.ts
+- [X] T037 [US2] Implement command policy and authorization service in backend/src/modules/elevators/command-policy.service.ts
+- [X] T038 [US2] Implement command execution orchestration and downstream correlation handling in backend/src/modules/elevators/command-execution.service.ts
+- [X] T039 [US2] Implement commands API route in backend/src/api/routes/commands.routes.ts
+- [X] T040 [US2] Implement command status realtime publisher in backend/src/modules/realtime/publishers/command-status.publisher.ts
+- [X] T041 [P] [US2] Implement frontend command action panel in frontend/src/modules/elevator/components/ElevatorCommandPanel.tsx
+- [X] T042 [US2] Implement frontend command mutation and optimistic acknowledgement state in frontend/src/modules/elevator/services/submit-command.ts and frontend/src/store/command-store.ts
+- [X] T043 [US2] Add command audit logging and command outcome metrics in backend/src/observability/command.metrics.ts and backend/src/modules/elevators/command-audit.repository.ts
 
 **Checkpoint**: User Stories 1 and 2 both work independently, and operators can monitor and issue safe commands.
 
@@ -126,21 +126,21 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T044 [P] [US4] Add contract tests for GET /alerts and POST /alerts/{alertId}/acknowledge in backend/tests/contract/alerts.contract.test.ts
-- [ ] T045 [P] [US4] Add backend integration test for alert rule mapping and acknowledgement workflow in backend/tests/integration/alerts.integration.test.ts
-- [ ] T046 [P] [US4] Add frontend integration test for alert panel filtering and acknowledgement in frontend/tests/integration/alert-panel.test.tsx
-- [ ] T047 [US4] Add realtime failure-mode test for duplicated and out-of-scope alert events in backend/tests/integration/alert-resilience.integration.test.ts
+- [X] T044 [P] [US4] Add contract tests for GET /alerts and POST /alerts/{alertId}/acknowledge in backend/tests/contract/alerts.contract.test.ts
+- [X] T045 [P] [US4] Add backend integration test for alert rule mapping and acknowledgement workflow in backend/tests/integration/alerts.integration.test.ts
+- [X] T046 [P] [US4] Add frontend integration test for alert panel filtering and acknowledgement in frontend/tests/integration/alert-panel.test.tsx
+- [X] T047 [US4] Add realtime failure-mode test for duplicated and out-of-scope alert events in backend/tests/integration/alert-resilience.integration.test.ts
 
 ### Implementation for User Story 4
 
-- [ ] T048 [P] [US4] Implement alert domain model and repository in backend/src/modules/alerts/alert.model.ts and backend/src/modules/alerts/alert.repository.ts
-- [ ] T049 [US4] Implement alert rule engine and severity mapping service in backend/src/modules/alerts/alert-rule.service.ts
-- [ ] T050 [US4] Implement alerts query and acknowledgement service in backend/src/modules/alerts/alerts.service.ts
-- [ ] T051 [US4] Implement alerts API routes in backend/src/api/routes/alerts.routes.ts
-- [ ] T052 [US4] Implement alert realtime publishers in backend/src/modules/realtime/publishers/alert.publisher.ts
-- [ ] T053 [P] [US4] Implement frontend alert store and filter state in frontend/src/store/alert-store.ts and frontend/src/modules/alerts/hooks/useAlertFilters.ts
-- [ ] T054 [P] [US4] Implement alert panel and alert detail UI in frontend/src/modules/alerts/components/AlertPanel.tsx and frontend/src/modules/alerts/components/AlertDetailDrawer.tsx
-- [ ] T055 [US4] Add alert acknowledgement audit logging and alert latency metrics in backend/src/observability/alert.metrics.ts and backend/src/modules/alerts/alert-audit.repository.ts
+- [X] T048 [P] [US4] Implement alert domain model and repository in backend/src/modules/alerts/alert.model.ts and backend/src/modules/alerts/alert.repository.ts
+- [X] T049 [US4] Implement alert rule engine and severity mapping service in backend/src/modules/alerts/alert-rule.service.ts
+- [X] T050 [US4] Implement alerts query and acknowledgement service in backend/src/modules/alerts/alerts.service.ts
+- [X] T051 [US4] Implement alerts API routes in backend/src/api/routes/alerts.routes.ts
+- [X] T052 [US4] Implement alert realtime publishers in backend/src/modules/realtime/publishers/alert.publisher.ts
+- [X] T053 [P] [US4] Implement frontend alert store and filter state in frontend/src/store/alert-store.ts and frontend/src/modules/alerts/hooks/useAlertFilters.ts
+- [X] T054 [P] [US4] Implement alert panel and alert detail UI in frontend/src/modules/alerts/components/AlertPanel.tsx and frontend/src/modules/alerts/components/AlertDetailDrawer.tsx
+- [X] T055 [US4] Add alert acknowledgement audit logging and alert latency metrics in backend/src/observability/alert.metrics.ts and backend/src/modules/alerts/alert-audit.repository.ts
 
 **Checkpoint**: User Stories 1, 2, and 4 provide a complete core operations workflow for live monitoring, command execution, and incident response.
 
@@ -154,18 +154,18 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T056 [P] [US3] Add frontend integration test for 3D object binding and selection state in frontend/tests/integration/twin3d-binding.test.tsx
-- [ ] T057 [P] [US3] Add frontend UI test for hover and detail panel interactions in frontend/tests/e2e/twin3d-interaction.spec.ts
-- [ ] T058 [US3] Add realtime resilience test for degraded 3D state updates in frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T056 [P] [US3] Add frontend integration test for 3D object binding and selection state in frontend/tests/integration/twin3d-binding.test.tsx
+- [X] T057 [P] [US3] Add frontend UI test for hover and detail panel interactions in frontend/tests/e2e/twin3d-interaction.spec.ts
+- [X] T058 [US3] Add realtime resilience test for degraded 3D state updates in frontend/tests/integration/twin3d-resilience.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T059 [P] [US3] Implement 3D mapping configuration model and repository in backend/src/modules/elevators/twin3d-mapping.model.ts and backend/src/modules/elevators/twin3d-mapping.repository.ts
-- [ ] T060 [US3] Implement frontend 3D asset state adapter in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts
-- [ ] T061 [P] [US3] Implement React Three Fiber scene and camera controls in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/TwinControls.tsx
-- [ ] T062 [P] [US3] Implement elevator mesh binding and status coloring in frontend/src/modules/twin3d/components/ElevatorMesh.tsx
-- [ ] T063 [US3] Implement hover, selection, and detail synchronization in frontend/src/modules/twin3d/hooks/useTwinSelection.ts and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
-- [ ] T064 [US3] Add 3D rendering performance instrumentation in frontend/src/modules/twin3d/services/twin3d-performance.ts
+- [X] T059 [P] [US3] Implement 3D mapping configuration model and repository in backend/src/modules/elevators/twin3d-mapping.model.ts and backend/src/modules/elevators/twin3d-mapping.repository.ts
+- [X] T060 [US3] Implement frontend 3D asset state adapter in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts
+- [X] T061 [P] [US3] Implement React Three Fiber scene and camera controls in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/TwinControls.tsx
+- [X] T062 [P] [US3] Implement elevator mesh binding and status coloring in frontend/src/modules/twin3d/components/ElevatorMesh.tsx
+- [X] T063 [US3] Implement hover, selection, and detail synchronization in frontend/src/modules/twin3d/hooks/useTwinSelection.ts and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T064 [US3] Add 3D rendering performance instrumentation in frontend/src/modules/twin3d/services/twin3d-performance.ts
 
 **Checkpoint**: User Story 3 is independently usable with live spatial visualization layered onto the operational dashboard.
 
@@ -179,19 +179,19 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T065 [P] [US5] Add contract test for GET /elevators/{elevatorId}/history in backend/tests/contract/elevator-history.contract.test.ts
-- [ ] T066 [P] [US5] Add backend integration test for time-range history queries in backend/tests/integration/elevator-history.integration.test.ts
-- [ ] T067 [P] [US5] Add frontend integration test for history filters and result states in frontend/tests/integration/elevator-history-panel.test.tsx
-- [ ] T068 [US5] Add failure-mode test for partial historical data windows in backend/tests/integration/elevator-history-partial-data.test.ts
+- [X] T065 [P] [US5] Add contract test for GET /elevators/{elevatorId}/history in backend/tests/contract/elevator-history.contract.test.ts
+- [X] T066 [P] [US5] Add backend integration test for time-range history queries in backend/tests/integration/elevator-history.integration.test.ts
+- [X] T067 [P] [US5] Add frontend integration test for history filters and result states in frontend/tests/integration/elevator-history-panel.test.tsx
+- [X] T068 [US5] Add failure-mode test for partial historical data windows in backend/tests/integration/elevator-history-partial-data.test.ts
 
 ### Implementation for User Story 5
 
-- [ ] T069 [P] [US5] Implement historical telemetry repository in backend/src/modules/elevators/historical-telemetry.repository.ts
-- [ ] T070 [P] [US5] Implement historical query service in backend/src/modules/elevators/elevator-history.service.ts
-- [ ] T071 [US5] Implement elevator history API route in backend/src/api/routes/elevator-history.routes.ts
-- [ ] T072 [P] [US5] Implement frontend history filter state and query service in frontend/src/store/history-store.ts and frontend/src/modules/elevator/services/fetch-elevator-history.ts
-- [ ] T073 [P] [US5] Implement history charts and records panel in frontend/src/modules/elevator/components/ElevatorHistoryPanel.tsx and frontend/src/modules/elevator/components/ElevatorHistoryChart.tsx
-- [ ] T074 [US5] Add history query latency metrics and audit traces in backend/src/observability/history.metrics.ts
+- [X] T069 [P] [US5] Implement historical telemetry repository in backend/src/modules/elevators/historical-telemetry.repository.ts
+- [X] T070 [P] [US5] Implement historical query service in backend/src/modules/elevators/elevator-history.service.ts
+- [X] T071 [US5] Implement elevator history API route in backend/src/api/routes/elevator-history.routes.ts
+- [X] T072 [P] [US5] Implement frontend history filter state and query service in frontend/src/store/history-store.ts and frontend/src/modules/elevator/services/fetch-elevator-history.ts
+- [X] T073 [P] [US5] Implement history charts and records panel in frontend/src/modules/elevator/components/ElevatorHistoryPanel.tsx and frontend/src/modules/elevator/components/ElevatorHistoryChart.tsx
+- [X] T074 [US5] Add history query latency metrics and audit traces in backend/src/observability/history.metrics.ts
 
 **Checkpoint**: User Story 5 is independently testable and supports investigation workflows without dependence on the AI features.
 
@@ -205,20 +205,20 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T075 [P] [US6] Add contract test for GET /analytics/risk in backend/tests/contract/risk-analytics.contract.test.ts
-- [ ] T076 [P] [US6] Add AI service test for risk feature generation and scoring in ai-service/tests/test_risk_pipeline.py
-- [ ] T077 [P] [US6] Add backend integration test for AI result ingestion and publishing in backend/tests/integration/risk-warning.integration.test.ts
-- [ ] T078 [US6] Add frontend integration test for predictive warning rendering in frontend/tests/integration/risk-warning-panel.test.tsx
+- [X] T075 [P] [US6] Add contract test for GET /analytics/risk in backend/tests/contract/risk-analytics.contract.test.ts
+- [X] T076 [P] [US6] Add AI service test for risk feature generation and scoring in ai-service/tests/test_risk_pipeline.py
+- [X] T077 [P] [US6] Add backend integration test for AI result ingestion and publishing in backend/tests/integration/risk-warning.integration.test.ts
+- [X] T078 [US6] Add frontend integration test for predictive warning rendering in frontend/tests/integration/risk-warning-panel.test.tsx
 
 ### Implementation for User Story 6
 
-- [ ] T079 [P] [US6] Implement risk warning domain model and repository in backend/src/modules/analytics/risk-warning.model.ts and backend/src/modules/analytics/risk-warning.repository.ts
-- [ ] T080 [P] [US6] Implement curated telemetry feature pipeline in ai-service/app/pipelines/elevator_feature_pipeline.py
-- [ ] T081 [P] [US6] Implement predictive scoring service and FastAPI endpoint in ai-service/app/services/predictive_maintenance_service.py and ai-service/app/api/risk.py
-- [ ] T082 [US6] Implement backend analytics ingestion and query service in backend/src/modules/analytics/risk-analytics.service.ts
-- [ ] T083 [US6] Implement analytics API route and risk realtime publisher in backend/src/api/routes/analytics.routes.ts and backend/src/modules/realtime/publishers/risk.publisher.ts
-- [ ] T084 [P] [US6] Implement frontend risk warning store and panel UI in frontend/src/store/risk-store.ts and frontend/src/modules/analytics/components/RiskWarningPanel.tsx
-- [ ] T085 [US6] Add predictive observability and model version traceability in ai-service/app/services/model_registry.py and backend/src/observability/risk.metrics.ts
+- [X] T079 [P] [US6] Implement risk warning domain model and repository in backend/src/modules/analytics/risk-warning.model.ts and backend/src/modules/analytics/risk-warning.repository.ts
+- [X] T080 [P] [US6] Implement curated telemetry feature pipeline in ai-service/app/pipelines/elevator_feature_pipeline.py
+- [X] T081 [P] [US6] Implement predictive scoring service and FastAPI endpoint in ai-service/app/services/predictive_maintenance_service.py and ai-service/app/api/risk.py
+- [X] T082 [US6] Implement backend analytics ingestion and query service in backend/src/modules/analytics/risk-analytics.service.ts
+- [X] T083 [US6] Implement analytics API route and risk realtime publisher in backend/src/api/routes/analytics.routes.ts and backend/src/modules/realtime/publishers/risk.publisher.ts
+- [X] T084 [P] [US6] Implement frontend risk warning store and panel UI in frontend/src/store/risk-store.ts and frontend/src/modules/analytics/components/RiskWarningPanel.tsx
+- [X] T085 [US6] Add predictive observability and model version traceability in ai-service/app/services/model_registry.py and backend/src/observability/risk.metrics.ts
 
 **Checkpoint**: All user stories are independently functional, with predictive insight layered onto the operational core.
 
@@ -228,11 +228,11 @@ description: "Task list for Smart Building Operations Dashboard implementation"
 
 **Purpose**: Final hardening, documentation, and production-readiness work across all stories.
 
-- [ ] T086 [P] Document local setup and operating procedures in README.md and docs/operations-dashboard.md
-- [ ] T087 Harden security, rate limiting, and session expiry handling in backend/src/modules/auth/rate-limit.ts and backend/src/modules/auth/session-policy.ts
-- [ ] T088 [P] Add end-to-end quickstart validation coverage in frontend/tests/e2e/quickstart-flow.spec.ts and backend/tests/performance/k6-smoke.js
-- [ ] T089 Validate dashboards, alerts, and operational runbooks in infra/observability/grafana-dashboard.json and infra/observability/runbook.md
-- [ ] T090 [P] Add performance and load tuning updates for WebSocket fan-out and history queries in backend/tests/performance/realtime-load.k6.js and backend/tests/performance/history-load.k6.js
+- [X] T086 [P] Document local setup and operating procedures in README.md and docs/operations-dashboard.md
+- [X] T087 Harden security, rate limiting, and session expiry handling in backend/src/modules/auth/rate-limit.ts and backend/src/modules/auth/session-policy.ts
+- [X] T088 [P] Add end-to-end quickstart validation coverage in frontend/tests/e2e/quickstart-flow.spec.ts and backend/tests/performance/k6-smoke.js
+- [X] T089 Validate dashboards, alerts, and operational runbooks in infra/observability/grafana-dashboard.json and infra/observability/runbook.md
+- [X] T090 [P] Add performance and load tuning updates for WebSocket fan-out and history queries in backend/tests/performance/realtime-load.k6.js and backend/tests/performance/history-load.k6.js
 
 ---
 

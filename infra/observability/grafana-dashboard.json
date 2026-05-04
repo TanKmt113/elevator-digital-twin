@@ -1,0 +1,8 @@
+{
+  "title": "Smart Building Operations",
+  "panels": [
+    { "title": "Realtime Latency" },
+    { "title": "Alert Throughput" },
+    { "title": "Risk Warning Count" }
+  ]
+}
