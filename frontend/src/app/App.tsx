@@ -61,8 +61,10 @@ export function App(): React.JSX.Element {
   const connectionState = useRealtimeStore((state) => state.connectionState);
   const dataState = useRealtimeStore((state) => state.dataState);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
+  const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
-  const featuredElevator = elevators[0];
+  const featuredElevator =
+    elevators.find((elevator) => elevator.elevatorId === selectedElevatorId) ?? elevators[0];
   const toneClasses = {
     info: 'border-sky-400/30 bg-sky-400/10 text-sky-100',
     warning: 'border-amber-300/30 bg-amber-300/10 text-amber-50',

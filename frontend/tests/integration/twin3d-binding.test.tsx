@@ -16,6 +16,32 @@ describe('twin3d binding', () => {
       stale: false
     });
     expect(asset.y).toBe(30);
+    expect(asset.floorPosition).toBe(10);
+    expect(asset.movementDirection).toBe('up');
+    expect(asset.doorVisualState).toBe('closed');
+    expect(asset.healthTone).toBe('normal');
+  });
+
+  it('maps stale and transitioning state without raw Twin fields', () => {
+    const asset = mapElevatorStateToScene({
+      elevatorId: 'E2',
+      buildingId: 'L72',
+      status: 'maintenance',
+      currentFloor: 4,
+      direction: 'sideways',
+      doorState: 'opening',
+      healthState: 'critical',
+      stale: true
+    }, true);
+
+    expect(asset).toMatchObject({
+      buildingId: 'L72',
+      movementDirection: 'unknown',
+      doorVisualState: 'transitioning',
+      healthTone: 'critical',
+      isSelected: true,
+      isStale: true
+    });
   });
 
   it('keeps list and overlay aligned on the same elevator identity', () => {

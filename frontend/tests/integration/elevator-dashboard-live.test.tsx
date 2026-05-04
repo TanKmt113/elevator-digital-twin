@@ -15,6 +15,8 @@ describe('elevator dashboard live updates', () => {
       connected: false,
       connectionState: 'connecting',
       dataState: 'loading',
+      duplicateEventsDropped: 0,
+      outOfOrderEventsRejected: 0,
       staleMessage: undefined
     });
     handleRealtimeEvent({
@@ -32,5 +34,27 @@ describe('elevator dashboard live updates', () => {
     expect(useElevatorStore.getState().elevators.A?.currentFloor).toBe(12);
     expect(useRealtimeStore.getState().dataState).toBe('ready');
     expect(deriveAppShellState('live', 'ready', 1).title).toBe('Twin synchronization is live');
+  });
+
+  it('stores backend synchronization state events', () => {
+    handleRealtimeEvent({
+      eventType: 'system.connection.state',
+      payload: {
+        connectionState: 'degraded',
+        dataState: 'degraded',
+        duplicateEventsDropped: 2,
+        outOfOrderEventsRejected: 1,
+        lastFailureReason: 'ditto unavailable'
+      }
+    });
+
+    expect(useRealtimeStore.getState()).toMatchObject({
+      connected: false,
+      connectionState: 'degraded',
+      dataState: 'degraded',
+      duplicateEventsDropped: 2,
+      outOfOrderEventsRejected: 1,
+      staleMessage: 'ditto unavailable'
+    });
   });
 });

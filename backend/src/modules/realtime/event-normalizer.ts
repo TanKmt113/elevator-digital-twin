@@ -61,9 +61,10 @@ function normalizeStatus(value: unknown): ElevatorTwin['status'] {
     value === 'door_open' ||
     value === 'maintenance' ||
     value === 'fault' ||
-    value === 'offline'
+    value === 'offline' ||
+    value === 'unknown'
     ? value
-    : 'idle';
+    : 'unknown';
 }
 
 function normalizeDirection(value: unknown): ElevatorTwin['direction'] {

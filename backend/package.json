@@ -8,6 +8,7 @@
     "build": "tsc --noEmit",
     "test": "vitest run",
     "validate:phase2": "npm run build && npm test",
+    "validate:phase3": "npm run build && npm test",
     "lint": "eslint ."
   },
   "dependencies": {

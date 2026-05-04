@@ -28,5 +28,23 @@ describe('elevator realtime resilience', () => {
     expect(router.route(currentEvent)).toEqual(currentEvent);
     expect(router.route(currentEvent)).toBeNull();
     expect(router.route(outOfOrderEvent)).toBeNull();
+    expect(router.getStats()).toEqual({
+      duplicateEventsDropped: 1,
+      outOfOrderEventsRejected: 1
+    });
+  });
+
+  it('rejects out-of-scope building events when a scope is provided', () => {
+    const router = new EventRouter();
+    const event: NormalizedEvent<{ elevatorId: string; buildingId: string }> = {
+      eventId: 'evt-out-of-scope',
+      eventType: 'elevator.state.changed',
+      schemaVersion: '1.0.0',
+      dataClass: 'realtime',
+      occurredAt: '2026-05-04T10:00:01.000Z',
+      payload: { elevatorId: 'L30-ELEV-A', buildingId: 'L30' }
+    };
+
+    expect(router.route(event, 'L72')).toBeNull();
   });
 });

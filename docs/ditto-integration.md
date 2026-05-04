@@ -63,9 +63,9 @@ This is enough to wire the next implementation steps:
 3. connect Ditto WebSocket events to `event-normalizer.ts`
 4. fall back to point lookup for selected elevator detail views
 
-## Phase 2 Validation Focus
+## Phase 3 Validation Focus
 
 - Startup readiness must distinguish `loading`, `ready`, `empty`, and `degraded` dashboard states.
 - Twin bootstrap failure must be observable through backend health, logs, or metrics.
 - Live synchronization must preserve last accepted state when delivery is delayed, duplicated, or temporarily unavailable.
-- Analytics degradation is reported separately from Twin degradation; missing model traceability must not mask live synchronization readiness.
+- AI service availability is not part of this validation path and must not mask Twin synchronization readiness.

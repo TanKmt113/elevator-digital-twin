@@ -62,7 +62,14 @@ export function createApp(options: CreateAppOptions = {}) {
       riskLevel: 'moderate',
       predictedWindowHours: 96,
       generatedAt: new Date().toISOString(),
-      drivers: ['usage']
+      drivers: ['usage'],
+      modelVersion: 'seed-model-v1',
+      validationRunId: 'seed-validation-run',
+      modelTrace: {
+        featureSet: 'seed-operations-dashboard',
+        scoredAt: new Date().toISOString(),
+        validationStatus: 'passed'
+      }
     });
     riskPublisher.publish(
       riskAnalyticsService.list()[0] ?? {
@@ -71,7 +78,14 @@ export function createApp(options: CreateAppOptions = {}) {
         riskLevel: 'moderate',
         predictedWindowHours: 96,
         generatedAt: new Date().toISOString(),
-        drivers: ['usage']
+        drivers: ['usage'],
+        modelVersion: 'seed-model-v1',
+        validationRunId: 'seed-validation-run',
+        modelTrace: {
+          featureSet: 'seed-operations-dashboard',
+          scoredAt: new Date().toISOString(),
+          validationStatus: 'passed'
+        }
       }
     );
   }

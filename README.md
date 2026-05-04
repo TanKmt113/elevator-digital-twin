@@ -14,18 +14,17 @@ Implementation scaffold for the Keangnam Landmark 72 smart building digital twin
 - Raw Ditto HTTP API contract: [docs/ditto-api-2.yml](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-api-2.yml)
 - Project-specific integration notes: [docs/ditto-integration.md](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-integration.md)
 
-## Phase 2 Hardening
+## Phase 3 Digital Twin and 3D
 
-- Active phase-2 feature: [specs/002-dashboard-hardening/spec.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/spec.md)
-- Active phase-2 implementation plan: [specs/002-dashboard-hardening/plan.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/plan.md)
-- Active phase-2 task list: [specs/002-dashboard-hardening/tasks.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/tasks.md)
+- Active phase-3 feature: [specs/003-digital-twin-3d/spec.md](specs/003-digital-twin-3d/spec.md)
+- Active phase-3 implementation plan: [specs/003-digital-twin-3d/plan.md](specs/003-digital-twin-3d/plan.md)
+- Active phase-3 task list: [specs/003-digital-twin-3d/tasks.md](specs/003-digital-twin-3d/tasks.md)
 
-## Phase 2 Validation
+## Phase 3 Validation
 
-Run the dashboard hardening checks by workspace:
+Run the Digital Twin and 3D checks by workspace:
 
-- Backend: `cd backend && npm run validate:phase2`
-- Frontend: `cd frontend && npm run validate:phase2`
-- AI service: `cd ai-service && python3 -m pytest tests/test_risk_pipeline.py`
+- Backend: `cd backend && npm run validate:phase3`
+- Frontend: `cd frontend && npm run validate:phase3`
 
-Predictive warning outputs must include `riskWarningId`, `elevatorId`, `modelVersion`, `validationRunId`, and `modelTrace` before the backend accepts them for dashboard display.
+This phase validates Twin bootstrap, backend-mediated live synchronization, degraded readiness, and list/detail/3D selection without starting or depending on the AI service.

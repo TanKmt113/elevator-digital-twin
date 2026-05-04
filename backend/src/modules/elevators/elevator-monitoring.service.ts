@@ -67,7 +67,8 @@ export class ElevatorMonitoringService {
 
     try {
       const things = await this.dittoClient.listThings({
-        fields: DITTO_ELEVATOR_FIELDS
+        fields: DITTO_ELEVATOR_FIELDS,
+        timeout: `${settings.bootstrapTimeoutMs}ms`
       });
 
       const hydratedTwins = things
@@ -79,16 +80,17 @@ export class ElevatorMonitoringService {
       this.bootstrapSnapshot = {
         snapshotId: `bootstrap-${completedAt}`,
         buildingId: hydratedTwins[0]?.buildingId ?? 'unknown',
+        source: 'twin',
         requestedAt,
         completedAt,
-        status: hydratedTwins.length > 0 ? 'completed' : 'partial',
+        status: hydratedTwins.length > 0 ? 'completed' : 'empty',
         elevators: hydratedTwins,
         missingElevatorIds: hydratedTwins.length > 0 ? undefined : []
       };
       this.synchronizationState = {
         ...this.synchronizationState,
         buildingId: hydratedTwins[0]?.buildingId,
-        bootstrapStatus: hydratedTwins.length > 0 ? 'completed' : 'partial',
+        bootstrapStatus: hydratedTwins.length > 0 ? 'completed' : 'empty',
         dataState: hydratedTwins.length > 0 ? 'ready' : 'empty',
         connectionState: hydratedTwins.length > 0 ? 'live' : 'degraded',
         lastBootstrapAt: completedAt,
@@ -111,6 +113,7 @@ export class ElevatorMonitoringService {
       this.bootstrapSnapshot = {
         snapshotId: `bootstrap-failed-${requestedAt}`,
         buildingId: 'unknown',
+        source: 'twin',
         requestedAt,
         completedAt: new Date().toISOString(),
         status: 'failed',

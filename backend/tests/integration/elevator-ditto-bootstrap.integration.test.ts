@@ -70,9 +70,13 @@ describe('elevator Ditto bootstrap', () => {
       dataState: 'ready',
       connectionState: 'live'
     });
+    expect(service.getBootstrapSnapshot()).toMatchObject({
+      source: 'twin',
+      status: 'completed'
+    });
   });
 
-  it('marks synchronization degraded when bootstrap returns no admitted elevators', async () => {
+  it('marks synchronization degraded and empty when bootstrap returns no admitted elevators', async () => {
     const service = new ElevatorMonitoringService(undefined, undefined, new FakeDittoClient([
       {
         thingId: 'org.example:missing-building',
@@ -90,9 +94,14 @@ describe('elevator Ditto bootstrap', () => {
     await service.bootstrapFromDitto();
 
     expect(service.getSynchronizationState()).toMatchObject({
-      bootstrapStatus: 'partial',
+      bootstrapStatus: 'empty',
       dataState: 'empty',
       connectionState: 'degraded'
+    });
+    expect(service.getBootstrapSnapshot()).toMatchObject({
+      source: 'twin',
+      status: 'empty',
+      elevators: []
     });
   });
 });

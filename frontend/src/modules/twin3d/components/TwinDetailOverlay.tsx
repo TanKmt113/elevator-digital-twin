@@ -11,6 +11,9 @@ export function TwinDetailOverlay({ elevator }: { elevator?: ElevatorViewModel }
       <h3 className="ops-item-title text-base font-semibold text-slate-100">{elevator.elevatorId}</h3>
       <p className="mt-2">Floor: {elevator.currentFloor}</p>
       <p>Status: <span className="capitalize text-slate-100">{elevator.status}</span></p>
+      <p>Door: <span className="capitalize text-slate-100">{elevator.doorState}</span></p>
+      <p>Health: <span className="capitalize text-slate-100">{elevator.healthState}</span></p>
+      {elevator.stale ? <p className="mt-2 text-amber-100">Last accepted state is stale.</p> : null}
     </aside>
   );
 }

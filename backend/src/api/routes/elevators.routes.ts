@@ -22,8 +22,13 @@ export function createElevatorRoutes(service: ElevatorMonitoringService): Router
   });
 
   router.get('/elevators/:elevatorId', (req, res) => {
+    const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;
+    if (!buildingId) {
+      res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
+      return;
+    }
     const twin = service.get(req.params.elevatorId);
-    if (!twin) {
+    if (!twin || twin.buildingId !== buildingId) {
       res.status(404).json({ code: 'ELEVATOR_NOT_FOUND', message: 'Elevator not found' });
       return;
     }
