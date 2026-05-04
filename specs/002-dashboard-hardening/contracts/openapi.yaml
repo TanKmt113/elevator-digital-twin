@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: Dashboard Hardening API Delta
+  version: 2.0.0
+  description: Contract additions and tightened behavior for the dashboard hardening phase.
+paths:
+  /elevators:
+    get:
+      summary: List elevator operational summaries for one building
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elevator summaries scoped to the requested building
+        '400':
+          description: Missing buildingId scope
+  /health:
+    get:
+      summary: Report backend health and synchronization readiness
+      responses:
+        '200':
+          description: Health status including Twin bootstrap and realtime readiness

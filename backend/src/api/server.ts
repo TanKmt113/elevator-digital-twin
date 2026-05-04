@@ -16,12 +16,21 @@ import { createElevatorHistoryRoutes } from './routes/elevator-history.routes.js
 import { RiskAnalyticsService } from '../modules/analytics/risk-analytics.service.js';
 import { createAnalyticsRoutes } from './routes/analytics.routes.js';
 import { RiskPublisher } from '../modules/realtime/publishers/risk.publisher.js';
+import { DittoClient } from '../integrations/ditto/ditto-client.js';
+import { settings } from '../config/settings.js';
 
-export function createApp() {
+interface CreateAppOptions {
+  dittoClient?: DittoClient;
+  seedAnalytics?: boolean;
+  bootstrapTwin?: boolean;
+}
+
+export function createApp(options: CreateAppOptions = {}) {
   const app = express();
   app.use(express.json());
 
-  const monitoringService = new ElevatorMonitoringService();
+  const dittoClient = options.dittoClient ?? new DittoClient();
+  const monitoringService = new ElevatorMonitoringService(undefined, undefined, dittoClient);
   const commandExecutionService = new CommandExecutionService(monitoringService);
   const alertsService = new AlertsService();
   const historyService = new ElevatorHistoryService();
@@ -38,32 +47,49 @@ export function createApp() {
   app.use(createAlertsRoutes(alertsService, alertPublisher));
   app.use(createElevatorHistoryRoutes(historyService));
   app.use(createAnalyticsRoutes(riskAnalyticsService));
-  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/health', (_req, res) =>
+    res.json({
+      status: 'ok',
+      synchronization: monitoringService.getSynchronizationState(),
+      bootstrap: monitoringService.getBootstrapSnapshot()
+    })
+  );
 
-  riskAnalyticsService.ingest({
-    riskWarningId: 'seed-risk-warning',
-    elevatorId: 'L72-ELEV-A',
-    riskLevel: 'moderate',
-    predictedWindowHours: 96,
-    generatedAt: new Date().toISOString(),
-    drivers: ['usage']
-  });
-  riskPublisher.publish(
-    riskAnalyticsService.list()[0] ?? {
+  if (options.seedAnalytics !== false) {
+    riskAnalyticsService.ingest({
       riskWarningId: 'seed-risk-warning',
       elevatorId: 'L72-ELEV-A',
       riskLevel: 'moderate',
       predictedWindowHours: 96,
       generatedAt: new Date().toISOString(),
       drivers: ['usage']
-    }
-  );
+    });
+    riskPublisher.publish(
+      riskAnalyticsService.list()[0] ?? {
+        riskWarningId: 'seed-risk-warning',
+        elevatorId: 'L72-ELEV-A',
+        riskLevel: 'moderate',
+        predictedWindowHours: 96,
+        generatedAt: new Date().toISOString(),
+        drivers: ['usage']
+      }
+    );
+  }
+
+  if (options.bootstrapTwin !== false && settings.env.twinSyncEnabled) {
+    void monitoringService.bootstrapFromDitto().catch((error: unknown) => {
+      logger.error('ditto_bootstrap_failed', {
+        error: error instanceof Error ? error.message : 'unknown_error'
+      });
+    });
+  }
 
   return {
     app,
     server,
     sessions,
     monitoringService,
+    dittoClient,
     commandExecutionService,
     alertsService,
     historyService,

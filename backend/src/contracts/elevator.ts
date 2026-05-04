@@ -6,6 +6,15 @@ export type ElevatorStatus =
   | 'fault'
   | 'offline';
 
+export type TwinBootstrapStatus = 'idle' | 'loading' | 'completed' | 'partial' | 'failed';
+
+export type RealtimeConnectionState =
+  | 'connecting'
+  | 'live'
+  | 'stale'
+  | 'degraded'
+  | 'resyncing';
+
 export interface ElevatorTwin {
   elevatorId: string;
   buildingId: string;
@@ -20,4 +29,28 @@ export interface ElevatorTwin {
   healthState: 'normal' | 'warning' | 'critical' | 'unknown';
   lastEventAt: string;
   stale: boolean;
+}
+
+export interface TwinBootstrapSnapshot {
+  snapshotId: string;
+  buildingId: string;
+  requestedAt: string;
+  completedAt?: string;
+  status: TwinBootstrapStatus;
+  elevators: ElevatorTwin[];
+  missingElevatorIds?: string[];
+  failureReason?: string;
+}
+
+export interface RealtimeSynchronizationState {
+  buildingId?: string;
+  connectionState: RealtimeConnectionState;
+  bootstrapStatus: TwinBootstrapStatus;
+  dataState: 'loading' | 'ready' | 'empty' | 'degraded';
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  staleThresholdMs: number;
+  duplicateEventsDropped: number;
+  outOfOrderEventsRejected: number;
+  lastFailureReason?: string;
 }

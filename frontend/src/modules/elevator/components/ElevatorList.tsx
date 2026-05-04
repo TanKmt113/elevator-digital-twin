@@ -6,16 +6,47 @@ export function ElevatorList(): React.JSX.Element {
   const elevators = Object.values(useElevatorStore((state) => state.elevators));
 
   return (
-    <section>
-      {elevators.map((elevator) => (
-        <article key={elevator.elevatorId}>
-          <strong>{elevator.elevatorId}</strong>
-          <p>Floor: {elevator.currentFloor}</p>
-          <p>Direction: {elevator.direction}</p>
-          <p>Door: {elevator.doorState}</p>
-          <ElevatorStatusBadge status={elevator.status} stale={elevator.stale} />
-        </article>
-      ))}
+    <section className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Fleet Overview
+          </p>
+          <h2 className="text-xl font-semibold text-slate-100">Elevator List</h2>
+        </div>
+        <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-100">
+          {elevators.length} tracked
+        </span>
+      </div>
+      <div className="grid gap-3">
+        {elevators.length === 0 ? (
+          <article className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
+            No elevator state has been loaded for the active scope.
+          </article>
+        ) : null}
+        {elevators.map((elevator) => (
+          <article
+            key={elevator.elevatorId}
+            className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto]"
+          >
+            <div className="grid gap-2">
+              <div className="flex items-center gap-3">
+                <strong className="text-base font-semibold text-slate-100">{elevator.elevatorId}</strong>
+                <ElevatorStatusBadge status={elevator.status} stale={elevator.stale} />
+              </div>
+              <div className="grid gap-1 text-sm text-slate-300 sm:grid-cols-3">
+                <p>Floor: {elevator.currentFloor}</p>
+                <p>Direction: {elevator.direction}</p>
+                <p>Door: {elevator.doorState}</p>
+              </div>
+            </div>
+            <div className="text-right text-sm text-slate-400">
+              <p>Health</p>
+              <p className="font-medium capitalize text-slate-200">{elevator.healthState}</p>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

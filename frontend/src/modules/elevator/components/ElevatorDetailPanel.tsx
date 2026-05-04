@@ -5,13 +5,20 @@ import { ElevatorHistoryPanel } from './ElevatorHistoryPanel';
 
 export function ElevatorDetailPanel({ elevator }: { elevator: ElevatorViewModel }): React.JSX.Element {
   return (
-    <aside>
-      <h2>{elevator.elevatorId}</h2>
-      <p>Status: {elevator.status}</p>
-      <p>Load: {elevator.loadPercentage ?? 'n/a'}</p>
-      <p>Health: {elevator.healthState}</p>
-      <ElevatorCommandPanel elevatorId={elevator.elevatorId} />
-      <ElevatorHistoryPanel elevatorId={elevator.elevatorId} />
+    <aside className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+        Selected Asset
+      </p>
+      <h2 className="mt-1 text-2xl font-semibold text-slate-100">{elevator.elevatorId}</h2>
+      <div className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-300">
+        <p>Status: <span className="font-medium capitalize text-slate-100">{elevator.status}</span></p>
+        <p>Load: <span className="font-medium text-slate-100">{elevator.loadPercentage ?? 'n/a'}</span></p>
+        <p>Health: <span className="font-medium capitalize text-slate-100">{elevator.healthState}</span></p>
+      </div>
+      <div className="mt-4 grid gap-4">
+        <ElevatorCommandPanel elevatorId={elevator.elevatorId} />
+        <ElevatorHistoryPanel elevatorId={elevator.elevatorId} />
+      </div>
     </aside>
   );
 }

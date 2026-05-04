@@ -11,5 +11,6 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
   if (event.eventType === 'elevator.state.changed') {
     useElevatorStore.getState().upsertElevator(event.payload);
     useRealtimeStore.getState().setConnected(true);
+    useRealtimeStore.getState().setDataState('ready');
   }
 }

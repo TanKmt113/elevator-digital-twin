@@ -8,21 +8,52 @@ export function AlertPanel(): React.JSX.Element {
   const visible = severity === 'all' ? alerts : alerts.filter((alert) => alert.severity === severity);
 
   return (
-    <section>
-      <label>
-        Severity
-        <select value={severity} onChange={(event) => setSeverity(event.target.value as 'all' | 'warning' | 'critical')}>
+    <section className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Incident Queue
+          </p>
+          <h2 className="text-xl font-semibold text-slate-100">Alerts</h2>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-slate-300">
+          Severity
+          <select
+            className="rounded-full border border-white/10 bg-slate-900 px-3 py-1 text-sm text-slate-100"
+            value={severity}
+            onChange={(event) => setSeverity(event.target.value as 'all' | 'warning' | 'critical')}
+          >
           <option value="all">All</option>
           <option value="warning">Warning</option>
           <option value="critical">Critical</option>
         </select>
-      </label>
-      {visible.map((alert) => (
-        <article key={alert.alertId}>
-          <strong>{alert.alertType}</strong>
-          <p>{alert.message}</p>
-        </article>
-      ))}
+        </label>
+      </div>
+      <div className="grid gap-3">
+        {visible.length === 0 ? (
+          <article className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
+            No alerts match the current filter.
+          </article>
+        ) : null}
+        {visible.map((alert) => (
+          <article
+            key={alert.alertId}
+            className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <strong className="text-base font-semibold capitalize text-slate-100">{alert.alertType}</strong>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${
+                alert.severity === 'critical'
+                  ? 'bg-rose-400/10 text-rose-100'
+                  : 'bg-amber-300/10 text-amber-100'
+              }`}>
+                {alert.severity}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-slate-300">{alert.message}</p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

@@ -12,6 +12,10 @@ export class ElevatorStateRepository {
     return [...this.records.values()];
   }
 
+  listByBuilding(buildingId: string): ElevatorTwin[] {
+    return this.list().filter((twin) => twin.buildingId === buildingId);
+  }
+
   get(elevatorId: string): ElevatorTwin | undefined {
     return this.records.get(elevatorId);
   }

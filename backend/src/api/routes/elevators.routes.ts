@@ -7,8 +7,18 @@ export function createElevatorRoutes(service: ElevatorMonitoringService): Router
   const router = Router();
   router.use(authenticateJwt, requireRoles('operator', 'admin', 'maintenance'));
 
-  router.get('/elevators', (_req, res) => {
-    res.json({ items: service.list() });
+  router.get('/elevators', (req, res) => {
+    const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;
+    if (!buildingId) {
+      res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
+      return;
+    }
+    res.json({
+      items: service.listByBuilding(buildingId),
+      meta: {
+        synchronization: service.getSynchronizationState()
+      }
+    });
   });
 
   router.get('/elevators/:elevatorId', (req, res) => {
