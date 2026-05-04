@@ -74,6 +74,10 @@
 
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
+- What happens when a device, gateway, or downstream dependency is offline or
+  intermittently reachable?
+- How does the feature behave when events arrive late, out of order,
+  duplicated, or with a schema version mismatch?
 
 ## Requirements *(mandatory)*
 
@@ -89,16 +93,36 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-006**: Feature MUST define whether it reads or writes `realtime`,
+  `telemetry`, `config`, and `alarm` data classes and identify the canonical
+  Twin entities involved.
+- **FR-007**: Feature MUST specify the backend-mediated API or event path used
+  by clients; frontend direct access to Twin infrastructure is not allowed.
+- **FR-008**: Feature MUST define authentication, authorization scope, and
+  required observability signals for critical flows.
 
 *Example of marking unclear requirements:*
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **FR-009**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
+- **FR-010**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Operational Alignment *(mandatory for building-platform features)*
+
+- **Twin Authority**: [Describe how the feature uses the Digital Twin as the
+  single source of truth]
+- **Realtime Model**: [Describe the event sources, push channels,
+  normalization, and reconnection expectations]
+- **Failure Handling**: [Describe degraded behavior for offline devices,
+  downstream errors, and partial outages]
+- **Security Boundary**: [Describe JWT or equivalent auth, service auth, and
+  authorization scope by building, device, or role]
+- **Observability**: [List the logs, metrics, traces, and alerts needed to
+  operate this feature]
 
 ## Success Criteria *(mandatory)*
 

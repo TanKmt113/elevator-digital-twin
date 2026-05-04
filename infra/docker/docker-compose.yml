@@ -1,0 +1,15 @@
+services:
+  mongo:
+    image: mongo:7
+    ports: ["27017:27017"]
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports: ["1883:1883"]

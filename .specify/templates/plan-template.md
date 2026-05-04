@@ -31,7 +31,22 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Confirm the feature preserves the Digital Twin as the single source of truth
+  and does not introduce direct frontend or AI access to devices or Twin state
+  outside sanctioned backend paths.
+- Confirm the delivery model is event-driven for realtime behavior, documents
+  offline and partial-failure handling, and defines reconnection or backoff if
+  realtime channels are involved.
+- Confirm all external or cross-service data contracts define versioned schemas,
+  event normalization rules, and the data classes involved (`realtime`,
+  `telemetry`, `config`, `alarm`).
+- Confirm the architecture remains layered and backend-mediated, including
+  authentication, authorization, and policy enforcement boundaries.
+- Confirm observability, resilience, and testing obligations are included:
+  structured logging, metrics, tracing or correlation, bounded retries,
+  circuit-breaker strategy, and layer-appropriate tests.
+- Record any principle violations or temporary exceptions in `Complexity
+  Tracking` with justification and a remediation plan.
 
 ## Project Structure
 

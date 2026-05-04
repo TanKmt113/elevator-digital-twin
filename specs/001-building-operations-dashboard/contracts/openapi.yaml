@@ -1,0 +1,359 @@
+openapi: 3.1.0
+info:
+  title: Smart Building Operations API
+  version: 1.0.0
+  description: Backend-mediated API for elevator monitoring, alerts, history, and predictive analytics.
+servers:
+  - url: https://api.example.com
+    description: Production placeholder
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Elevators
+  - name: Commands
+  - name: Alerts
+  - name: Analytics
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate a dashboard user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /elevators:
+    get:
+      tags: [Elevators]
+      summary: List elevator operational summaries
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elevator summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ElevatorSummary'
+                required: [items]
+  /elevators/{elevatorId}:
+    get:
+      tags: [Elevators]
+      summary: Get elevator detail for one asset
+      parameters:
+        - $ref: '#/components/parameters/ElevatorId'
+      responses:
+        '200':
+          description: Elevator detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ElevatorDetail'
+  /elevators/{elevatorId}/history:
+    get:
+      tags: [Elevators]
+      summary: Retrieve filtered historical data for one elevator
+      parameters:
+        - $ref: '#/components/parameters/ElevatorId'
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Historical movement and activity records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HistoricalPoint'
+                required: [items]
+  /commands:
+    post:
+      tags: [Commands]
+      summary: Submit an authorized elevator command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandRequest'
+      responses:
+        '202':
+          description: Command accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+        '409':
+          description: Command rejected by policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /alerts:
+    get:
+      tags: [Alerts]
+      summary: List alerts for the selected scope
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: severity
+          required: false
+          schema:
+            type: string
+            enum: [warning, critical]
+      responses:
+        '200':
+          description: Alert list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+                required: [items]
+  /alerts/{alertId}/acknowledge:
+    post:
+      tags: [Alerts]
+      summary: Acknowledge an open alert
+      parameters:
+        - in: path
+          name: alertId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
+  /analytics/risk:
+    get:
+      tags: [Analytics]
+      summary: List active risk warnings
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Risk warning list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RiskWarning'
+                required: [items]
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ElevatorId:
+      in: path
+      name: elevatorId
+      required: true
+      schema:
+        type: string
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        role:
+          type: string
+          enum: [operator, admin, maintenance]
+      required: [accessToken, expiresAt, role]
+    ElevatorSummary:
+      type: object
+      properties:
+        elevatorId:
+          type: string
+        status:
+          type: string
+        currentFloor:
+          type: integer
+        direction:
+          type: string
+        doorState:
+          type: string
+        loadPercentage:
+          type: number
+        healthState:
+          type: string
+        stale:
+          type: boolean
+      required:
+        [elevatorId, status, currentFloor, direction, doorState, healthState, stale]
+    ElevatorDetail:
+      allOf:
+        - $ref: '#/components/schemas/ElevatorSummary'
+        - type: object
+          properties:
+            targetFloor:
+              type: integer
+            alerts:
+              type: array
+              items:
+                $ref: '#/components/schemas/Alert'
+            activeRiskWarning:
+              oneOf:
+                - $ref: '#/components/schemas/RiskWarning'
+                - type: 'null'
+    CommandRequest:
+      type: object
+      properties:
+        elevatorId:
+          type: string
+        commandType:
+          type: string
+          enum: [move_to_floor, stop, reset]
+        requestedFloor:
+          type: integer
+      required: [elevatorId, commandType]
+    CommandResponse:
+      type: object
+      properties:
+        commandId:
+          type: string
+        status:
+          type: string
+          enum: [accepted, rejected, in_progress, completed, failed, expired]
+        correlationId:
+          type: string
+        message:
+          type: string
+      required: [commandId, status, correlationId, message]
+    Alert:
+      type: object
+      properties:
+        alertId:
+          type: string
+        elevatorId:
+          type: string
+        alertType:
+          type: string
+        severity:
+          type: string
+          enum: [warning, critical]
+        status:
+          type: string
+          enum: [open, acknowledged, resolved, suppressed]
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        acknowledgedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        [alertId, elevatorId, alertType, severity, status, message, createdAt]
+    HistoricalPoint:
+      type: object
+      properties:
+        recordedAt:
+          type: string
+          format: date-time
+        currentFloor:
+          type: integer
+        direction:
+          type: string
+        doorState:
+          type: string
+        loadPercentage:
+          type: number
+        tripCount:
+          type: integer
+      required: [recordedAt]
+    RiskWarning:
+      type: object
+      properties:
+        riskWarningId:
+          type: string
+        elevatorId:
+          type: string
+        riskLevel:
+          type: string
+          enum: [low, moderate, high, critical]
+        predictedWindowHours:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        drivers:
+          type: array
+          items:
+            type: string
+      required:
+        [riskWarningId, elevatorId, riskLevel, predictedWindowHours, generatedAt]
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required: [code, message]
