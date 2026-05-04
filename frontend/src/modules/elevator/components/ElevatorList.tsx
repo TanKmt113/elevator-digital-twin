@@ -2,7 +2,7 @@ import React from 'react';
 import { useElevatorStore } from '../../../store/elevator-store';
 import { ElevatorStatusBadge } from './ElevatorStatusBadge';
 
-export function ElevatorList(): JSX.Element {
+export function ElevatorList(): React.JSX.Element {
   const elevators = Object.values(useElevatorStore((state) => state.elevators));
 
   return (

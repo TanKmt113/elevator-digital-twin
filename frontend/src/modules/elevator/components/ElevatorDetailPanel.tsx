@@ -3,7 +3,7 @@ import type { ElevatorViewModel } from '../../../store/elevator-store';
 import { ElevatorCommandPanel } from './ElevatorCommandPanel';
 import { ElevatorHistoryPanel } from './ElevatorHistoryPanel';
 
-export function ElevatorDetailPanel({ elevator }: { elevator: ElevatorViewModel }): JSX.Element {
+export function ElevatorDetailPanel({ elevator }: { elevator: ElevatorViewModel }): React.JSX.Element {
   return (
     <aside>
       <h2>{elevator.elevatorId}</h2>

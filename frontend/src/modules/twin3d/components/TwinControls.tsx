@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function TwinControls(): JSX.Element {
+export function TwinControls(): React.JSX.Element {
   return (
     <div>
       <button type="button">Zoom In</button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { submitCommand } from '../services/submit-command';
 
-export function ElevatorCommandPanel({ elevatorId }: { elevatorId: string }): JSX.Element {
+export function ElevatorCommandPanel({ elevatorId }: { elevatorId: string }): React.JSX.Element {
   return (
     <section>
       <button

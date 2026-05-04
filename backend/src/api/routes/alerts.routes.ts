@@ -18,7 +18,7 @@ export function createAlertsRoutes(service: AlertsService, publisher: AlertPubli
       res.status(401).json({ code: 'AUTH_REQUIRED', message: 'Bearer token required' });
       return;
     }
-    const alert = service.acknowledge(req.params.alertId, req.user.userId);
+    const alert = service.acknowledge(String(req.params.alertId), req.user.userId);
     if (!alert) {
       res.status(404).json({ code: 'ALERT_NOT_FOUND', message: 'Alert not found' });
       return;

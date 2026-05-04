@@ -6,7 +6,7 @@ import { ElevatorMesh } from './ElevatorMesh';
 import { TwinControls } from './TwinControls';
 import { TwinDetailOverlay } from './TwinDetailOverlay';
 
-export function TwinScene(): JSX.Element {
+export function TwinScene(): React.JSX.Element {
   const elevators = Object.values(useElevatorStore((state) => state.elevators));
   const selection = useTwinSelection();
   const selectedElevator = elevators.find(

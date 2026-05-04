@@ -1,7 +1,7 @@
 import React from 'react';
 import type { HistoryPoint } from '../../../store/history-store';
 
-export function ElevatorHistoryChart({ points }: { points: HistoryPoint[] }): JSX.Element {
+export function ElevatorHistoryChart({ points }: { points: HistoryPoint[] }): React.JSX.Element {
   return (
     <section>
       {points.map((point) => (

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { AlertViewModel } from '../../../store/alert-store';
 
-export function AlertDetailDrawer({ alert }: { alert: AlertViewModel }): JSX.Element {
+export function AlertDetailDrawer({ alert }: { alert: AlertViewModel }): React.JSX.Element {
   return (
     <aside>
       <h2>{alert.alertType}</h2>

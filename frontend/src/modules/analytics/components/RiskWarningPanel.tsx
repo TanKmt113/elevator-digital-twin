@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRiskStore } from '../../../store/risk-store';
 
-export function RiskWarningPanel(): JSX.Element {
+export function RiskWarningPanel(): React.JSX.Element {
   const warnings = Object.values(useRiskStore((state) => state.warnings));
   return (
     <section>
