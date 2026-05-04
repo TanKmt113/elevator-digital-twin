@@ -29,3 +29,204 @@
     min-height: 100vh;
   }
 }
+
+/* Semantic dashboard styles keep the UI usable even before Vite is restarted
+   with Tailwind processing enabled. */
+.ops-shell {
+  width: min(1440px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ops-topbar,
+.ops-panel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ops-kicker,
+.ops-label {
+  margin: 0;
+  color: #7dd3c7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ops-title {
+  margin: 6px 0 0;
+  color: #eef6f7;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.ops-scope-pill,
+.ops-count-chip {
+  border: 1px solid rgba(125, 211, 199, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 40, 44, 0.78);
+  color: #c8dedc;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.ops-sync,
+.ops-panel,
+.ops-metric-card {
+  border: 1px solid rgba(210, 230, 226, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 20, 24, 0.78);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.26);
+}
+
+.ops-sync {
+  padding: 16px 18px;
+  border-left: 4px solid #7dd3c7;
+}
+
+.ops-sync-warning {
+  border-left-color: #f6c56f;
+}
+
+.ops-sync-info {
+  border-left-color: #6cc7e8;
+}
+
+.ops-sync-title,
+.ops-panel-title,
+.ops-item-title {
+  margin: 4px 0 0;
+  color: #f1f7f6;
+  letter-spacing: 0;
+}
+
+.ops-sync-title {
+  font-size: 20px;
+}
+
+.ops-muted,
+.ops-empty,
+.ops-empty-inline {
+  color: #9db5b3;
+}
+
+.ops-summary-grid,
+.ops-main-grid,
+.ops-column,
+.ops-list,
+.ops-detail-grid,
+.ops-control-stack,
+.ops-twin-grid,
+.ops-twin-stage {
+  display: grid;
+  gap: 14px;
+}
+
+.ops-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ops-main-grid {
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.75fr);
+  align-items: start;
+}
+
+.ops-panel,
+.ops-metric-card {
+  padding: 18px;
+}
+
+.ops-metric-value {
+  margin: 10px 0 0;
+  color: #f4fbfa;
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.ops-list-item,
+.ops-empty,
+.ops-twin-stage,
+.ops-twin-overlay,
+.ops-detail-grid {
+  border: 1px solid rgba(210, 230, 226, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ops-list-item,
+.ops-empty,
+.ops-twin-overlay,
+.ops-detail-grid {
+  padding: 14px;
+}
+
+.ops-field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  color: #c9d8d6;
+}
+
+.ops-health {
+  color: #91a9a6;
+  text-align: right;
+}
+
+.ops-select {
+  border: 1px solid rgba(210, 230, 226, 0.18);
+  border-radius: 6px;
+  background: #0d1f23;
+  color: #eef6f7;
+  padding: 7px 10px;
+}
+
+.ops-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.ops-icon-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(210, 230, 226, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #eef6f7;
+  font-weight: 700;
+}
+
+.ops-twin-stage {
+  min-height: 240px;
+  align-content: start;
+}
+
+@media (max-width: 960px) {
+  .ops-shell {
+    padding: 18px;
+  }
+
+  .ops-topbar,
+  .ops-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ops-summary-grid,
+  .ops-main-grid,
+  .ops-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-health {
+    text-align: left;
+  }
+}

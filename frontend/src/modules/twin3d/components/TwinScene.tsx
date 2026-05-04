@@ -14,20 +14,20 @@ export function TwinScene(): React.JSX.Element {
   );
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <section className="ops-panel ops-twin-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+      <div className="ops-panel-head mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+          <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
             Spatial View
           </p>
-          <h2 className="text-xl font-semibold text-slate-100">Twin Scene</h2>
+          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Twin Scene</h2>
         </div>
         <TwinControls />
       </div>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="ops-twin-grid grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="ops-twin-stage grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 md:grid-cols-2 xl:grid-cols-3">
           {elevators.length === 0 ? (
-            <article className="text-sm text-slate-400">No Twin assets are currently available for the active scope.</article>
+            <article className="ops-empty-inline text-sm text-slate-400">No Twin assets are currently available for the active scope.</article>
           ) : null}
           {elevators.map((elevator) => (
             <ElevatorMesh

@@ -8,6 +8,14 @@ import { TwinScene } from '../modules/twin3d/components/TwinScene';
 import { useElevatorStore } from '../store/elevator-store';
 import { useRealtimeStore, type DashboardDataState, type RealtimeConnectionState } from '../store/realtime-store';
 
+export const DASHBOARD_SECTION_TITLES = [
+  'Operations Dashboard',
+  'Fleet Overview',
+  'Twin Scene',
+  'Alerts',
+  'Predictive Warnings'
+] as const;
+
 export function deriveAppShellState(
   connectionState: RealtimeConnectionState,
   dataState: DashboardDataState,
@@ -63,34 +71,34 @@ export function App(): React.JSX.Element {
   } as const;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-      <section className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <main className="ops-shell mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+      <section className="ops-topbar flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200/70">
-            Operations Dashboard
+          <p className="ops-kicker text-xs font-semibold uppercase tracking-[0.3em] text-cyan-200/70">
+            {DASHBOARD_SECTION_TITLES[0]}
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-100 sm:text-4xl">
+          <h1 className="ops-title text-3xl font-semibold tracking-tight text-slate-100 sm:text-4xl">
             Keangnam Smart Building Operations
           </h1>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
+        <div className="ops-scope-pill rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
           {elevators.length} elevators in active scope
         </div>
       </section>
-      <section className={`rounded-2xl border px-4 py-3 shadow-sm ${toneClasses[shellState.bannerTone]}`}>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
+      <section className={`ops-sync ops-sync-${shellState.bannerTone} rounded-2xl border px-4 py-3 shadow-sm ${toneClasses[shellState.bannerTone]}`}>
+        <p className="ops-label text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
           Synchronization
         </p>
-        <h2 className="mt-1 text-lg font-semibold">{shellState.title}</h2>
-        <p className="mt-1 text-sm text-white/80">{staleMessage ?? shellState.message}</p>
+        <h2 className="ops-sync-title mt-1 text-lg font-semibold">{shellState.title}</h2>
+        <p className="ops-muted mt-1 text-sm text-white/80">{staleMessage ?? shellState.message}</p>
       </section>
       <ElevatorSummaryCards />
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
-        <div className="grid gap-6">
+      <section className="ops-main-grid grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+        <div className="ops-column grid gap-6">
           <ElevatorList />
           <TwinScene />
         </div>
-        <div className="grid gap-6">
+        <div className="ops-column grid gap-6">
           {featuredElevator ? <ElevatorDetailPanel elevator={featuredElevator} /> : null}
           <AlertPanel />
           <RiskWarningPanel />
