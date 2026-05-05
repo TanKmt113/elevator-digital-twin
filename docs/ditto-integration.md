@@ -56,14 +56,14 @@ Authentication precedence:
 - `getRealtimeUrl()`
 - in-memory `subscribe()` / `emit()` hooks for normalized event fan-out
 
-This is enough to wire the next implementation steps:
+This client surface now supports the implemented phase-4 runtime flow:
 
 1. bootstrap elevator state from Ditto HTTP before realtime updates start
-2. map Ditto Thing payloads into `ElevatorTwin`
-3. connect Ditto WebSocket events to `event-normalizer.ts`
-4. fall back to point lookup for selected elevator detail views
+2. map Ditto Thing payloads into governed backend contracts
+3. connect Ditto WebSocket events to backend normalization and rejection handling
+4. keep frontend detail and summary views synchronized through backend REST and websocket delivery
 
-## Phase 3 Validation Focus
+## Phase 4 Validation Focus
 
 - Startup readiness must distinguish `loading`, `ready`, `empty`, and `degraded` dashboard states.
 - Twin bootstrap failure must be observable through backend health, logs, or metrics.

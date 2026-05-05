@@ -1,6 +1,8 @@
 export interface EnvConfig {
   port: number;
   jwtSecret: string;
+  devAuthEnabled: boolean;
+  corsOrigins: string[];
   dittoHttpUrl: string;
   dittoWsUrl: string;
   dittoUsername?: string;
@@ -14,9 +16,16 @@ export interface EnvConfig {
 }
 
 export function loadEnv(): EnvConfig {
+  const corsOrigins = (process.env.CORS_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   return {
     port: Number(process.env.PORT ?? 3000),
     jwtSecret: process.env.JWT_SECRET ?? 'change-me',
+    devAuthEnabled: process.env.DEV_AUTH_ENABLED !== 'false',
+    corsOrigins,
     dittoHttpUrl: process.env.DITTO_HTTP_URL ?? 'http://localhost:8080',
     dittoWsUrl: process.env.DITTO_WS_URL ?? 'ws://localhost:8080/ws/2',
     dittoUsername: process.env.DITTO_USERNAME,

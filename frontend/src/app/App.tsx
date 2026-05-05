@@ -7,6 +7,8 @@ import { RiskWarningPanel } from '../modules/analytics/components/RiskWarningPan
 import { TwinScene } from '../modules/twin3d/components/TwinScene';
 import { useElevatorStore } from '../store/elevator-store';
 import { useRealtimeStore, type DashboardDataState, type RealtimeConnectionState } from '../store/realtime-store';
+import { useSessionStore } from '../store/session-store';
+import { ApiError, fetchElevatorBootstrap } from '../services/api/client';
 
 export const DASHBOARD_SECTION_TITLES = [
   'Operations Dashboard',
@@ -15,6 +17,16 @@ export const DASHBOARD_SECTION_TITLES = [
   'Alerts',
   'Predictive Warnings'
 ] as const;
+
+interface BootstrapSynchronizationState {
+  bootstrapStatus?: string;
+  dittoLiveState?: string;
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  duplicateEventsDropped?: number;
+  outOfOrderEventsRejected?: number;
+  lastFailureReason?: string;
+}
 
 export function deriveAppShellState(
   connectionState: RealtimeConnectionState,
@@ -56,12 +68,53 @@ export function deriveAppShellState(
   };
 }
 
+export function deriveRealtimeStateFromBootstrap(
+  synchronization: BootstrapSynchronizationState,
+  elevatorCount: number
+): {
+  connectionState: RealtimeConnectionState;
+  dataState: DashboardDataState;
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  duplicateEventsDropped: number;
+  outOfOrderEventsRejected: number;
+  staleMessage?: string;
+} {
+  const connectionState =
+    synchronization.dittoLiveState === 'live'
+      ? 'live'
+      : synchronization.dittoLiveState === 'stale'
+        ? 'stale'
+        : synchronization.dittoLiveState === 'degraded'
+          ? 'degraded'
+          : 'connecting';
+
+  const dataState =
+    synchronization.bootstrapStatus === 'failed' || synchronization.bootstrapStatus === 'partial'
+      ? 'degraded'
+      : elevatorCount === 0 || synchronization.bootstrapStatus === 'empty'
+        ? 'empty'
+        : 'ready';
+
+  return {
+    connectionState,
+    dataState,
+    lastBootstrapAt: synchronization.lastBootstrapAt,
+    lastLiveEventAt: synchronization.lastLiveEventAt,
+    duplicateEventsDropped: synchronization.duplicateEventsDropped ?? 0,
+    outOfOrderEventsRejected: synchronization.outOfOrderEventsRejected ?? 0,
+    staleMessage: synchronization.lastFailureReason
+  };
+}
+
 export function App(): React.JSX.Element {
   const elevators = Object.values(useElevatorStore((state) => state.elevators));
+  const selectedBuildingId = useElevatorStore((state) => state.selectedBuildingId);
   const connectionState = useRealtimeStore((state) => state.connectionState);
   const dataState = useRealtimeStore((state) => state.dataState);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
   const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
+  const token = useSessionStore((state) => state.token);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
   const featuredElevator =
     elevators.find((elevator) => elevator.elevatorId === selectedElevatorId) ?? elevators[0];
@@ -71,6 +124,52 @@ export function App(): React.JSX.Element {
     critical: 'border-rose-400/30 bg-rose-400/10 text-rose-50',
     neutral: 'border-white/10 bg-white/5 text-slate-100'
   } as const;
+
+  React.useEffect(() => {
+    let cancelled = false;
+    useRealtimeStore.getState().setDataState('loading');
+    useRealtimeStore.getState().setConnectionState('connecting');
+    useRealtimeStore.getState().setStaleMessage(undefined);
+
+    void fetchElevatorBootstrap(selectedBuildingId, token)
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+
+        useElevatorStore.getState().replaceElevators(response.items, selectedBuildingId);
+        useRealtimeStore
+          .getState()
+          .applySynchronizationState(deriveRealtimeStateFromBootstrap(response.meta.synchronization, response.items.length));
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        const message =
+          error instanceof ApiError
+            ? error.status === 401
+              ? 'Backend requires an operator token for elevator bootstrap.'
+              : error.status === 403
+                ? 'Current token does not have access to the selected building.'
+                : error.message
+            : error instanceof Error
+              ? error.message
+              : 'Unable to load elevator bootstrap from backend.';
+
+        useElevatorStore.getState().replaceElevators([], selectedBuildingId);
+        useRealtimeStore.getState().applySynchronizationState({
+          connectionState: 'degraded',
+          dataState: 'degraded',
+          staleMessage: message
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBuildingId, token]);
 
   return (
     <main className="ops-shell mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">

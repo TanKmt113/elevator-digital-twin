@@ -6,8 +6,14 @@ interface SessionState {
   setSession: (token: string, role: string) => void;
 }
 
+function getInitialSession() {
+  return {
+    token: import.meta.env.VITE_OPERATOR_TOKEN,
+    role: import.meta.env.VITE_OPERATOR_ROLE ?? 'operator'
+  };
+}
+
 export const useSessionStore = create<SessionState>((set) => ({
-  token: undefined,
-  role: undefined,
+  ...getInitialSession(),
   setSession: (token, role) => set({ token, role })
 }));

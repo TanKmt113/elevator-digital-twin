@@ -48,6 +48,11 @@ export interface GetThingOptions {
   condition?: string;
 }
 
+export interface DittoPolicy {
+  entries: Record<string, unknown>;
+  imports?: Record<string, unknown>;
+}
+
 export const DITTO_ELEVATOR_FIELDS = 'thingId,attributes,features';
 
 export function projectDittoElevatorThing(thing: DittoThing): DittoElevatorThingProjection {
@@ -145,9 +150,26 @@ export class DittoClient {
     return this.request<DittoThing>(`/api/2/things/${encodedThingId}?${search.toString()}`);
   }
 
-  private async request<T>(path: string): Promise<T> {
+  async upsertPolicy(policyId: string, policy: DittoPolicy): Promise<void> {
+    const encodedPolicyId = encodeURIComponent(policyId);
+    await this.requestVoid(`/api/2/policies/${encodedPolicyId}`, {
+      method: 'PUT',
+      body: JSON.stringify(policy)
+    });
+  }
+
+  async upsertThing(thingId: string, thing: DittoThing): Promise<void> {
+    const encodedThingId = encodeURIComponent(thingId);
+    await this.requestVoid(`/api/2/things/${encodedThingId}`, {
+      method: 'PUT',
+      body: JSON.stringify(thing)
+    });
+  }
+
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetchImpl(`${this.httpUrl}${path}`, {
-      headers: this.createHeaders()
+      ...init,
+      headers: this.createHeaders(init.body !== undefined, init.headers)
     });
 
     if (!response.ok) {
@@ -157,10 +179,25 @@ export class DittoClient {
     return (await response.json()) as T;
   }
 
-  private createHeaders(): HeadersInit {
+  private async requestVoid(path: string, init: RequestInit = {}): Promise<void> {
+    const response = await this.fetchImpl(`${this.httpUrl}${path}`, {
+      ...init,
+      headers: this.createHeaders(init.body !== undefined, init.headers)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ditto request failed: ${response.status} ${response.statusText}`);
+    }
+  }
+
+  private createHeaders(hasJsonBody = false, headersInit?: HeadersInit): HeadersInit {
     const headers: Record<string, string> = {
       Accept: 'application/json'
     };
+
+    if (hasJsonBody) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (this.bearerToken) {
       headers.Authorization = `Bearer ${this.bearerToken}`;
@@ -169,6 +206,9 @@ export class DittoClient {
       headers.Authorization = `Basic ${credentials}`;
     }
 
-    return headers;
+    return {
+      ...headers,
+      ...(headersInit ?? {})
+    };
   }
 }

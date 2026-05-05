@@ -74,14 +74,12 @@ VITE_BUILDING_ID=L72
 
 ```sh
 cd backend
-npm run build
-npm test
+npm run validate:phase4
 ```
 
 ```sh
 cd frontend
-npm run build
-npm test
+npm run validate:phase4
 ```
 
 Manual quickstart validation is required after automated tests because this phase crosses Ditto, backend, websocket, and browser boundaries.

@@ -1,6 +1,70 @@
+import type { ElevatorViewModel } from '../../store/elevator-store';
+
+interface SynchronizationHealth {
+  bootstrapStatus?: string;
+  dittoHttpState?: string;
+  dittoLiveState?: string;
+  frontendRealtimeState?: string;
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  duplicateEventsDropped?: number;
+  outOfOrderEventsRejected?: number;
+  outOfScopeEventsRejected?: number;
+  malformedEventsRejected?: number;
+  lastFailureReason?: string;
+}
+
+export interface ElevatorBootstrapResponse {
+  items: ElevatorViewModel[];
+  meta: {
+    synchronization: SynchronizationHealth;
+  };
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly payload?: unknown
+  ) {
+    super(message);
+  }
+}
+
+function getApiBaseUrl(): string {
+  return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
+}
+
+function buildApiUrl(path: string): string {
+  const baseUrl = getApiBaseUrl();
+  if (!baseUrl) {
+    return path;
+  }
+
+  return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export async function apiGet<T>(path: string, token?: string): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(buildApiUrl(path), {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined
   });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => undefined);
+    const message =
+      typeof payload === 'object' && payload && 'message' in payload && typeof payload.message === 'string'
+        ? payload.message
+        : `Request failed with status ${response.status}`;
+    throw new ApiError(message, response.status, payload);
+  }
+
   return response.json() as Promise<T>;
+}
+
+export async function fetchElevatorBootstrap(
+  buildingId: string,
+  token?: string
+): Promise<ElevatorBootstrapResponse> {
+  const query = new URLSearchParams({ buildingId });
+  return apiGet<ElevatorBootstrapResponse>(`/elevators?${query.toString()}`, token);
 }

@@ -115,6 +115,15 @@ paths:
           description: Local validation token
         '404':
           description: Developer auth disabled
+  /dev/ditto/seed:
+    post:
+      summary: Seed the local Ditto dataset into policy and elevator Things
+      description: This endpoint is for local validation only. It loads the repository's local Ditto seed dataset and upserts the corresponding policy and Things through the Ditto HTTP API.
+      responses:
+        '200':
+          description: Local Ditto dataset seeded successfully
+        '502':
+          description: Ditto rejected the seed request or was unavailable
 components:
   securitySchemes:
     bearerAuth:

@@ -6,18 +6,18 @@
 2. Start backend and frontend workspaces.
 3. Confirm backend readiness includes Twin bootstrap and synchronization state.
 4. Use simulated realtime events to validate monitoring, commands, alerts, 3D view, and history.
-5. Leave the AI service stopped for the phase-3 validation path.
+5. Leave the AI service stopped for the phase-4 validation path.
 
 ## Ditto Integration
 
 - Eclipse Ditto HTTP contract used by this project: [ditto-api-2.yml](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-api-2.yml)
 - Working integration guide for backend usage: [ditto-integration.md](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-integration.md)
 
-## Phase 3 Focus
+## Phase 4 Focus
 
-- Phase-3 spec: [specs/003-digital-twin-3d/spec.md](../specs/003-digital-twin-3d/spec.md)
-- Phase-3 plan: [specs/003-digital-twin-3d/plan.md](../specs/003-digital-twin-3d/plan.md)
-- Phase-3 quickstart: [specs/003-digital-twin-3d/quickstart.md](../specs/003-digital-twin-3d/quickstart.md)
+- Phase-4 spec: [specs/004-ditto-end-to-end/spec.md](../specs/004-ditto-end-to-end/spec.md)
+- Phase-4 plan: [specs/004-ditto-end-to-end/plan.md](../specs/004-ditto-end-to-end/plan.md)
+- Phase-4 quickstart: [specs/004-ditto-end-to-end/quickstart.md](../specs/004-ditto-end-to-end/quickstart.md)
 - Digital Twin and 3D phase notes: [digital-twin-3d-next-phase.md](digital-twin-3d-next-phase.md)
 
 ## Degraded Twin Behavior

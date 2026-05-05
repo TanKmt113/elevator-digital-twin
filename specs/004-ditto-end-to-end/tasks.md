@@ -29,10 +29,10 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 **Purpose**: Establish phase-4 runtime references, validation commands, and local Ditto dataset locations.
 
-- [ ] T001 Update phase-4 references in AGENTS.md, README.md, docs/operations-dashboard.md, and docs/ditto-integration.md for specs/004-ditto-end-to-end/
-- [ ] T002 [P] Add phase-4 validation scripts and environment documentation in backend/package.json, frontend/package.json, backend/src/config/env.ts, and frontend/src/services/api/client.ts
-- [ ] T003 [P] Add local Ditto dataset and seed script entry points in infra/ditto/local-l72-elevators.json and infra/ditto/seed-ditto.ts
-- [ ] T004 [P] Update local infrastructure notes and compose placeholders for Ditto in infra/README.md and infra/docker/docker-compose.yml
+- [X] T001 Update phase-4 references in AGENTS.md, README.md, docs/operations-dashboard.md, and docs/ditto-integration.md for specs/004-ditto-end-to-end/
+- [X] T002 [P] Add phase-4 validation scripts and environment documentation in backend/package.json, frontend/package.json, backend/src/config/env.ts, and frontend/src/services/api/client.ts
+- [X] T003 [P] Add local Ditto dataset and seed script entry points in infra/ditto/local-l72-elevators.json and infra/ditto/seed-ditto.ts
+- [X] T004 [P] Update local infrastructure notes and compose placeholders for Ditto in infra/README.md and infra/docker/docker-compose.yml
 
 ---
 
@@ -42,13 +42,13 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T005 Define phase-4 synchronization and health contracts in backend/src/contracts/elevator.ts and frontend/src/store/realtime-store.ts
-- [ ] T006 [P] Add shared realtime envelope and rejection-counter tests in backend/tests/integration/elevator-realtime-resilience.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T007 [P] Implement local developer auth contract in backend/src/modules/auth/dev-auth.routes.ts and backend/tests/contract/auth.contract.test.ts
-- [ ] T008 [P] Extend backend environment and settings for Ditto live, dev auth, and reconnect defaults in backend/src/config/env.ts and backend/src/config/settings.ts
-- [ ] T009 Add scoped authorization helpers for REST and websocket building access in backend/src/modules/auth/rbac.ts and backend/src/modules/auth/auth.middleware.ts
-- [ ] T010 Add synchronization health metrics and structured log fields in backend/src/observability/elevator-monitoring.metrics.ts and backend/src/observability/logger.ts
-- [ ] T011 [P] Refresh phase-4 API and realtime contracts after foundational decisions in specs/004-ditto-end-to-end/contracts/backend-api.yaml and specs/004-ditto-end-to-end/contracts/realtime-events.md
+- [X] T005 Define phase-4 synchronization and health contracts in backend/src/contracts/elevator.ts and frontend/src/store/realtime-store.ts
+- [X] T006 [P] Add shared realtime envelope and rejection-counter tests in backend/tests/integration/elevator-realtime-resilience.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T007 [P] Implement local developer auth contract in backend/src/modules/auth/dev-auth.routes.ts and backend/tests/contract/auth.contract.test.ts
+- [X] T008 [P] Extend backend environment and settings for Ditto live, dev auth, and reconnect defaults in backend/src/config/env.ts and backend/src/config/settings.ts
+- [X] T009 Add scoped authorization helpers for REST and websocket building access in backend/src/modules/auth/rbac.ts and backend/src/modules/auth/auth.middleware.ts
+- [X] T010 Add synchronization health metrics and structured log fields in backend/src/observability/elevator-monitoring.metrics.ts and backend/src/observability/logger.ts
+- [X] T011 [P] Refresh phase-4 API and realtime contracts after foundational decisions in specs/004-ditto-end-to-end/contracts/backend-api.yaml and specs/004-ditto-end-to-end/contracts/realtime-events.md
 
 **Checkpoint**: Shared runtime contracts, auth scope, and observability foundation are ready.
 
@@ -62,20 +62,20 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Add contract test for scoped elevator listing, detail lookup, and synchronization metadata in backend/tests/contract/elevators.contract.test.ts
-- [ ] T013 [P] [US1] Add integration test for Ditto seed bootstrap completed, empty, partial, malformed, and failed states in backend/tests/integration/elevator-ditto-bootstrap.integration.test.ts
-- [ ] T014 [P] [US1] Add frontend bootstrap integration test for REST elevator loading and degraded bootstrap states in frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T015 [US1] Add quickstart bootstrap validation coverage in frontend/tests/e2e/quickstart-flow.spec.ts
+- [X] T012 [P] [US1] Add contract test for scoped elevator listing, detail lookup, and synchronization metadata in backend/tests/contract/elevators.contract.test.ts
+- [X] T013 [P] [US1] Add integration test for Ditto seed bootstrap completed, empty, partial, malformed, and failed states in backend/tests/integration/elevator-ditto-bootstrap.integration.test.ts
+- [X] T014 [P] [US1] Add frontend bootstrap integration test for REST elevator loading and degraded bootstrap states in frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T015 [US1] Add quickstart bootstrap validation coverage in frontend/tests/e2e/quickstart-flow.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implement idempotent local Ditto seed dataset loading in infra/ditto/seed-ditto.ts and infra/ditto/local-l72-elevators.json
-- [ ] T017 [P] [US1] Harden Ditto HTTP bootstrap projection and rejected Thing reporting in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
-- [ ] T018 [US1] Extend Twin bootstrap run state and health reporting in backend/src/modules/elevators/elevator-monitoring.service.ts and backend/src/api/server.ts
-- [ ] T019 [US1] Enforce building scope in elevator REST list/detail responses in backend/src/api/routes/elevators.routes.ts and backend/src/modules/elevators/elevator-state.repository.ts
-- [ ] T020 [P] [US1] Implement frontend REST bootstrap service and store hydration in frontend/src/services/api/client.ts and frontend/src/store/elevator-store.ts
-- [ ] T021 [US1] Wire dashboard startup bootstrap and visible loading/empty/degraded states in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinScene.tsx
-- [ ] T022 [US1] Document bootstrap setup, seed commands, and failure interpretation in specs/004-ditto-end-to-end/quickstart.md and docs/ditto-integration.md
+- [X] T016 [P] [US1] Implement idempotent local Ditto seed dataset loading in infra/ditto/seed-ditto.ts and infra/ditto/local-l72-elevators.json
+- [X] T017 [P] [US1] Harden Ditto HTTP bootstrap projection and rejected Thing reporting in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
+- [X] T018 [US1] Extend Twin bootstrap run state and health reporting in backend/src/modules/elevators/elevator-monitoring.service.ts and backend/src/api/server.ts
+- [X] T019 [US1] Enforce building scope in elevator REST list/detail responses in backend/src/api/routes/elevators.routes.ts and backend/src/modules/elevators/elevator-state.repository.ts
+- [X] T020 [P] [US1] Implement frontend REST bootstrap service and store hydration in frontend/src/services/api/client.ts and frontend/src/store/elevator-store.ts
+- [X] T021 [US1] Wire dashboard startup bootstrap and visible loading/empty/degraded states in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinScene.tsx
+- [X] T022 [US1] Document bootstrap setup, seed commands, and failure interpretation in specs/004-ditto-end-to-end/quickstart.md and docs/ditto-integration.md
 
 **Checkpoint**: Current Twin state loads into backend and frontend from Ditto with explicit readiness.
 
@@ -89,21 +89,21 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Add Ditto live event projection tests in backend/tests/integration/ditto-client.integration.test.ts
-- [ ] T024 [P] [US2] Add backend live reconciliation and rejection-counter tests in backend/tests/integration/elevator-monitoring.integration.test.ts
-- [ ] T025 [P] [US2] Add backend websocket publishing and scoped delivery tests in backend/tests/integration/realtime-bootstrap.test.ts
-- [ ] T026 [US2] Add frontend realtime websocket event application and resync tests in frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T023 [P] [US2] Add Ditto live event projection tests in backend/tests/integration/ditto-client.integration.test.ts
+- [X] T024 [P] [US2] Add backend live reconciliation and rejection-counter tests in backend/tests/integration/elevator-monitoring.integration.test.ts
+- [X] T025 [P] [US2] Add backend websocket publishing and scoped delivery tests in backend/tests/integration/realtime-bootstrap.test.ts
+- [X] T026 [US2] Add frontend realtime websocket event application and resync tests in frontend/tests/integration/elevator-dashboard-live.test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Implement Ditto live consumer adapter with bounded reconnect in backend/src/integrations/ditto/ditto-live-consumer.ts
-- [ ] T028 [P] [US2] Implement Ditto live payload projection and malformed event handling in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
-- [ ] T029 [US2] Integrate live events with EventRouter, ElevatorMonitoringService, and rejection counters in backend/src/modules/realtime/event-router.ts and backend/src/modules/elevators/elevator-monitoring.service.ts
-- [ ] T030 [US2] Implement real backend websocket server sessions, scoped delivery, active session tracking, and close handling in backend/src/modules/realtime/ws-server.ts
-- [ ] T031 [US2] Publish accepted elevator and synchronization state events to websocket clients in backend/src/modules/realtime/publishers/elevator-state.publisher.ts and backend/src/api/server.ts
-- [ ] T032 [P] [US2] Implement browser websocket client with reconnect and message dispatch in frontend/src/services/realtime/ws-client.ts and frontend/src/services/realtime/elevator-events.ts
-- [ ] T033 [US2] Wire frontend realtime startup, resync-required handling, and stale state updates in frontend/src/app/App.tsx and frontend/src/store/realtime-store.ts
-- [ ] T034 [US2] Document live event replay, rejection semantics, and reconnect behavior in specs/004-ditto-end-to-end/contracts/ditto-live-events.md and specs/004-ditto-end-to-end/quickstart.md
+- [X] T027 [P] [US2] Implement Ditto live consumer adapter with bounded reconnect in backend/src/integrations/ditto/ditto-live-consumer.ts
+- [X] T028 [P] [US2] Implement Ditto live payload projection and malformed event handling in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
+- [X] T029 [US2] Integrate live events with EventRouter, ElevatorMonitoringService, and rejection counters in backend/src/modules/realtime/event-router.ts and backend/src/modules/elevators/elevator-monitoring.service.ts
+- [X] T030 [US2] Implement real backend websocket server sessions, scoped delivery, active session tracking, and close handling in backend/src/modules/realtime/ws-server.ts
+- [X] T031 [US2] Publish accepted elevator and synchronization state events to websocket clients in backend/src/modules/realtime/publishers/elevator-state.publisher.ts and backend/src/api/server.ts
+- [X] T032 [P] [US2] Implement browser websocket client with reconnect and message dispatch in frontend/src/services/realtime/ws-client.ts and frontend/src/services/realtime/elevator-events.ts
+- [X] T033 [US2] Wire frontend realtime startup, resync-required handling, and stale state updates in frontend/src/app/App.tsx and frontend/src/store/realtime-store.ts
+- [X] T034 [US2] Document live event replay, rejection semantics, and reconnect behavior in specs/004-ditto-end-to-end/contracts/ditto-live-events.md and specs/004-ditto-end-to-end/quickstart.md
 
 **Checkpoint**: Ditto live events update dashboard state end-to-end through backend websocket delivery.
 
@@ -117,19 +117,19 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 ### Tests for User Story 3
 
-- [ ] T035 [P] [US3] Add developer operator token and forbidden-scope contract tests in backend/tests/contract/auth.contract.test.ts
-- [ ] T036 [P] [US3] Add websocket authentication and building-scope integration tests in backend/tests/integration/realtime-bootstrap.test.ts
-- [ ] T037 [P] [US3] Add frontend unauthorized, forbidden, reconnecting, and resync UI tests in frontend/tests/integration/app-shell.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T038 [US3] Add operator browser flow coverage for token, REST bootstrap, websocket live, and reconnect in frontend/tests/e2e/quickstart-flow.spec.ts
+- [X] T035 [P] [US3] Add developer operator token and forbidden-scope contract tests in backend/tests/contract/auth.contract.test.ts
+- [X] T036 [P] [US3] Add websocket authentication and building-scope integration tests in backend/tests/integration/realtime-bootstrap.test.ts
+- [X] T037 [P] [US3] Add frontend unauthorized, forbidden, reconnecting, and resync UI tests in frontend/tests/integration/app-shell.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T038 [US3] Add operator browser flow coverage for token, REST bootstrap, websocket live, and reconnect in frontend/tests/e2e/quickstart-flow.spec.ts
 
 ### Implementation for User Story 3
 
-- [ ] T039 [P] [US3] Implement dev-only operator token route and environment guard in backend/src/modules/auth/dev-auth.routes.ts and backend/src/api/server.ts
-- [ ] T040 [P] [US3] Enforce JWT and building scope during websocket upgrade in backend/src/modules/realtime/ws-server.ts and backend/src/modules/auth/auth.middleware.ts
-- [ ] T041 [US3] Add frontend auth token configuration and scoped API headers in frontend/src/services/api/client.ts and frontend/src/store/session-store.ts
-- [ ] T042 [US3] Add frontend access, forbidden, reconnecting, and resync presentation in frontend/src/app/App.tsx and frontend/src/store/realtime-store.ts
-- [ ] T043 [P] [US3] Preserve shared selected elevator state across bootstrap resync and realtime reconnect in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
-- [ ] T044 [US3] Document operator auth, local token issuance, and scoped websocket access in specs/004-ditto-end-to-end/quickstart.md and docs/operations-dashboard.md
+- [X] T039 [P] [US3] Implement dev-only operator token route and environment guard in backend/src/modules/auth/dev-auth.routes.ts and backend/src/api/server.ts
+- [X] T040 [P] [US3] Enforce JWT and building scope during websocket upgrade in backend/src/modules/realtime/ws-server.ts and backend/src/modules/auth/auth.middleware.ts
+- [X] T041 [US3] Add frontend auth token configuration and scoped API headers in frontend/src/services/api/client.ts and frontend/src/store/session-store.ts
+- [X] T042 [US3] Add frontend access, forbidden, reconnecting, and resync presentation in frontend/src/app/App.tsx and frontend/src/store/realtime-store.ts
+- [X] T043 [P] [US3] Preserve shared selected elevator state across bootstrap resync and realtime reconnect in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
+- [X] T044 [US3] Document operator auth, local token issuance, and scoped websocket access in specs/004-ditto-end-to-end/quickstart.md and docs/operations-dashboard.md
 
 **Checkpoint**: Authenticated browser clients can bootstrap, subscribe, reconnect, and resync through backend-only paths.
 
@@ -143,17 +143,17 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 ### Tests for User Story 4
 
-- [ ] T045 [P] [US4] Add seed dataset validation tests in backend/tests/integration/ditto-client.integration.test.ts
-- [ ] T046 [P] [US4] Add quickstart command smoke tests and AI-exclusion assertions in frontend/tests/e2e/quickstart-flow.spec.ts
-- [ ] T047 [P] [US4] Add degraded Ditto and websocket failure-mode tests in backend/tests/integration/elevator-realtime-resilience.test.ts and frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T045 [P] [US4] Add seed dataset validation tests in backend/tests/integration/ditto-client.integration.test.ts
+- [X] T046 [P] [US4] Add quickstart command smoke tests and AI-exclusion assertions in frontend/tests/e2e/quickstart-flow.spec.ts
+- [X] T047 [P] [US4] Add degraded Ditto and websocket failure-mode tests in backend/tests/integration/elevator-realtime-resilience.test.ts and frontend/tests/integration/twin3d-resilience.test.tsx
 
 ### Implementation for User Story 4
 
-- [ ] T048 [P] [US4] Add local Ditto services, environment examples, and seed wiring in infra/docker/docker-compose.yml and infra/README.md
-- [ ] T049 [P] [US4] Add replay fixtures for accepted, duplicate, late, malformed, and out-of-scope events in infra/ditto/replay-events.json and infra/ditto/replay-ditto-event.ts
-- [ ] T050 [US4] Add health output for Ditto HTTP, Ditto live, frontend sessions, and rejection counters in backend/src/api/server.ts and backend/src/observability/elevator-monitoring.metrics.ts
-- [ ] T051 [US4] Add dashboard degraded and validation-ready indicators for local demo in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
-- [ ] T052 [US4] Finalize step-by-step local runbook in specs/004-ditto-end-to-end/quickstart.md, docs/ditto-integration.md, and infra/observability/runbook.md
+- [X] T048 [P] [US4] Add local Ditto services, environment examples, and seed wiring in infra/docker/docker-compose.yml and infra/README.md
+- [X] T049 [P] [US4] Add replay fixtures for accepted, duplicate, late, malformed, and out-of-scope events in infra/ditto/replay-events.json and infra/ditto/replay-ditto-event.ts
+- [X] T050 [US4] Add health output for Ditto HTTP, Ditto live, frontend sessions, and rejection counters in backend/src/api/server.ts and backend/src/observability/elevator-monitoring.metrics.ts
+- [X] T051 [US4] Add dashboard degraded and validation-ready indicators for local demo in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T052 [US4] Finalize step-by-step local runbook in specs/004-ditto-end-to-end/quickstart.md, docs/ditto-integration.md, and infra/observability/runbook.md
 
 **Checkpoint**: Local end-to-end Digital Twin demo can be run and validated from documentation.
 
@@ -163,12 +163,12 @@ description: "Task list for Ditto End-to-End Digital Twin Runtime"
 
 **Purpose**: Final contract alignment, validation, documentation, and release readiness.
 
-- [ ] T053 [P] Refresh final phase-4 contracts in specs/004-ditto-end-to-end/contracts/backend-api.yaml, specs/004-ditto-end-to-end/contracts/realtime-events.md, specs/004-ditto-end-to-end/contracts/ditto-seed-dataset.md, and specs/004-ditto-end-to-end/contracts/ditto-live-events.md
-- [ ] T054 [P] Run and document backend validation in backend/package.json and specs/004-ditto-end-to-end/quickstart.md
-- [ ] T055 [P] Run and document frontend validation in frontend/package.json and specs/004-ditto-end-to-end/quickstart.md
-- [ ] T056 Harden operational alerts and troubleshooting guidance in infra/observability/runbook.md and docs/operations-dashboard.md
-- [ ] T057 Validate no frontend direct Ditto access and no AI-service dependency in frontend/src/, backend/src/, and specs/004-ditto-end-to-end/quickstart.md
-- [ ] T058 Mark implementation completion state in specs/004-ditto-end-to-end/tasks.md after all validation passes
+- [X] T053 [P] Refresh final phase-4 contracts in specs/004-ditto-end-to-end/contracts/backend-api.yaml, specs/004-ditto-end-to-end/contracts/realtime-events.md, specs/004-ditto-end-to-end/contracts/ditto-seed-dataset.md, and specs/004-ditto-end-to-end/contracts/ditto-live-events.md
+- [X] T054 [P] Run and document backend validation in backend/package.json and specs/004-ditto-end-to-end/quickstart.md
+- [X] T055 [P] Run and document frontend validation in frontend/package.json and specs/004-ditto-end-to-end/quickstart.md
+- [X] T056 Harden operational alerts and troubleshooting guidance in infra/observability/runbook.md and docs/operations-dashboard.md
+- [X] T057 Validate no frontend direct Ditto access and no AI-service dependency in frontend/src/, backend/src/, and specs/004-ditto-end-to-end/quickstart.md
+- [X] T058 Mark implementation completion state in specs/004-ditto-end-to-end/tasks.md after all validation passes
 
 ---
 

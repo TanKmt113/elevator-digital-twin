@@ -1,5 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
+import { readFileSync } from 'fs';
+import type { Request, Response, NextFunction } from 'express';
 import { loadEnv } from '../config/env.js';
 import { logger } from '../observability/logger.js';
 import { ElevatorMonitoringService } from '../modules/elevators/elevator-monitoring.service.js';
@@ -18,6 +20,8 @@ import { createAnalyticsRoutes } from './routes/analytics.routes.js';
 import { RiskPublisher } from '../modules/realtime/publishers/risk.publisher.js';
 import { DittoClient } from '../integrations/ditto/ditto-client.js';
 import { settings } from '../config/settings.js';
+import { createDevDittoRoutes } from './routes/dev-ditto.routes.js';
+import { createDevAuthRoutes } from './routes/dev-auth.routes.js';
 
 interface CreateAppOptions {
   dittoClient?: DittoClient;
@@ -25,8 +29,71 @@ interface CreateAppOptions {
   bootstrapTwin?: boolean;
 }
 
+const openApiSpecPath = new URL('../../../specs/004-ditto-end-to-end/contracts/backend-api.yaml', import.meta.url);
+const openApiSpec = readFileSync(openApiSpecPath, 'utf8');
+
+export function getOpenApiSpec() {
+  return openApiSpec;
+}
+
+export function renderSwaggerUiHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keangnam Backend API Docs</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+    />
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+      window.ui = SwaggerUIBundle({
+        url: '/openapi.yaml',
+        dom_id: '#swagger-ui'
+      });
+    </script>
+  </body>
+</html>`;
+}
+
+function isAllowedCorsOrigin(origin: string | undefined): boolean {
+  if (!origin) {
+    return false;
+  }
+
+  if (settings.env.corsOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+}
+
+export function applyCorsHeaders(req: Request, res: Response, next: NextFunction): void {
+  const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
+
+  if (isAllowedCorsOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin as string);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  }
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+
+  next();
+}
+
 export function createApp(options: CreateAppOptions = {}) {
   const app = express();
+  app.use(applyCorsHeaders);
   app.use(express.json());
 
   const dittoClient = options.dittoClient ?? new DittoClient();
@@ -35,18 +102,12 @@ export function createApp(options: CreateAppOptions = {}) {
   const alertsService = new AlertsService();
   const historyService = new ElevatorHistoryService();
   const riskAnalyticsService = new RiskAnalyticsService();
-  app.use(createElevatorRoutes(monitoringService));
-
-  const server = createServer(app);
-  const sessions = createWsServer(server, new RealtimeSessionManager());
-  const commandStatusPublisher = new CommandStatusPublisher(sessions);
-  const alertPublisher = new AlertPublisher(sessions);
-  const riskPublisher = new RiskPublisher(sessions);
-
-  app.use(createCommandRoutes(commandExecutionService, commandStatusPublisher));
-  app.use(createAlertsRoutes(alertsService, alertPublisher));
-  app.use(createElevatorHistoryRoutes(historyService));
-  app.use(createAnalyticsRoutes(riskAnalyticsService));
+  app.get('/openapi.yaml', (_req, res) => {
+    res.type('application/yaml').send(getOpenApiSpec());
+  });
+  app.get('/docs', (_req, res) => {
+    res.type('html').send(renderSwaggerUiHtml());
+  });
   app.get('/health', (_req, res) =>
     res.json({
       status: 'ok',
@@ -54,6 +115,20 @@ export function createApp(options: CreateAppOptions = {}) {
       bootstrap: monitoringService.getBootstrapSnapshot()
     })
   );
+
+  const server = createServer(app);
+  const sessions = createWsServer(server, new RealtimeSessionManager());
+  const commandStatusPublisher = new CommandStatusPublisher(sessions);
+  const alertPublisher = new AlertPublisher(sessions);
+  const riskPublisher = new RiskPublisher(sessions);
+
+  app.use(createDevAuthRoutes());
+  app.use(createDevDittoRoutes(dittoClient));
+  app.use(createElevatorRoutes(monitoringService));
+  app.use(createCommandRoutes(commandExecutionService, commandStatusPublisher));
+  app.use(createAlertsRoutes(alertsService, alertPublisher));
+  app.use(createElevatorHistoryRoutes(historyService));
+  app.use(createAnalyticsRoutes(riskAnalyticsService));
 
   if (options.seedAnalytics !== false) {
     riskAnalyticsService.ingest({

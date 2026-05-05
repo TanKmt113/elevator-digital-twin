@@ -13,18 +13,19 @@ Implementation scaffold for the Keangnam Landmark 72 smart building digital twin
 
 - Raw Ditto HTTP API contract: [docs/ditto-api-2.yml](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-api-2.yml)
 - Project-specific integration notes: [docs/ditto-integration.md](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-integration.md)
+- Backend Swagger UI: `http://localhost:3000/docs`
 
-## Phase 3 Digital Twin and 3D
+## Phase 4 Ditto End-to-End Runtime
 
-- Active phase-3 feature: [specs/003-digital-twin-3d/spec.md](specs/003-digital-twin-3d/spec.md)
-- Active phase-3 implementation plan: [specs/003-digital-twin-3d/plan.md](specs/003-digital-twin-3d/plan.md)
-- Active phase-3 task list: [specs/003-digital-twin-3d/tasks.md](specs/003-digital-twin-3d/tasks.md)
+- Active phase-4 feature: [specs/004-ditto-end-to-end/spec.md](specs/004-ditto-end-to-end/spec.md)
+- Active phase-4 implementation plan: [specs/004-ditto-end-to-end/plan.md](specs/004-ditto-end-to-end/plan.md)
+- Active phase-4 task list: [specs/004-ditto-end-to-end/tasks.md](specs/004-ditto-end-to-end/tasks.md)
 
-## Phase 3 Validation
+## Phase 4 Validation
 
-Run the Digital Twin and 3D checks by workspace:
+Run the Ditto-backed runtime checks by workspace:
 
-- Backend: `cd backend && npm run validate:phase3`
-- Frontend: `cd frontend && npm run validate:phase3`
+- Backend: `cd backend && npm run validate:phase4`
+- Frontend: `cd frontend && npm run validate:phase4`
 
-This phase validates Twin bootstrap, backend-mediated live synchronization, degraded readiness, and list/detail/3D selection without starting or depending on the AI service.
+This phase validates Ditto bootstrap, backend-mediated live synchronization, degraded readiness, scoped operator access, and list/detail/3D consistency without starting or depending on the AI service.

@@ -90,4 +90,53 @@ describe('DittoClient', () => {
       direction: 'up'
     });
   });
+
+  it('upserts policies and things with JSON payloads', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 204 }));
+
+    const client = new DittoClient({
+      httpUrl: 'http://localhost:8080',
+      wsUrl: 'ws://localhost:8080/ws/2',
+      username: 'ditto',
+      password: 'secret',
+      fetchImpl: fetchMock as typeof fetch
+    });
+
+    await client.upsertPolicy('org.example:l72-elevator-policy', {
+      entries: {
+        DEFAULT: {
+          subjects: {},
+          resources: {}
+        }
+      }
+    });
+    await client.upsertThing('org.example:L72-ELEV-A', {
+      thingId: 'org.example:L72-ELEV-A',
+      attributes: {
+        buildingId: 'L72'
+      }
+    });
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      'http://localhost:8080/api/2/policies/org.example%3Al72-elevator-policy',
+      expect.objectContaining({
+        method: 'PUT',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: expect.stringMatching(/^Basic /)
+        })
+      })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      'http://localhost:8080/api/2/things/org.example%3AL72-ELEV-A',
+      expect.objectContaining({
+        method: 'PUT',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json'
+        })
+      })
+    );
+  });
 });
