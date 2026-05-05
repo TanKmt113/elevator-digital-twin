@@ -5,9 +5,9 @@ import { useRealtimeStore } from '../../../store/realtime-store';
 import { mapElevatorStateToScene } from '../services/map-elevator-state-to-scene';
 import { measureTwinRenderFrame } from '../services/twin3d-performance';
 import { useTwinSelection } from '../hooks/useTwinSelection';
-import { ElevatorMesh } from './ElevatorMesh';
 import { TwinControls } from './TwinControls';
 import { TwinDetailOverlay } from './TwinDetailOverlay';
+import { TwinCanvasScene } from '../render/TwinCanvasScene';
 
 interface DerivedTwinSceneState {
   assets: ReturnType<typeof mapElevatorStateToScene>[];
@@ -38,6 +38,9 @@ export function TwinScene(): React.JSX.Element {
   const selection = useTwinSelection();
   const sceneRuntime = useRealtimeStore((state) => state.sceneRuntime);
   const projectionCount = useRealtimeStore((state) => state.projectionCount);
+  const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
+  const webglMessage = useRealtimeStore((state) => state.webglMessage);
+  const projectionFailures = useRealtimeStore((state) => state.projectionFailures);
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const { assets, visibleAssets } = React.useMemo(
     () => deriveTwinSceneState(elevators, selection.selectedElevatorId, selection.sceneFocusMode),
@@ -48,8 +51,27 @@ export function TwinScene(): React.JSX.Element {
   );
   const performanceSample = measureTwinRenderFrame(
     Math.min(8 + visibleAssets.length * 2, 24),
-    visibleAssets.length
+    visibleAssets.length,
+    hasWebglSupport
   );
+
+  React.useEffect(() => {
+    const nextSupport = detectWebglSupport();
+    const nextMessage = nextSupport
+      ? undefined
+      : 'WebGL support is missing or blocked in this browser/runtime.';
+    useRealtimeStore.getState().setWebglCapability(nextSupport, nextMessage);
+  }, []);
+
+  React.useEffect(() => {
+    const projectionFailuresCount = assets.filter(
+      (asset) =>
+        !Number.isFinite(asset.worldPosition.x) ||
+        !Number.isFinite(asset.worldPosition.y) ||
+        !Number.isFinite(asset.worldPosition.z)
+    ).length;
+    useRealtimeStore.getState().setProjectionFailures(projectionFailuresCount);
+  }, [assets]);
 
   return (
     <section className="ops-panel ops-twin-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
@@ -77,16 +99,20 @@ export function TwinScene(): React.JSX.Element {
             <article className="ops-empty-inline text-sm text-slate-400">
               {sceneRuntime === 'empty'
                 ? 'No Twin assets are currently available for the active scope.'
-                : 'No elevator is currently available for the selected scene focus.'}
+                : sceneRuntime === 'unavailable'
+                  ? 'True 3D rendering is unavailable in the current browser/runtime.'
+                  : 'No elevator is currently available for the selected scene focus.'}
             </article>
-          ) : null}
-          {visibleAssets.map((asset) => (
-            <ElevatorMesh
-              key={asset.elevatorId}
-              asset={asset}
+          ) : (
+            <TwinCanvasScene
+              assets={visibleAssets}
+              focusMode={selection.sceneFocusMode}
+              selectedElevatorId={selection.selectedElevatorId}
+              hasWebglSupport={hasWebglSupport}
               onSelect={selection.selectElevator}
+              onTransitionStateChange={selection.setCameraTransitionState}
             />
-          ))}
+          )}
         </div>
         <TwinDetailOverlay
           elevator={selectedElevator ?? elevators[0]}
@@ -94,8 +120,23 @@ export function TwinScene(): React.JSX.Element {
           focusMode={selection.sceneFocusMode}
           projectionCount={projectionCount || assets.length}
           performanceSample={performanceSample}
+          webglMessage={webglMessage}
+          projectionFailures={projectionFailures}
         />
       </div>
     </section>
   );
+}
+
+function detectWebglSupport(): boolean {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return false;
+  }
+
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+  } catch {
+    return false;
+  }
 }

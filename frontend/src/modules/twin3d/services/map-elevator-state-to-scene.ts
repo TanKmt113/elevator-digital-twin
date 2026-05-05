@@ -5,10 +5,19 @@ export interface TwinSceneAsset {
   buildingId?: string;
   shaftIndex: number;
   floorPosition: number;
+  targetFloor?: number;
   y: number;
   x: number;
   z: number;
   height: number;
+  worldPosition: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  cabinHeight: number;
+  doorOpenRatio: number;
+  shaftLabel: string;
   movementDirection: 'up' | 'down' | 'stationary' | 'unknown';
   doorVisualState: 'open' | 'closed' | 'transitioning' | 'unknown';
   healthTone: 'normal' | 'warning' | 'critical' | 'unknown';
@@ -19,6 +28,7 @@ export interface TwinSceneAsset {
     | 'fault'
     | 'offline'
     | 'stale'
+    | 'degraded'
     | 'unknown';
   color: 'green' | 'red' | 'yellow' | 'gray';
   isSelected: boolean;
@@ -42,10 +52,19 @@ export function mapElevatorStateToScene(
     buildingId: elevator.buildingId,
     shaftIndex,
     floorPosition: elevator.currentFloor,
+    targetFloor: elevator.targetFloor,
     y: elevator.currentFloor * 3,
     x: shaftIndex * 2.8,
     z: highlighted ? 0.9 : 0,
     height: 2.2,
+    worldPosition: {
+      x: shaftIndex * 2.8,
+      y: elevator.currentFloor * 3,
+      z: highlighted ? 0.9 : 0
+    },
+    cabinHeight: 2.2,
+    doorOpenRatio: deriveDoorOpenRatio(doorVisualState),
+    shaftLabel: `Shaft ${shaftIndex + 1}`,
     movementDirection: normalizeDirection(elevator.direction),
     doorVisualState,
     healthTone,
@@ -87,6 +106,10 @@ function deriveVisualStatus(
     return 'stale';
   }
 
+  if (status === 'degraded') {
+    return 'degraded';
+  }
+
   if (healthTone === 'critical' || status === 'fault') {
     return 'fault';
   }
@@ -112,6 +135,18 @@ function deriveVisualStatus(
 
 function deriveShaftIndex(elevatorId: string): number {
   return elevatorId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 6;
+}
+
+function deriveDoorOpenRatio(doorState: TwinSceneAsset['doorVisualState']): number {
+  if (doorState === 'open') {
+    return 1;
+  }
+
+  if (doorState === 'transitioning') {
+    return 0.45;
+  }
+
+  return 0;
 }
 
 function normalizeDirection(value: string): TwinSceneAsset['movementDirection'] {

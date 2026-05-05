@@ -29,5 +29,6 @@ describe('app shell', () => {
     expect(deriveSceneRuntimeState('stale', 'ready', 2)).toBe('stale');
     expect(deriveSceneRuntimeState('degraded', 'degraded', 2)).toBe('degraded');
     expect(deriveSceneRuntimeState('live', 'ready', 2)).toBe('ready');
+    expect(deriveSceneRuntimeState('live', 'ready', 2, false)).toBe('unavailable');
   });
 });

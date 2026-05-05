@@ -18,7 +18,12 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
     useRealtimeStore.getState().setConnected(true);
     useRealtimeStore.getState().setDataState('ready');
     const projectionCount = Object.keys(useElevatorStore.getState().elevators).length;
-    useRealtimeStore.getState().setSceneRuntime('ready', projectionCount);
+    useRealtimeStore
+      .getState()
+      .setSceneRuntime(
+        deriveSceneRuntimeState('live', 'ready', projectionCount, useRealtimeStore.getState().hasWebglSupport),
+        projectionCount
+      );
   }
 
   if (event.eventType === 'system.connection.state') {
@@ -39,7 +44,8 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
           ? deriveSceneRuntimeState(
               payload.connectionState,
               payload.dataState,
-              Object.keys(useElevatorStore.getState().elevators).length
+              Object.keys(useElevatorStore.getState().elevators).length,
+              useRealtimeStore.getState().hasWebglSupport
             )
           : undefined,
       projectionCount: Object.keys(useElevatorStore.getState().elevators).length,

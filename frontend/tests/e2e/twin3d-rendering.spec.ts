@@ -1,25 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { deriveAppShellState } from '../../src/app/App';
-import { measureTwinRenderFrame } from '../../src/modules/twin3d/services/twin3d-performance';
+import { deriveSceneRuntimeState } from '../../src/app/App';
 import { useElevatorStore } from '../../src/store/elevator-store';
 
-describe('twin3d resilience', () => {
-  it('flags frames that exceed the budget', () => {
-    expect(measureTwinRenderFrame(20, 9)).toMatchObject({
-      frameBudgetExceeded: true,
-      density: 'moderate'
-    });
-  });
-
-  it('reports unsupported render capability when WebGL is unavailable', () => {
-    expect(measureTwinRenderFrame(5, 2, false).unsupportedReason).toBe('WebGL unavailable');
-  });
-
-  it('renders a degraded banner when realtime state is stale', () => {
-    expect(deriveAppShellState('stale', 'ready', 2).title).toBe('Live updates are degraded');
-  });
-
-  it('preserves focused selection across refresh when the elevator remains in scope', () => {
+describe('true 3d rendering validation', () => {
+  it('preserves focused selection when the elevator remains in scope after refresh', () => {
     useElevatorStore.setState({
       elevators: {
         A: {
@@ -37,7 +21,9 @@ describe('twin3d resilience', () => {
       selectedElevatorId: 'A',
       selectionSource: '3d',
       selectedAt: '2026-05-05T00:00:00.000Z',
-      sceneFocusMode: 'selected'
+      sceneFocusMode: 'selected',
+      cameraTransitionState: 'transitioning',
+      lastFocusChangeAt: '2026-05-05T00:00:00.000Z'
     });
 
     useElevatorStore.getState().replaceElevators(
@@ -58,5 +44,10 @@ describe('twin3d resilience', () => {
 
     expect(useElevatorStore.getState().selectedElevatorId).toBe('A');
     expect(useElevatorStore.getState().sceneFocusMode).toBe('selected');
+  });
+
+  it('distinguishes unsupported true-3d runtime from normal degraded synchronization', () => {
+    expect(deriveSceneRuntimeState('live', 'ready', 2, false)).toBe('unavailable');
+    expect(deriveSceneRuntimeState('degraded', 'degraded', 2, true)).toBe('degraded');
   });
 });

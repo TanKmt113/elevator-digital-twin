@@ -8,7 +8,13 @@ export type RealtimeConnectionState =
   | 'resyncing';
 
 export type DashboardDataState = 'loading' | 'ready' | 'empty' | 'degraded';
-export type TwinSceneRuntimeState = 'loading' | 'ready' | 'empty' | 'stale' | 'degraded';
+export type TwinSceneRuntimeState =
+  | 'loading'
+  | 'ready'
+  | 'empty'
+  | 'stale'
+  | 'degraded'
+  | 'unavailable';
 
 interface RealtimeState {
   connected: boolean;
@@ -16,6 +22,9 @@ interface RealtimeState {
   dataState: DashboardDataState;
   sceneRuntime: TwinSceneRuntimeState;
   projectionCount: number;
+  hasWebglSupport: boolean;
+  webglMessage?: string;
+  projectionFailures: number;
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
   duplicateEventsDropped: number;
@@ -26,6 +35,8 @@ interface RealtimeState {
   setConnected: (connected: boolean) => void;
   setStaleMessage: (message?: string) => void;
   setSceneRuntime: (sceneRuntime: TwinSceneRuntimeState, projectionCount?: number) => void;
+  setWebglCapability: (hasWebglSupport: boolean, webglMessage?: string) => void;
+  setProjectionFailures: (projectionFailures: number) => void;
   applySynchronizationState: (state: Partial<Omit<RealtimeState, 'applySynchronizationState'>>) => void;
 }
 
@@ -35,6 +46,9 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   dataState: 'loading',
   sceneRuntime: 'loading',
   projectionCount: 0,
+  hasWebglSupport: true,
+  webglMessage: undefined,
+  projectionFailures: 0,
   lastBootstrapAt: undefined,
   lastLiveEventAt: undefined,
   duplicateEventsDropped: 0,
@@ -53,6 +67,8 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
     }),
   setStaleMessage: (staleMessage) => set({ staleMessage }),
   setSceneRuntime: (sceneRuntime, projectionCount = 0) => set({ sceneRuntime, projectionCount }),
+  setWebglCapability: (hasWebglSupport, webglMessage) => set({ hasWebglSupport, webglMessage }),
+  setProjectionFailures: (projectionFailures) => set({ projectionFailures }),
   applySynchronizationState: (state) =>
     set((current) => ({
       ...current,

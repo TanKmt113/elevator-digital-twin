@@ -45,12 +45,17 @@ Each cabin projection must carry:
 - `isHighlighted`
 - `isStale`
 
+The initial true-3D runtime may render governed procedural geometry for shafts,
+floors, and cabins instead of imported building assets, as long as cabin height
+and relative spatial position remain operator-readable.
+
 ## Failure Semantics
 
 - Missing or malformed elevator values must degrade the affected projection instead of collapsing the entire scene.
 - Loss of WebGL capability or initialization failure must transition the scene to `unavailable` with an operator-visible explanation.
 - Stale or degraded runtime must preserve the last accepted cabin geometry when available.
 - Projection failures for one cabin must not erase valid unaffected cabins.
+- Unsupported-browser fallback may show a controlled non-canvas representation, but it must not present itself as a live healthy 3D scene.
 
 ## Observability Signals
 

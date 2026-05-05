@@ -63,4 +63,8 @@ describe('elevator dashboard live updates', () => {
   it('keeps scene runtime stale during live synchronization delay', () => {
     expect(deriveSceneRuntimeState('stale', 'ready', 2)).toBe('stale');
   });
+
+  it('keeps scene unavailable when rendering support is missing', () => {
+    expect(deriveSceneRuntimeState('live', 'ready', 2, false)).toBe('unavailable');
+  });
 });

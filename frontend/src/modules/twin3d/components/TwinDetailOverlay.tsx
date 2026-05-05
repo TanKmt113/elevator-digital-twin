@@ -9,13 +9,17 @@ export function TwinDetailOverlay({
   sceneRuntime = 'loading',
   focusMode = 'overview',
   projectionCount = 0,
-  performanceSample
+  performanceSample,
+  webglMessage,
+  projectionFailures = 0
 }: {
   elevator?: ElevatorViewModel;
   sceneRuntime?: TwinSceneRuntimeState;
   focusMode?: TwinSceneFocusMode;
   projectionCount?: number;
   performanceSample?: TwinRenderSample;
+  webglMessage?: string;
+  projectionFailures?: number;
 }): React.JSX.Element {
   const runtimeCopy = getRuntimeCopy(sceneRuntime);
 
@@ -36,7 +40,13 @@ export function TwinDetailOverlay({
             Scene load: <span className="capitalize text-slate-100">{performanceSample.density}</span> ({performanceSample.renderTimeMs}ms)
           </p>
         ) : null}
+        {projectionFailures > 0 ? (
+          <p>
+            Projection failures: <span className="text-amber-100">{projectionFailures}</span>
+          </p>
+        ) : null}
       </div>
+      {webglMessage ? <p className="mt-3 text-xs text-amber-100">{webglMessage}</p> : null}
       {elevator ? (
         <div className="ops-twin-overlay-stack mt-4 grid gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
           <h4 className="text-base font-semibold text-slate-100">{elevator.elevatorId}</h4>
@@ -81,6 +91,13 @@ function getRuntimeCopy(sceneRuntime: TwinSceneRuntimeState): { title: string; m
     return {
       title: 'Scene is degraded',
       message: 'At least part of the scene is unreliable, incomplete, or behind the current backend state.'
+    };
+  }
+
+  if (sceneRuntime === 'unavailable') {
+    return {
+      title: 'Scene is unavailable',
+      message: 'The browser could not initialize the true 3D scene, so the dashboard is showing a controlled fallback.'
     };
   }
 

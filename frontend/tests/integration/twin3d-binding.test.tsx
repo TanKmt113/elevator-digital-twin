@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { deriveTwinSceneState, TwinScene } from '../../src/modules/twin3d/components/TwinScene';
 import { ElevatorStatusBadge } from '../../src/modules/elevator/components/ElevatorStatusBadge';
+import { deriveCameraAnchor } from '../../src/modules/twin3d/contracts/camera-focus';
 import { TwinDetailOverlay } from '../../src/modules/twin3d/components/TwinDetailOverlay';
 import { mapElevatorStateToScene } from '../../src/modules/twin3d/services/map-elevator-state-to-scene';
 import { useElevatorStore } from '../../src/store/elevator-store';
@@ -21,6 +22,7 @@ describe('twin3d binding', () => {
     expect(asset.y).toBe(30);
     expect(asset.shaftIndex).toBeGreaterThanOrEqual(0);
     expect(asset.floorPosition).toBe(10);
+    expect(asset.worldPosition.y).toBe(30);
     expect(asset.movementDirection).toBe('up');
     expect(asset.doorVisualState).toBe('closed');
     expect(asset.healthTone).toBe('normal');
@@ -69,6 +71,22 @@ describe('twin3d binding', () => {
         />
       )
     ).toContain('E1');
+  });
+
+  it('derives a selected camera anchor from the shared asset projection', () => {
+    const asset = mapElevatorStateToScene({
+      elevatorId: 'E5',
+      currentFloor: 9,
+      direction: 'up',
+      doorState: 'closed',
+      healthState: 'normal',
+      status: 'moving',
+      stale: false
+    });
+
+    const anchor = deriveCameraAnchor([asset], 'selected', 'E5');
+    expect(anchor.target).toEqual([asset.worldPosition.x, asset.worldPosition.y, asset.worldPosition.z]);
+    expect(anchor.position[1]).toBeGreaterThan(anchor.target[1]);
   });
 
   it('keeps scene selection synchronized with the selected elevator context', () => {

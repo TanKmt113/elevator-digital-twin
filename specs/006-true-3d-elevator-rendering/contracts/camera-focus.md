@@ -21,6 +21,7 @@ Define how the true 3D camera behaves across overview and selected-elevator insp
 - Returning to `overview` must restore a predictable building-wide vantage point.
 - Normal live state updates must not trigger disruptive camera jumps while the building scope is unchanged.
 - Repeated focus changes must not create render loops or uncontrolled camera thrash.
+- Camera motion may use bounded smoothing, but it must converge toward the accepted selected cabin anchor instead of simulating independent physical behavior.
 
 ## Selection Continuity Rules
 

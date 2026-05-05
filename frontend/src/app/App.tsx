@@ -115,8 +115,13 @@ export function deriveRealtimeStateFromBootstrap(
 export function deriveSceneRuntimeState(
   connectionState: RealtimeConnectionState,
   dataState: DashboardDataState,
-  projectionCount: number
+  projectionCount: number,
+  hasWebglSupport = true
 ): TwinSceneRuntimeState {
+  if (!hasWebglSupport) {
+    return 'unavailable';
+  }
+
   if (dataState === 'loading') {
     return 'loading';
   }
@@ -142,6 +147,7 @@ export function App(): React.JSX.Element {
   const connectionState = useRealtimeStore((state) => state.connectionState);
   const dataState = useRealtimeStore((state) => state.dataState);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
+  const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
   const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
   const token = useSessionStore((state) => state.token);
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
@@ -175,7 +181,8 @@ export function App(): React.JSX.Element {
           sceneRuntime: deriveSceneRuntimeState(
             realtimeState.connectionState,
             realtimeState.dataState,
-            response.items.length
+            response.items.length,
+            hasWebglSupport
           ),
           projectionCount: response.items.length
         });
