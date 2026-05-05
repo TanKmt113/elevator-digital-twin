@@ -138,6 +138,10 @@ export class ElevatorMonitoringService {
     }
   }
 
+  async refreshFromDitto(): Promise<ElevatorTwin[]> {
+    return this.bootstrapFromDitto();
+  }
+
   upsert(twin: ElevatorTwin): ElevatorTwin {
     const saved = this.repository.save({
       ...twin,

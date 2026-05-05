@@ -233,7 +233,10 @@ export function createApp(options: CreateAppOptions = {}) {
       }
 
       const saved = monitoringService.upsert(routed.payload);
-      elevatorStatePublisher.publish(saved);
+      elevatorStatePublisher.publishEvent({
+        ...routed,
+        payload: saved
+      });
       publishSynchronizationState(saved.buildingId);
     },
     () => {

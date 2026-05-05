@@ -204,4 +204,127 @@ describe('DittoClient', () => {
       })
     );
   });
+
+  it('hydrates Ditto protocol websocket events using topic-derived thing ids', async () => {
+    const accepted = vi.fn();
+    const consumer = new DittoLiveConsumer(
+      {
+        subscribe() {
+          return () => undefined;
+        },
+        getRealtimeUrl() {
+          return 'ws://127.0.0.1:65535/ws/2';
+        },
+        createAuthorizationHeaders() {
+          return {};
+        },
+        async getThing(thingId) {
+          expect(thingId).toBe('org.example:L72-ELEV-A');
+          return {
+            thingId,
+            attributes: { buildingId: 'L72' },
+            features: {
+              elevator: {
+                properties: {
+                  currentFloor: 3,
+                  status: 'idle',
+                  direction: 'stationary',
+                  doorState: 'open',
+                  healthState: 'normal'
+                }
+              }
+            }
+          };
+        }
+      },
+      accepted
+    );
+
+    await (consumer as unknown as { handleIncomingPayload(payload: unknown): Promise<void> }).handleIncomingPayload({
+      topic: 'org.example/L72-ELEV-A/things/twin/events/modified',
+      path: '/features/elevator/properties/currentFloor',
+      value: 3,
+      revision: 2,
+      timestamp: '2026-05-05T10:05:00.000Z'
+    });
+
+    expect(accepted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'elevator.state.changed',
+        payload: expect.objectContaining({
+          elevatorId: 'org.example:L72-ELEV-A',
+          buildingId: 'L72',
+          currentFloor: 3,
+          lastEventAt: '2026-05-05T10:05:00.000Z'
+        })
+      })
+    );
+  });
+
+  it('subscribes for Ditto twin events when the websocket connection opens', () => {
+    let openHandler: (() => void) | undefined;
+    let messageHandler: ((payload: Buffer | string) => void) | undefined;
+    const send = vi.fn();
+    const accepted = vi.fn();
+
+    const consumer = new DittoLiveConsumer(
+      {
+        subscribe() {
+          return () => undefined;
+        },
+        getRealtimeUrl() {
+          return 'ws://127.0.0.1:65535/ws/2';
+        },
+        createAuthorizationHeaders() {
+          return { Authorization: 'Basic abc' };
+        },
+        async getThing() {
+          return {
+            thingId: 'org.example:L72-ELEV-A',
+            attributes: { buildingId: 'L72' },
+            features: {
+              elevator: {
+                properties: {
+                  currentFloor: 3,
+                  status: 'idle',
+                  direction: 'stationary',
+                  doorState: 'open',
+                  healthState: 'normal'
+                }
+              }
+            }
+          };
+        }
+      },
+      accepted,
+      undefined,
+      undefined,
+      () =>
+        ({
+          on(event: string, handler: (...args: never[]) => void) {
+            if (event === 'open') {
+              openHandler = handler as () => void;
+            }
+            if (event === 'message') {
+              messageHandler = handler as (payload: Buffer | string) => void;
+            }
+          },
+          send,
+          close() {
+            return undefined;
+          },
+          removeAllListeners() {
+            return undefined;
+          }
+        }) as unknown as never
+    );
+
+    consumer.start();
+    openHandler?.();
+    messageHandler?.('START-SEND-EVENTS:ACK');
+
+    expect(send).toHaveBeenCalledWith('START-SEND-EVENTS');
+    expect(accepted).not.toHaveBeenCalled();
+    consumer.stop();
+  });
 });

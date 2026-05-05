@@ -27,7 +27,7 @@ function parseThingIdFromTopic(topic: string | undefined): string | undefined {
   }
 
   const segments = topic.split('/');
-  return segments.length > 1 ? segments[1] : undefined;
+  return segments.length > 1 && segments[0] && segments[1] ? `${segments[0]}:${segments[1]}` : undefined;
 }
 
 function getEventTime(payload: Record<string, unknown>): string {
@@ -114,7 +114,11 @@ export class DittoLiveConsumer {
     >,
     private readonly onAcceptedEvent: (event: NormalizedEvent<ElevatorTwin>) => void,
     private readonly onMalformedEvent?: () => void,
-    private readonly onConnectionStateChange?: (state: 'connecting' | 'live' | 'degraded') => void
+    private readonly onConnectionStateChange?: (state: 'connecting' | 'live' | 'degraded') => void,
+    private readonly socketFactory: (
+      url: string,
+      options: { headers: Record<string, string> }
+    ) => WebSocket = (url, options) => new WebSocket(url, options)
   ) {}
 
   start(): void {
@@ -143,15 +147,21 @@ export class DittoLiveConsumer {
   private connectSocket(): void {
     try {
       this.onConnectionStateChange?.('connecting');
-      this.socket = new WebSocket(this.client.getRealtimeUrl(), {
+      this.socket = this.socketFactory(this.client.getRealtimeUrl(), {
         headers: this.client.createAuthorizationHeaders()
       });
       this.socket.on('open', () => {
         this.reconnectAttempt = 0;
+        this.socket?.send('START-SEND-EVENTS');
         this.onConnectionStateChange?.('live');
       });
       this.socket.on('message', (message) => {
-        void this.handleIncomingPayload(message.toString());
+        const text = message.toString();
+        if (text.endsWith(':ACK')) {
+          return;
+        }
+
+        void this.handleIncomingPayload(text);
       });
       this.socket.on('error', () => {
         this.onConnectionStateChange?.('degraded');

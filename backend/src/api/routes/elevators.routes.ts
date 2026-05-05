@@ -11,7 +11,7 @@ export function createElevatorRoutes(
   const router = Router();
   router.use(authenticateJwt, requireRoles('operator', 'admin', 'maintenance'));
 
-  router.get('/elevators', (req, res) => {
+  router.get('/elevators', async (req, res) => {
     const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;
     if (!buildingId) {
       res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
@@ -21,6 +21,8 @@ export function createElevatorRoutes(
       res.status(403).json({ code: 'AUTH_FORBIDDEN', message: 'Building scope is forbidden' });
       return;
     }
+
+    await service.refreshFromDitto().catch(() => undefined);
     res.json({
       items: service.listByBuilding(buildingId),
       meta: {
@@ -29,7 +31,7 @@ export function createElevatorRoutes(
     });
   });
 
-  router.get('/elevators/:elevatorId', (req, res) => {
+  router.get('/elevators/:elevatorId', async (req, res) => {
     const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;
     if (!buildingId) {
       res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
@@ -39,6 +41,8 @@ export function createElevatorRoutes(
       res.status(403).json({ code: 'AUTH_FORBIDDEN', message: 'Building scope is forbidden' });
       return;
     }
+
+    await service.refreshFromDitto().catch(() => undefined);
     const twin = service.get(req.params.elevatorId);
     if (!twin || twin.buildingId !== buildingId) {
       res.status(404).json({ code: 'ELEVATOR_NOT_FOUND', message: 'Elevator not found' });

@@ -108,4 +108,46 @@ describe('realtime bootstrap', () => {
     expect(lifecycleListener).toHaveBeenCalledTimes(3);
     removeL72();
   });
+
+  it('can publish the accepted Ditto realtime event envelope without regenerating it', () => {
+    const sessions = new RealtimeSessionManager();
+    const publisher = new ElevatorStatePublisher(sessions);
+    const sendL72 = vi.fn();
+    const l72Client = {
+      readyState: WebSocket.OPEN,
+      send: sendL72
+    } as unknown as WebSocket;
+
+    const removeL72 = sessions.addSession(l72Client, {
+      userId: 'operator-L72',
+      role: 'operator',
+      buildingId: 'L72'
+    });
+
+    publisher.publishEvent({
+      eventId: 'ditto-live-evt-1',
+      eventType: 'elevator.state.changed',
+      schemaVersion: '1.0.0',
+      dataClass: 'realtime',
+      occurredAt: '2026-05-05T10:10:00.000Z',
+      payload: createElevatorTwin({
+        elevatorId: 'org.example:L72-ELEV-A',
+        buildingId: 'L72',
+        currentFloor: 3,
+        lastEventAt: '2026-05-05T10:10:00.000Z'
+      })
+    });
+
+    expect(JSON.parse(sendL72.mock.calls[0][0] as string)).toMatchObject({
+      eventId: 'ditto-live-evt-1',
+      occurredAt: '2026-05-05T10:10:00.000Z',
+      payload: expect.objectContaining({
+        elevatorId: 'org.example:L72-ELEV-A',
+        currentFloor: 3,
+        lastEventAt: '2026-05-05T10:10:00.000Z'
+      })
+    });
+
+    removeL72();
+  });
 });
