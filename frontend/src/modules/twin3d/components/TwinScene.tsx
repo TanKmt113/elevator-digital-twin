@@ -74,6 +74,7 @@ export function TwinScene(): React.JSX.Element {
     hasWebglSupport
   );
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const hasSceneContent = visibleAssets.length > 0;
 
   React.useEffect(() => {
     const nextSupport = detectWebglSupport();
@@ -141,7 +142,7 @@ export function TwinScene(): React.JSX.Element {
       </div>
       <div className={`ops-twin-grid grid gap-3 ${isFullscreen ? 'ops-twin-grid-fullscreen' : 'lg:grid-cols-[minmax(0,1fr)_280px]'}`}>
         <div
-          className={`ops-twin-stage grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 ${isFullscreen ? 'ops-twin-stage-fullscreen' : 'md:grid-cols-2 xl:grid-cols-3'}`}
+          className={`ops-twin-stage grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 ${isFullscreen ? 'ops-twin-stage-fullscreen' : ''} ${hasSceneContent ? 'ops-twin-stage-has-scene' : ''}`}
           data-scene-runtime={sceneRuntime}
           data-focus-mode={selection.sceneFocusMode}
         >

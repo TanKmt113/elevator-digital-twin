@@ -19,7 +19,7 @@ export function TwinControls({
   return (
     <div className="ops-toolbar flex flex-wrap gap-2">
       <button
-        className={`ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100 ${focusMode === 'overview' ? 'is-active' : ''}`}
+        className={`ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100 w-auto ${focusMode === 'overview' ? 'is-active' : ''}`}
         title="Overview mode"
         type="button"
         onClick={onFocusOverview}
@@ -27,7 +27,7 @@ export function TwinControls({
         All
       </button>
       <button
-        className={`ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100 ${focusMode === 'selected' ? 'is-active' : ''}`}
+        className={`ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100 w-auto ${focusMode === 'selected' ? 'is-active' : ''}`}
         title="Focus selected elevator"
         type="button"
         onClick={onFocusSelected}
@@ -36,7 +36,7 @@ export function TwinControls({
         Focus
       </button>
       <button
-        className="ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100"
+        className="ops-icon-button rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-100 w-auto"
         title={isFullscreen ? 'Exit full screen' : 'Open full screen'}
         type="button"
         onClick={onToggleFullscreen}

@@ -1,3 +1,7 @@
+import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 export interface EnvConfig {
   port: number;
   jwtSecret: string;
@@ -15,7 +19,32 @@ export interface EnvConfig {
   redisUrl: string;
 }
 
+let envLoaded = false;
+
+function ensureEnvLoaded(): void {
+  if (envLoaded) {
+    return;
+  }
+
+  const configDir = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    resolve(process.cwd(), '.env'),
+    resolve(configDir, '../../.env')
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      process.loadEnvFile(candidate);
+      break;
+    }
+  }
+
+  envLoaded = true;
+}
+
 export function loadEnv(): EnvConfig {
+  ensureEnvLoaded();
+
   const corsOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((origin) => origin.trim())
