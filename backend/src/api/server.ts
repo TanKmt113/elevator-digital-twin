@@ -22,6 +22,10 @@ import { DittoClient } from '../integrations/ditto/ditto-client.js';
 import { settings } from '../config/settings.js';
 import { createDevDittoRoutes } from './routes/dev-ditto.routes.js';
 import { createDevAuthRoutes } from './routes/dev-auth.routes.js';
+import { ElevatorStatePublisher } from '../modules/realtime/publishers/elevator-state.publisher.js';
+import { EventRouter } from '../modules/realtime/event-router.js';
+import { DittoLiveConsumer } from '../integrations/ditto/ditto-live-consumer.js';
+import type { RealtimeSynchronizationState } from '../contracts/elevator.js';
 
 interface CreateAppOptions {
   dittoClient?: DittoClient;
@@ -102,6 +106,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const alertsService = new AlertsService();
   const historyService = new ElevatorHistoryService();
   const riskAnalyticsService = new RiskAnalyticsService();
+  const eventRouter = new EventRouter();
   app.get('/openapi.yaml', (_req, res) => {
     res.type('application/yaml').send(getOpenApiSpec());
   });
@@ -111,20 +116,43 @@ export function createApp(options: CreateAppOptions = {}) {
   app.get('/health', (_req, res) =>
     res.json({
       status: 'ok',
-      synchronization: monitoringService.getSynchronizationState(),
+      synchronization: buildSynchronizationState(),
       bootstrap: monitoringService.getBootstrapSnapshot()
     })
   );
 
   const server = createServer(app);
   const sessions = createWsServer(server, new RealtimeSessionManager());
+  const elevatorStatePublisher = new ElevatorStatePublisher(sessions);
   const commandStatusPublisher = new CommandStatusPublisher(sessions);
   const alertPublisher = new AlertPublisher(sessions);
   const riskPublisher = new RiskPublisher(sessions);
 
+  const buildSynchronizationState = (): RealtimeSynchronizationState => {
+    monitoringService.setFrontendRealtimeState(
+      sessions.getFrontendRealtimeState(),
+      sessions.getActiveSessionCount()
+    );
+    return monitoringService.getSynchronizationState();
+  };
+
+  const publishSynchronizationState = (buildingId?: string): void => {
+    sessions.publish({
+      eventId: `sync-${Date.now()}`,
+      eventType: 'system.connection.state',
+      schemaVersion: '1.0.0',
+      dataClass: 'realtime',
+      occurredAt: new Date().toISOString(),
+      payload: {
+        ...buildSynchronizationState(),
+        buildingId: buildingId ?? monitoringService.getSynchronizationState().buildingId
+      }
+    });
+  };
+
   app.use(createDevAuthRoutes());
   app.use(createDevDittoRoutes(dittoClient));
-  app.use(createElevatorRoutes(monitoringService));
+  app.use(createElevatorRoutes(monitoringService, buildSynchronizationState));
   app.use(createCommandRoutes(commandExecutionService, commandStatusPublisher));
   app.use(createAlertsRoutes(alertsService, alertPublisher));
   app.use(createElevatorHistoryRoutes(historyService));
@@ -173,12 +201,41 @@ export function createApp(options: CreateAppOptions = {}) {
     });
   }
 
+  const liveConsumer = new DittoLiveConsumer(
+    dittoClient,
+    (event) => {
+      const routed = eventRouter.route(event, monitoringService.getSynchronizationState().buildingId);
+      monitoringService.setRejectionStats(eventRouter.getStats());
+      if (!routed) {
+        publishSynchronizationState();
+        return;
+      }
+
+      const saved = monitoringService.upsert(routed.payload);
+      elevatorStatePublisher.publish(saved);
+      publishSynchronizationState(saved.buildingId);
+    },
+    () => {
+      const current = monitoringService.getSynchronizationState();
+      monitoringService.setRejectionStats({
+        malformedEventsRejected: current.malformedEventsRejected + 1
+      });
+      publishSynchronizationState();
+    },
+    (state) => {
+      monitoringService.setDittoLiveState(state);
+      publishSynchronizationState();
+    }
+  );
+  liveConsumer.start();
+
   return {
     app,
     server,
     sessions,
     monitoringService,
     dittoClient,
+    eventRouter,
     commandExecutionService,
     alertsService,
     historyService,

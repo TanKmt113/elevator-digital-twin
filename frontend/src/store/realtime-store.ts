@@ -20,6 +20,9 @@ interface RealtimeState {
   connected: boolean;
   connectionState: RealtimeConnectionState;
   dataState: DashboardDataState;
+  dittoHttpState?: 'connecting' | 'live' | 'degraded';
+  dittoLiveState?: RealtimeConnectionState;
+  frontendRealtimeState?: RealtimeConnectionState;
   sceneRuntime: TwinSceneRuntimeState;
   projectionCount: number;
   hasWebglSupport: boolean;
@@ -27,8 +30,11 @@ interface RealtimeState {
   projectionFailures: number;
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
+  activeSessions: number;
   duplicateEventsDropped: number;
   outOfOrderEventsRejected: number;
+  outOfScopeEventsRejected: number;
+  malformedEventsRejected: number;
   staleMessage?: string;
   setConnectionState: (connectionState: RealtimeConnectionState) => void;
   setDataState: (dataState: DashboardDataState) => void;
@@ -44,6 +50,9 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   connected: false,
   connectionState: 'connecting',
   dataState: 'loading',
+  dittoHttpState: 'connecting',
+  dittoLiveState: 'connecting',
+  frontendRealtimeState: 'connecting',
   sceneRuntime: 'loading',
   projectionCount: 0,
   hasWebglSupport: true,
@@ -51,8 +60,11 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   projectionFailures: 0,
   lastBootstrapAt: undefined,
   lastLiveEventAt: undefined,
+  activeSessions: 0,
   duplicateEventsDropped: 0,
   outOfOrderEventsRejected: 0,
+  outOfScopeEventsRejected: 0,
+  malformedEventsRejected: 0,
   staleMessage: undefined,
   setConnectionState: (connectionState) =>
     set({

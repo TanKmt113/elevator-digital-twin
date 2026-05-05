@@ -12,7 +12,10 @@ interface ElevatorStateEnvelope {
   payload: ElevatorViewModel | Record<string, unknown>;
 }
 
-export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
+export function handleRealtimeEvent(
+  event: ElevatorStateEnvelope,
+  options?: { onResyncRequired?: () => void }
+): void {
   if (event.eventType === 'elevator.state.changed') {
     useElevatorStore.getState().upsertElevator(event.payload as ElevatorViewModel);
     useRealtimeStore.getState().setConnected(true);
@@ -28,15 +31,26 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
 
   if (event.eventType === 'system.connection.state') {
     const payload = event.payload as {
+      dittoHttpState?: 'connecting' | 'live' | 'degraded';
+      dittoLiveState?: unknown;
+      frontendRealtimeState?: unknown;
       connectionState?: unknown;
       dataState?: unknown;
       lastBootstrapAt?: string;
       lastLiveEventAt?: string;
+      activeSessions?: number;
       duplicateEventsDropped?: number;
       outOfOrderEventsRejected?: number;
+      outOfScopeEventsRejected?: number;
+      malformedEventsRejected?: number;
       lastFailureReason?: string;
     };
     useRealtimeStore.getState().applySynchronizationState({
+      dittoHttpState: payload.dittoHttpState,
+      dittoLiveState: isConnectionState(payload.dittoLiveState) ? payload.dittoLiveState : undefined,
+      frontendRealtimeState: isConnectionState(payload.frontendRealtimeState)
+        ? payload.frontendRealtimeState
+        : undefined,
       connectionState: isConnectionState(payload.connectionState) ? payload.connectionState : undefined,
       dataState: isDataState(payload.dataState) ? payload.dataState : undefined,
       sceneRuntime:
@@ -51,10 +65,18 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
       projectionCount: Object.keys(useElevatorStore.getState().elevators).length,
       lastBootstrapAt: payload.lastBootstrapAt,
       lastLiveEventAt: payload.lastLiveEventAt,
+      activeSessions: typeof payload.activeSessions === 'number' ? payload.activeSessions : undefined,
       duplicateEventsDropped: payload.duplicateEventsDropped,
       outOfOrderEventsRejected: payload.outOfOrderEventsRejected,
+      outOfScopeEventsRejected: payload.outOfScopeEventsRejected,
+      malformedEventsRejected: payload.malformedEventsRejected,
       staleMessage: payload.lastFailureReason
     });
+  }
+
+  if (event.eventType === 'dashboard.resync.required') {
+    useRealtimeStore.getState().setConnectionState('resyncing');
+    options?.onResyncRequired?.();
   }
 }
 

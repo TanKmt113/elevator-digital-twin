@@ -42,7 +42,7 @@ description: "Task list for Ditto Realtime Synchronization"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Define or extend versioned realtime synchronization contracts in backend/src/contracts/elevator.ts and frontend/src/store/realtime-store.ts
+- [X] T004 Define or extend versioned realtime synchronization contracts in backend/src/contracts/elevator.ts and frontend/src/store/realtime-store.ts
 - [ ] T005 [P] Add shared normalized live event and resync contract coverage in backend/tests/integration/realtime-bootstrap.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
 - [ ] T006 [P] Extend backend environment and reconnect defaults for live ingestion and browser delivery in backend/src/config/env.ts and backend/src/config/settings.ts
 - [ ] T007 [P] Implement or refine building-scope authorization helpers for realtime delivery in backend/src/modules/auth/rbac.ts and backend/src/modules/auth/auth.middleware.ts
@@ -68,12 +68,12 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Implement Ditto live consumer adapter with normalized event subscription in backend/src/integrations/ditto/ditto-live-consumer.ts
+- [X] T014 [P] [US1] Implement Ditto live consumer adapter with normalized event subscription in backend/src/integrations/ditto/ditto-live-consumer.ts
 - [ ] T015 [P] [US1] Extend Ditto client live parsing and projection helpers in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
-- [ ] T016 [US1] Integrate accepted live state mutation into backend materialized state in backend/src/modules/elevators/elevator-monitoring.service.ts and backend/src/modules/elevators/elevator-state.repository.ts
-- [ ] T017 [US1] Implement backend realtime publication flow for accepted elevator changes in backend/src/modules/realtime/publishers/elevator-state.publisher.ts and backend/src/api/server.ts
-- [ ] T018 [P] [US1] Implement browser realtime transport client in frontend/src/services/realtime/ws-client.ts and frontend/src/services/realtime/elevator-events.ts
-- [ ] T019 [US1] Wire frontend live update startup and store application in frontend/src/app/App.tsx, frontend/src/store/realtime-store.ts, and frontend/src/store/elevator-store.ts
+- [X] T016 [US1] Integrate accepted live state mutation into backend materialized state in backend/src/modules/elevators/elevator-monitoring.service.ts and backend/src/modules/elevators/elevator-state.repository.ts
+- [X] T017 [US1] Implement backend realtime publication flow for accepted elevator changes in backend/src/modules/realtime/publishers/elevator-state.publisher.ts and backend/src/api/server.ts
+- [X] T018 [P] [US1] Implement browser realtime transport client in frontend/src/services/realtime/ws-client.ts and frontend/src/services/realtime/elevator-events.ts
+- [X] T019 [US1] Wire frontend live update startup and store application in frontend/src/app/App.tsx, frontend/src/store/realtime-store.ts, and frontend/src/store/elevator-store.ts
 - [ ] T020 [US1] Confirm 3D and dashboard projections consume the same accepted live state in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
 
 **Checkpoint**: Accepted Ditto changes update the dashboard automatically end-to-end.
@@ -94,7 +94,7 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Extend live event routing and rejection accounting in backend/src/modules/realtime/event-router.ts and backend/src/contracts/elevator.ts
+- [X] T024 [P] [US2] Extend live event routing and rejection accounting in backend/src/modules/realtime/event-router.ts and backend/src/contracts/elevator.ts
 - [ ] T025 [US2] Harden malformed payload normalization and rejection semantics in backend/src/modules/realtime/event-normalizer.ts and backend/src/integrations/ditto/ditto-client.ts
 - [ ] T026 [US2] Enforce building-scope filtering before realtime publication in backend/src/modules/realtime/ws-server.ts and backend/src/modules/auth/auth.middleware.ts
 - [ ] T027 [US2] Publish synchronization-state updates for rejected-event visibility in backend/src/api/server.ts and backend/src/observability/elevator-monitoring.metrics.ts

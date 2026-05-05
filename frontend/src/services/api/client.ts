@@ -2,11 +2,12 @@ import type { ElevatorViewModel } from '../../store/elevator-store';
 
 interface SynchronizationHealth {
   bootstrapStatus?: string;
-  dittoHttpState?: string;
-  dittoLiveState?: string;
-  frontendRealtimeState?: string;
+  dittoHttpState?: 'connecting' | 'live' | 'degraded';
+  dittoLiveState?: 'connecting' | 'live' | 'stale' | 'degraded' | 'resyncing';
+  frontendRealtimeState?: 'connecting' | 'live' | 'stale' | 'degraded' | 'resyncing';
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
+  activeSessions?: number;
   duplicateEventsDropped?: number;
   outOfOrderEventsRejected?: number;
   outOfScopeEventsRejected?: number;

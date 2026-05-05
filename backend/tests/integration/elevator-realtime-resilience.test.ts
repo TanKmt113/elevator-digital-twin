@@ -30,7 +30,8 @@ describe('elevator realtime resilience', () => {
     expect(router.route(outOfOrderEvent)).toBeNull();
     expect(router.getStats()).toEqual({
       duplicateEventsDropped: 1,
-      outOfOrderEventsRejected: 1
+      outOfOrderEventsRejected: 1,
+      outOfScopeEventsRejected: 0
     });
   });
 
@@ -46,5 +47,6 @@ describe('elevator realtime resilience', () => {
     };
 
     expect(router.route(event, 'L72')).toBeNull();
+    expect(router.getStats().outOfScopeEventsRejected).toBe(1);
   });
 });

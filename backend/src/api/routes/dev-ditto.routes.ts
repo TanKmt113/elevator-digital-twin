@@ -85,7 +85,9 @@ export async function seedLocalTwinDataset(
   };
 }
 
-export function createDevDittoRoutes(dittoClient: Pick<DittoClient, 'upsertPolicy' | 'upsertThing'>): Router {
+export function createDevDittoRoutes(
+  dittoClient: Pick<DittoClient, 'upsertPolicy' | 'upsertThing'> & { emit?: (payload: unknown) => void }
+): Router {
   const router = Router();
 
   router.post('/dev/ditto/seed', async (_req, res) => {
@@ -102,6 +104,41 @@ export function createDevDittoRoutes(dittoClient: Pick<DittoClient, 'upsertPolic
       res.status(502).json({
         code: 'DITTO_SEED_FAILED',
         message: error instanceof Error ? error.message : 'Failed to seed Ditto dataset'
+      });
+    }
+  });
+
+  router.post('/dev/ditto/replay', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      res.status(404).json({ code: 'ROUTE_NOT_FOUND', message: 'Not found' });
+      return;
+    }
+
+    const thing = req.body as DittoThing | undefined;
+    if (!thing?.thingId) {
+      res.status(400).json({
+        code: 'INVALID_DITTO_REPLAY',
+        message: 'thingId is required in the request body'
+      });
+      return;
+    }
+
+    try {
+      await dittoClient.upsertThing(thing.thingId, thing);
+      dittoClient.emit?.({
+        id: `dev-replay-${Date.now()}`,
+        thingId: thing.thingId,
+        time: new Date().toISOString(),
+        value: thing
+      });
+      res.json({
+        thingId: thing.thingId,
+        replayedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(502).json({
+        code: 'DITTO_REPLAY_FAILED',
+        message: error instanceof Error ? error.message : 'Failed to replay Ditto change'
       });
     }
   });

@@ -104,6 +104,10 @@ export class DittoClient {
     return this.wsUrl;
   }
 
+  getHttpUrl(): string {
+    return this.httpUrl;
+  }
+
   subscribe(handler: DittoHandler): () => void {
     this.handlers.add(handler);
     return () => this.handlers.delete(handler);
@@ -210,5 +214,12 @@ export class DittoClient {
       ...headers,
       ...(headersInit ?? {})
     };
+  }
+
+  createAuthorizationHeaders(): Record<string, string> {
+    const headers = this.createHeaders(false);
+    return typeof headers === 'object' && !Array.isArray(headers)
+      ? (headers as Record<string, string>)
+      : { Accept: 'application/json' };
   }
 }

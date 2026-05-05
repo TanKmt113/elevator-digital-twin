@@ -5,6 +5,7 @@ export class EventRouter {
   private readonly latestAcceptedAt = new Map<string, number>();
   private duplicateEventsDropped = 0;
   private outOfOrderEventsRejected = 0;
+  private outOfScopeEventsRejected = 0;
 
   route<T>(event: NormalizedEvent<T>, buildingScope?: string): NormalizedEvent<T> | null {
     if (this.seen.has(event.eventId)) {
@@ -15,6 +16,7 @@ export class EventRouter {
     const subjectId = this.getSubjectId(event.payload);
     const buildingId = this.getBuildingId(event.payload);
     if (buildingScope && buildingId && buildingId !== buildingScope) {
+      this.outOfScopeEventsRejected += 1;
       return null;
     }
 
@@ -36,10 +38,15 @@ export class EventRouter {
     return event;
   }
 
-  getStats(): { duplicateEventsDropped: number; outOfOrderEventsRejected: number } {
+  getStats(): {
+    duplicateEventsDropped: number;
+    outOfOrderEventsRejected: number;
+    outOfScopeEventsRejected: number;
+  } {
     return {
       duplicateEventsDropped: this.duplicateEventsDropped,
-      outOfOrderEventsRejected: this.outOfOrderEventsRejected
+      outOfOrderEventsRejected: this.outOfOrderEventsRejected,
+      outOfScopeEventsRejected: this.outOfScopeEventsRejected
     };
   }
 

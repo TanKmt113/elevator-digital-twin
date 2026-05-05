@@ -2,8 +2,12 @@ import { Router } from 'express';
 import { authenticateJwt } from '../../modules/auth/auth.middleware.js';
 import { requireRoles } from '../../modules/auth/rbac.js';
 import { ElevatorMonitoringService } from '../../modules/elevators/elevator-monitoring.service.js';
+import type { RealtimeSynchronizationState } from '../../contracts/elevator.js';
 
-export function createElevatorRoutes(service: ElevatorMonitoringService): Router {
+export function createElevatorRoutes(
+  service: ElevatorMonitoringService,
+  getSynchronizationState: () => RealtimeSynchronizationState = () => service.getSynchronizationState()
+): Router {
   const router = Router();
   router.use(authenticateJwt, requireRoles('operator', 'admin', 'maintenance'));
 
@@ -16,7 +20,7 @@ export function createElevatorRoutes(service: ElevatorMonitoringService): Router
     res.json({
       items: service.listByBuilding(buildingId),
       meta: {
-        synchronization: service.getSynchronizationState()
+        synchronization: getSynchronizationState()
       }
     });
   });

@@ -14,6 +14,8 @@ import {
 } from '../store/realtime-store';
 import { useSessionStore } from '../store/session-store';
 import { ApiError, fetchElevatorBootstrap } from '../services/api/client';
+import { RealtimeClient } from '../services/realtime/ws-client';
+import { handleRealtimeEvent } from '../services/realtime/elevator-events';
 
 export const DASHBOARD_SECTION_TITLES = [
   'Operations Dashboard',
@@ -25,11 +27,16 @@ export const DASHBOARD_SECTION_TITLES = [
 
 interface BootstrapSynchronizationState {
   bootstrapStatus?: string;
+  dittoHttpState?: 'connecting' | 'live' | 'degraded';
   dittoLiveState?: string;
+  frontendRealtimeState?: string;
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
+  activeSessions?: number;
   duplicateEventsDropped?: number;
   outOfOrderEventsRejected?: number;
+  outOfScopeEventsRejected?: number;
+  malformedEventsRejected?: number;
   lastFailureReason?: string;
 }
 
@@ -142,6 +149,7 @@ export function deriveSceneRuntimeState(
 }
 
 export function App(): React.JSX.Element {
+  const realtimeClientRef = React.useRef<RealtimeClient | null>(null);
   const elevatorRecord = useElevatorStore((state) => state.elevators);
   const selectedBuildingId = useElevatorStore((state) => state.selectedBuildingId);
   const connectionState = useRealtimeStore((state) => state.connectionState);
@@ -161,31 +169,58 @@ export function App(): React.JSX.Element {
     neutral: 'border-white/10 bg-white/5 text-slate-100'
   } as const;
 
+  const hydrateBootstrap = React.useCallback(async () => {
+    const response = await fetchElevatorBootstrap(selectedBuildingId, token);
+    useElevatorStore.getState().replaceElevators(response.items, selectedBuildingId);
+    const realtimeState = deriveRealtimeStateFromBootstrap(
+      response.meta.synchronization,
+      response.items.length
+    );
+
+    useRealtimeStore.getState().applySynchronizationState({
+      ...realtimeState,
+      dittoHttpState: response.meta.synchronization.dittoHttpState,
+      dittoLiveState:
+        response.meta.synchronization.dittoLiveState === 'connecting' ||
+        response.meta.synchronization.dittoLiveState === 'live' ||
+        response.meta.synchronization.dittoLiveState === 'stale' ||
+        response.meta.synchronization.dittoLiveState === 'degraded' ||
+        response.meta.synchronization.dittoLiveState === 'resyncing'
+          ? response.meta.synchronization.dittoLiveState
+          : undefined,
+      frontendRealtimeState:
+        response.meta.synchronization.frontendRealtimeState === 'connecting' ||
+        response.meta.synchronization.frontendRealtimeState === 'live' ||
+        response.meta.synchronization.frontendRealtimeState === 'stale' ||
+        response.meta.synchronization.frontendRealtimeState === 'degraded' ||
+        response.meta.synchronization.frontendRealtimeState === 'resyncing'
+          ? response.meta.synchronization.frontendRealtimeState
+          : undefined,
+      activeSessions: response.meta.synchronization.activeSessions,
+      outOfScopeEventsRejected: response.meta.synchronization.outOfScopeEventsRejected,
+      malformedEventsRejected: response.meta.synchronization.malformedEventsRejected,
+      sceneRuntime: deriveSceneRuntimeState(
+        realtimeState.connectionState,
+        realtimeState.dataState,
+        response.items.length,
+        hasWebglSupport
+      ),
+      projectionCount: response.items.length
+    });
+    return response;
+  }, [hasWebglSupport, selectedBuildingId, token]);
+
   React.useEffect(() => {
     let cancelled = false;
     useRealtimeStore.getState().setDataState('loading');
     useRealtimeStore.getState().setConnectionState('connecting');
     useRealtimeStore.getState().setStaleMessage(undefined);
 
-    void fetchElevatorBootstrap(selectedBuildingId, token)
-      .then((response) => {
+    void hydrateBootstrap()
+      .then(() => {
         if (cancelled) {
           return;
         }
-
-        useElevatorStore.getState().replaceElevators(response.items, selectedBuildingId);
-        const realtimeState = deriveRealtimeStateFromBootstrap(response.meta.synchronization, response.items.length);
-
-        useRealtimeStore.getState().applySynchronizationState({
-          ...realtimeState,
-          sceneRuntime: deriveSceneRuntimeState(
-            realtimeState.connectionState,
-            realtimeState.dataState,
-            response.items.length,
-            hasWebglSupport
-          ),
-          projectionCount: response.items.length
-        });
       })
       .catch((error: unknown) => {
         if (cancelled) {
@@ -216,7 +251,38 @@ export function App(): React.JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [selectedBuildingId, token]);
+  }, [hydrateBootstrap, selectedBuildingId]);
+
+  React.useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const realtimeClient = new RealtimeClient();
+    realtimeClientRef.current = realtimeClient;
+
+    const disposeMessage = realtimeClient.onMessage((payload) => {
+      handleRealtimeEvent(payload as Parameters<typeof handleRealtimeEvent>[0], {
+        onResyncRequired: () => {
+          void hydrateBootstrap().catch(() => {
+            useRealtimeStore.getState().setConnectionState('degraded');
+          });
+        }
+      });
+    });
+    const disposeConnection = realtimeClient.onConnectionState((state) => {
+      useRealtimeStore.getState().setConnectionState(state);
+    });
+
+    realtimeClient.connect(selectedBuildingId, token);
+
+    return () => {
+      disposeMessage();
+      disposeConnection();
+      realtimeClient.disconnect();
+      realtimeClientRef.current = null;
+    };
+  }, [hydrateBootstrap, selectedBuildingId, token]);
 
   return (
     <main className="ops-shell mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
