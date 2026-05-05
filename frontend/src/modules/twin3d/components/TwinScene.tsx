@@ -60,6 +60,12 @@ export function TwinScene(): React.JSX.Element {
   const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
   const webglMessage = useRealtimeStore((state) => state.webglMessage);
   const projectionFailures = useRealtimeStore((state) => state.projectionFailures);
+  const activeSessions = useRealtimeStore((state) => state.activeSessions);
+  const duplicateEventsDropped = useRealtimeStore((state) => state.duplicateEventsDropped);
+  const outOfOrderEventsRejected = useRealtimeStore((state) => state.outOfOrderEventsRejected);
+  const outOfScopeEventsRejected = useRealtimeStore((state) => state.outOfScopeEventsRejected);
+  const malformedEventsRejected = useRealtimeStore((state) => state.malformedEventsRejected);
+  const staleMessage = useRealtimeStore((state) => state.staleMessage);
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const { assets, visibleAssets } = React.useMemo(
     () => deriveTwinSceneState(elevators, selection.selectedElevatorId, selection.sceneFocusMode),
@@ -174,6 +180,12 @@ export function TwinScene(): React.JSX.Element {
           performanceSample={performanceSample}
           webglMessage={webglMessage}
           projectionFailures={projectionFailures}
+          activeSessions={activeSessions}
+          duplicateEventsDropped={duplicateEventsDropped}
+          outOfOrderEventsRejected={outOfOrderEventsRejected}
+          outOfScopeEventsRejected={outOfScopeEventsRejected}
+          malformedEventsRejected={malformedEventsRejected}
+          staleMessage={staleMessage}
         />
       </div>
     </section>

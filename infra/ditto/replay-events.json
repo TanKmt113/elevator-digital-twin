@@ -1,0 +1,77 @@
+[
+  {
+    "eventId": "accepted-move-a",
+    "description": "Accepted live move for elevator A inside L72",
+    "thing": {
+      "thingId": "org.example:L72-ELEV-A",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-a"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "moving",
+            "currentFloor": 3,
+            "targetFloor": 8,
+            "direction": "up",
+            "doorState": "closed",
+            "loadPercentage": 34,
+            "healthState": "normal"
+          }
+        }
+      }
+    }
+  },
+  {
+    "eventId": "accepted-stop-b",
+    "description": "Accepted stop/open-door event for elevator B inside L72",
+    "thing": {
+      "thingId": "org.example:L72-ELEV-B",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-b"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "idle",
+            "currentFloor": 18,
+            "targetFloor": 18,
+            "direction": "stationary",
+            "doorState": "open",
+            "loadPercentage": 12,
+            "healthState": "normal"
+          }
+        }
+      }
+    }
+  },
+  {
+    "eventId": "out-of-scope-l30",
+    "description": "Out-of-scope change for a different building",
+    "thing": {
+      "thingId": "org.example:L30-ELEV-A",
+      "attributes": {
+        "buildingId": "L30",
+        "deviceType": "elevator",
+        "shaftId": "shaft-a"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "moving",
+            "currentFloor": 9,
+            "targetFloor": 12,
+            "direction": "up",
+            "doorState": "closed",
+            "loadPercentage": 40,
+            "healthState": "normal"
+          }
+        }
+      }
+    }
+  }
+]

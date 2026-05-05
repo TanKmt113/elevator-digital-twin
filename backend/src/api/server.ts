@@ -167,6 +167,10 @@ export function createApp(options: CreateAppOptions = {}) {
     });
   };
 
+  sessions.addLifecycleListener(() => {
+    publishSynchronizationState();
+  });
+
   app.use(createDevAuthRoutes());
   app.use(createDevDittoRoutes(dittoClient));
   app.use(createElevatorRoutes(monitoringService, buildSynchronizationState));

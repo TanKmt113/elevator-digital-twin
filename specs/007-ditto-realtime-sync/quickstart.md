@@ -33,8 +33,10 @@ Frontend environment:
 
 ```sh
 VITE_API_BASE_URL=http://localhost:3000
+VITE_WS_URL=ws://localhost:3000/ws
 VITE_BUILDING_ID=L72
 VITE_OPERATOR_ROLE=operator
+VITE_WS_RECONNECT_MS=1000
 ```
 
 ## Bring-Up
@@ -51,11 +53,11 @@ VITE_OPERATOR_ROLE=operator
 
 1. Open one dashboard session scoped to `L72`.
 2. Confirm current elevator state appears in summary, list, detail, and 3D views.
-3. Change one elevator's state in Ditto.
+3. Change one elevator's state in Ditto or replay a named local fixture with `node --experimental-strip-types infra/ditto/replay-ditto-event.ts accepted-move-a`.
 4. Confirm the changed elevator updates in all dashboard surfaces within the realtime target and without refreshing the page.
 5. Open a second dashboard session and repeat a Ditto change.
 6. Confirm both sessions reflect the same accepted update.
-7. Replay duplicate, malformed, late, and out-of-scope live changes.
+7. Replay duplicate, malformed, late, and out-of-scope live changes with `POST /dev/ditto/replay` or fixtures from `infra/ditto/replay-events.json`.
 8. Confirm the active dashboard does not regress or replay duplicate transitions and that health or counters reflect the rejections.
 9. Interrupt browser realtime delivery or backend live delivery.
 10. Confirm the dashboard moves to `stale` or `degraded` while preserving the last accepted elevator state.
@@ -69,6 +71,7 @@ VITE_OPERATOR_ROLE=operator
 - Rejected live changes do not create visible false transitions.
 - Realtime interruption becomes explicit through stale, resyncing, or degraded status.
 - Recovery restores the latest accepted state through backend-mediated resync.
+- Health output surfaces active frontend sessions and per-category rejection counters.
 
 ## Validation Commands
 
@@ -85,3 +88,10 @@ npm test
 ```
 
 Manual validation remains required because this feature crosses Ditto, backend-managed realtime delivery, browser connectivity, and 3D projection behavior.
+
+## Latest Validation Result
+
+- Date: `2026-05-05`
+- Backend: `cd backend && npm run validate:phase7` -> pass
+- Frontend: `cd frontend && npm run validate:phase7` -> pass
+- Note: frontend production build emitted a chunk-size warning only; validation still passed and no runtime contract failure was reported.

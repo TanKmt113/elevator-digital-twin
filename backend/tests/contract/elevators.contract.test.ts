@@ -10,7 +10,11 @@ describe('elevators contract', () => {
     expect(monitoringService.getSynchronizationState()).toMatchObject({
       bootstrapStatus: expect.any(String),
       dataState: expect.any(String),
-      connectionState: expect.any(String)
+      connectionState: expect.any(String),
+      duplicateEventsDropped: expect.any(Number),
+      outOfOrderEventsRejected: expect.any(Number),
+      outOfScopeEventsRejected: expect.any(Number),
+      malformedEventsRejected: expect.any(Number)
     });
   });
 

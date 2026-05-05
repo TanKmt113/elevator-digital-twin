@@ -23,6 +23,13 @@ describe('app shell', () => {
     });
   });
 
+  it('reports an explicit resyncing state while the dashboard refreshes accepted state', () => {
+    expect(deriveAppShellState('resyncing', 'ready', 2)).toMatchObject({
+      title: 'Resynchronizing live state',
+      bannerTone: 'info'
+    });
+  });
+
   it('derives governed scene runtime states from dashboard synchronization', () => {
     expect(deriveSceneRuntimeState('connecting', 'loading', 0)).toBe('loading');
     expect(deriveSceneRuntimeState('live', 'empty', 0)).toBe('empty');

@@ -10,6 +10,8 @@ This project uses [ditto-api-2.yml](/home/tandev/WorkDev/elevator-digital-twin/d
   Used to hydrate a single elevator twin with selected fields.
 - `GET /api/2/things?ids=...&fields=...`
   Preferred dashboard bootstrap pattern to avoid fetching the full Thing document.
+- `GET /api/2/things/{thingId}?fields=thingId,attributes,features`
+  Used by live recovery or minimal live projection when a Twin event only identifies the changed thing.
 
 ## Suggested Field Projection
 
@@ -54,18 +56,27 @@ Authentication precedence:
 - `listThings({ ids, fields, timeout })`
 - `getThing(thingId, { fields, timeout, condition })`
 - `getRealtimeUrl()`
+- `createAuthorizationHeaders()`
 - in-memory `subscribe()` / `emit()` hooks for normalized event fan-out
 
-This client surface now supports the implemented phase-4 runtime flow:
+This client surface now supports the implemented phase-7 realtime flow:
 
 1. bootstrap elevator state from Ditto HTTP before realtime updates start
-2. map Ditto Thing payloads into governed backend contracts
+2. project live Twin changes into governed backend contracts
 3. connect Ditto WebSocket events to backend normalization and rejection handling
-4. keep frontend detail and summary views synchronized through backend REST and websocket delivery
+4. keep frontend detail, summary, and 3D views synchronized through backend REST and websocket delivery
 
-## Phase 4 Validation Focus
+## Local Realtime Replay
+
+- Use `POST /dev/ditto/replay` with a full Thing body to simulate a live Twin change through backend-managed delivery.
+- Use `infra/ditto/replay-events.json` as the local catalog of replayable fixtures.
+- Use `node --experimental-strip-types infra/ditto/replay-ditto-event.ts <eventId>` to replay a named local fixture against `API_BASE_URL`.
+
+## Phase 7 Validation Focus
 
 - Startup readiness must distinguish `loading`, `ready`, `empty`, and `degraded` dashboard states.
 - Twin bootstrap failure must be observable through backend health, logs, or metrics.
 - Live synchronization must preserve last accepted state when delivery is delayed, duplicated, or temporarily unavailable.
+- Live rejection counters should identify duplicate, out-of-order, out-of-scope, and malformed changes separately.
+- Realtime recovery should transition through explicit `stale` or `resyncing` state before returning to `live`.
 - AI service availability is not part of this validation path and must not mask Twin synchronization readiness.

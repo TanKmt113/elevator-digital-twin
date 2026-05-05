@@ -30,9 +30,9 @@ description: "Task list for Ditto Realtime Synchronization"
 
 **Purpose**: Prepare feature-local documentation anchors, validation entry points, and realtime environment references.
 
-- [ ] T001 Update feature-007 references in AGENTS.md, README.md, and docs/operations-dashboard.md to point at specs/007-ditto-realtime-sync/
-- [ ] T002 [P] Add feature-007 validation script entries and realtime environment notes in backend/package.json, frontend/package.json, backend/README.md, and frontend/README.md
-- [ ] T003 [P] Add local Ditto live replay references for feature-007 in infra/README.md and docs/ditto-integration.md
+- [X] T001 Update feature-007 references in AGENTS.md, README.md, and docs/operations-dashboard.md to point at specs/007-ditto-realtime-sync/
+- [X] T002 [P] Add feature-007 validation script entries and realtime environment notes in backend/package.json, frontend/package.json, backend/README.md, and frontend/README.md
+- [X] T003 [P] Add local Ditto live replay references for feature-007 in infra/README.md and docs/ditto-integration.md
 
 ---
 
@@ -43,11 +43,11 @@ description: "Task list for Ditto Realtime Synchronization"
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [X] T004 Define or extend versioned realtime synchronization contracts in backend/src/contracts/elevator.ts and frontend/src/store/realtime-store.ts
-- [ ] T005 [P] Add shared normalized live event and resync contract coverage in backend/tests/integration/realtime-bootstrap.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T006 [P] Extend backend environment and reconnect defaults for live ingestion and browser delivery in backend/src/config/env.ts and backend/src/config/settings.ts
-- [ ] T007 [P] Implement or refine building-scope authorization helpers for realtime delivery in backend/src/modules/auth/rbac.ts and backend/src/modules/auth/auth.middleware.ts
-- [ ] T008 Add structured logs, rejection counters, and synchronization metrics foundations in backend/src/observability/logger.ts and backend/src/observability/elevator-monitoring.metrics.ts
-- [ ] T009 Refresh feature-007 browser event contracts in specs/007-ditto-realtime-sync/contracts/realtime-events.md and specs/007-ditto-realtime-sync/contracts/resync-sequence.md after foundational decisions
+- [X] T005 [P] Add shared normalized live event and resync contract coverage in backend/tests/integration/realtime-bootstrap.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T006 [P] Extend backend environment and reconnect defaults for live ingestion and browser delivery in backend/src/config/env.ts and backend/src/config/settings.ts
+- [X] T007 [P] Implement or refine building-scope authorization helpers for realtime delivery in backend/src/modules/auth/rbac.ts and backend/src/modules/auth/auth.middleware.ts
+- [X] T008 Add structured logs, rejection counters, and synchronization metrics foundations in backend/src/observability/logger.ts and backend/src/observability/elevator-monitoring.metrics.ts
+- [X] T009 Refresh feature-007 browser event contracts in specs/007-ditto-realtime-sync/contracts/realtime-events.md and specs/007-ditto-realtime-sync/contracts/resync-sequence.md after foundational decisions
 
 **Checkpoint**: Shared realtime contracts, auth scope, and observability foundation are ready.
 
@@ -61,20 +61,20 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T010 [P] [US1] Add backend Ditto live ingestion integration test for accepted elevator updates in backend/tests/integration/ditto-client.integration.test.ts
-- [ ] T011 [P] [US1] Add backend publication integration test for accepted elevator updates reaching realtime sessions in backend/tests/integration/realtime-bootstrap.test.ts
-- [ ] T012 [P] [US1] Add frontend integration test for applying accepted `elevator.state.changed` updates across dashboard surfaces in frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T013 [US1] Add feature-007 quickstart validation test notes and manual acceptance steps in specs/007-ditto-realtime-sync/quickstart.md
+- [X] T010 [P] [US1] Add backend Ditto live ingestion integration test for accepted elevator updates in backend/tests/integration/ditto-client.integration.test.ts
+- [X] T011 [P] [US1] Add backend publication integration test for accepted elevator updates reaching realtime sessions in backend/tests/integration/realtime-bootstrap.test.ts
+- [X] T012 [P] [US1] Add frontend integration test for applying accepted `elevator.state.changed` updates across dashboard surfaces in frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T013 [US1] Add feature-007 quickstart validation test notes and manual acceptance steps in specs/007-ditto-realtime-sync/quickstart.md
 
 ### Implementation for User Story 1
 
 - [X] T014 [P] [US1] Implement Ditto live consumer adapter with normalized event subscription in backend/src/integrations/ditto/ditto-live-consumer.ts
-- [ ] T015 [P] [US1] Extend Ditto client live parsing and projection helpers in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
+- [X] T015 [P] [US1] Extend Ditto client live parsing and projection helpers in backend/src/integrations/ditto/ditto-client.ts and backend/src/modules/realtime/event-normalizer.ts
 - [X] T016 [US1] Integrate accepted live state mutation into backend materialized state in backend/src/modules/elevators/elevator-monitoring.service.ts and backend/src/modules/elevators/elevator-state.repository.ts
 - [X] T017 [US1] Implement backend realtime publication flow for accepted elevator changes in backend/src/modules/realtime/publishers/elevator-state.publisher.ts and backend/src/api/server.ts
 - [X] T018 [P] [US1] Implement browser realtime transport client in frontend/src/services/realtime/ws-client.ts and frontend/src/services/realtime/elevator-events.ts
 - [X] T019 [US1] Wire frontend live update startup and store application in frontend/src/app/App.tsx, frontend/src/store/realtime-store.ts, and frontend/src/store/elevator-store.ts
-- [ ] T020 [US1] Confirm 3D and dashboard projections consume the same accepted live state in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
+- [X] T020 [US1] Confirm 3D and dashboard projections consume the same accepted live state in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
 
 **Checkpoint**: Accepted Ditto changes update the dashboard automatically end-to-end.
 
@@ -88,17 +88,17 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T021 [P] [US2] Add backend rejection-path integration tests for duplicate, late, malformed, and out-of-scope Twin changes in backend/tests/integration/elevator-monitoring.integration.test.ts
-- [ ] T022 [P] [US2] Add backend scope and envelope contract coverage for rejected-event counters in backend/tests/contract/elevators.contract.test.ts
-- [ ] T023 [P] [US2] Add frontend integration test ensuring rejected live changes do not regress visible dashboard state in frontend/tests/integration/twin3d-resilience.test.tsx and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T021 [P] [US2] Add backend rejection-path integration tests for duplicate, late, malformed, and out-of-scope Twin changes in backend/tests/integration/elevator-monitoring.integration.test.ts
+- [X] T022 [P] [US2] Add backend scope and envelope contract coverage for rejected-event counters in backend/tests/contract/elevators.contract.test.ts
+- [X] T023 [P] [US2] Add frontend integration test ensuring rejected live changes do not regress visible dashboard state in frontend/tests/integration/twin3d-resilience.test.tsx and frontend/tests/integration/elevator-dashboard-live.test.tsx
 
 ### Implementation for User Story 2
 
 - [X] T024 [P] [US2] Extend live event routing and rejection accounting in backend/src/modules/realtime/event-router.ts and backend/src/contracts/elevator.ts
-- [ ] T025 [US2] Harden malformed payload normalization and rejection semantics in backend/src/modules/realtime/event-normalizer.ts and backend/src/integrations/ditto/ditto-client.ts
-- [ ] T026 [US2] Enforce building-scope filtering before realtime publication in backend/src/modules/realtime/ws-server.ts and backend/src/modules/auth/auth.middleware.ts
-- [ ] T027 [US2] Publish synchronization-state updates for rejected-event visibility in backend/src/api/server.ts and backend/src/observability/elevator-monitoring.metrics.ts
-- [ ] T028 [US2] Apply idempotent live-event handling and rejection-safe store updates in frontend/src/services/realtime/elevator-events.ts and frontend/src/store/realtime-store.ts
+- [X] T025 [US2] Harden malformed payload normalization and rejection semantics in backend/src/modules/realtime/event-normalizer.ts and backend/src/integrations/ditto/ditto-client.ts
+- [X] T026 [US2] Enforce building-scope filtering before realtime publication in backend/src/modules/realtime/ws-server.ts and backend/src/modules/auth/auth.middleware.ts
+- [X] T027 [US2] Publish synchronization-state updates for rejected-event visibility in backend/src/api/server.ts and backend/src/observability/elevator-monitoring.metrics.ts
+- [X] T028 [US2] Apply idempotent live-event handling and rejection-safe store updates in frontend/src/services/realtime/elevator-events.ts and frontend/src/store/realtime-store.ts
 
 **Checkpoint**: Rejected Twin changes are observable but never produce false dashboard transitions.
 
@@ -112,17 +112,17 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] Add backend reconnect and resync integration coverage in backend/tests/integration/elevator-realtime-resilience.test.ts and backend/tests/integration/realtime-bootstrap.test.ts
-- [ ] T030 [P] [US3] Add frontend reconnect, stale, and resync integration coverage in frontend/tests/integration/app-shell.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T031 [US3] Add 3D selection continuity and degraded-state regression coverage during resync in frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T029 [P] [US3] Add backend reconnect and resync integration coverage in backend/tests/integration/elevator-realtime-resilience.test.ts and backend/tests/integration/realtime-bootstrap.test.ts
+- [X] T030 [P] [US3] Add frontend reconnect, stale, and resync integration coverage in frontend/tests/integration/app-shell.test.ts and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T031 [US3] Add 3D selection continuity and degraded-state regression coverage during resync in frontend/tests/integration/twin3d-resilience.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T032 [P] [US3] Implement backend realtime session lifecycle and reconnect tracking in backend/src/modules/realtime/ws-server.ts and backend/src/modules/realtime/session-manager.ts
-- [ ] T033 [P] [US3] Add backend synchronization-state and resync-required publication in backend/src/api/server.ts and backend/src/modules/realtime/publishers/elevator-state.publisher.ts
-- [ ] T034 [US3] Implement frontend reconnect handling and controlled resync flow in frontend/src/services/realtime/ws-client.ts, frontend/src/services/api/client.ts, and frontend/src/services/realtime/elevator-events.ts
-- [ ] T035 [US3] Wire stale, resyncing, and degraded state presentation into frontend runtime stores and app shell in frontend/src/store/realtime-store.ts and frontend/src/app/App.tsx
-- [ ] T036 [US3] Preserve selected elevator context across reconnect and resync in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
+- [X] T032 [P] [US3] Implement backend realtime session lifecycle and reconnect tracking in backend/src/modules/realtime/ws-server.ts and backend/src/modules/realtime/session-manager.ts
+- [X] T033 [P] [US3] Add backend synchronization-state and resync-required publication in backend/src/api/server.ts and backend/src/modules/realtime/publishers/elevator-state.publisher.ts
+- [X] T034 [US3] Implement frontend reconnect handling and controlled resync flow in frontend/src/services/realtime/ws-client.ts, frontend/src/services/api/client.ts, and frontend/src/services/realtime/elevator-events.ts
+- [X] T035 [US3] Wire stale, resyncing, and degraded state presentation into frontend runtime stores and app shell in frontend/src/store/realtime-store.ts and frontend/src/app/App.tsx
+- [X] T036 [US3] Preserve selected elevator context across reconnect and resync in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
 
 **Checkpoint**: Delivery interruption and recovery are explicit, stable, and operator-safe.
 
@@ -136,15 +136,15 @@ description: "Task list for Ditto Realtime Synchronization"
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T037 [P] [US4] Add local live replay validation coverage in backend/tests/integration/ditto-client.integration.test.ts and backend/tests/integration/elevator-realtime-resilience.test.ts
-- [ ] T038 [P] [US4] Add frontend multi-session and local recovery validation coverage in frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T037 [P] [US4] Add local live replay validation coverage in backend/tests/integration/ditto-client.integration.test.ts and backend/tests/integration/elevator-realtime-resilience.test.ts
+- [X] T038 [P] [US4] Add frontend multi-session and local recovery validation coverage in frontend/tests/integration/elevator-dashboard-live.test.tsx
 
 ### Implementation for User Story 4
 
-- [ ] T039 [P] [US4] Add or refresh local Ditto replay fixtures and helper scripts in infra/ditto/replay-events.json and infra/ditto/replay-ditto-event.ts
-- [ ] T040 [P] [US4] Expose local health and troubleshooting signals for live synchronization in backend/src/api/server.ts and infra/observability/runbook.md
-- [ ] T041 [US4] Finalize local validation steps, expected outputs, and failure interpretation in specs/007-ditto-realtime-sync/quickstart.md and docs/ditto-integration.md
-- [ ] T042 [US4] Surface operator-visible local readiness and degraded hints in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T039 [P] [US4] Add or refresh local Ditto replay fixtures and helper scripts in infra/ditto/replay-events.json and infra/ditto/replay-ditto-event.ts
+- [X] T040 [P] [US4] Expose local health and troubleshooting signals for live synchronization in backend/src/api/server.ts and infra/observability/runbook.md
+- [X] T041 [US4] Finalize local validation steps, expected outputs, and failure interpretation in specs/007-ditto-realtime-sync/quickstart.md and docs/ditto-integration.md
+- [X] T042 [US4] Surface operator-visible local readiness and degraded hints in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
 
 **Checkpoint**: Local developers can validate realtime behavior end-to-end from documentation.
 
@@ -154,12 +154,12 @@ description: "Task list for Ditto Realtime Synchronization"
 
 **Purpose**: Final alignment, validation, and release-readiness across all stories.
 
-- [ ] T043 [P] Refresh final feature-007 contracts and plan references in specs/007-ditto-realtime-sync/contracts/realtime-events.md, specs/007-ditto-realtime-sync/contracts/resync-sequence.md, and specs/007-ditto-realtime-sync/plan.md
-- [ ] T044 [P] Run and document backend validation for feature-007 in backend/package.json and specs/007-ditto-realtime-sync/quickstart.md
-- [ ] T045 [P] Run and document frontend validation for feature-007 in frontend/package.json and specs/007-ditto-realtime-sync/quickstart.md
-- [ ] T046 Harden operational troubleshooting and delivery notes in docs/operations-dashboard.md and infra/observability/runbook.md
-- [ ] T047 Validate that no frontend code connects directly to Ditto and that no polling fallback was introduced in frontend/src/ and backend/src/
-- [ ] T048 Mark implementation completion state in specs/007-ditto-realtime-sync/tasks.md after all validation passes
+- [X] T043 [P] Refresh final feature-007 contracts and plan references in specs/007-ditto-realtime-sync/contracts/realtime-events.md, specs/007-ditto-realtime-sync/contracts/resync-sequence.md, and specs/007-ditto-realtime-sync/plan.md
+- [X] T044 [P] Run and document backend validation for feature-007 in backend/package.json and specs/007-ditto-realtime-sync/quickstart.md
+- [X] T045 [P] Run and document frontend validation for feature-007 in frontend/package.json and specs/007-ditto-realtime-sync/quickstart.md
+- [X] T046 Harden operational troubleshooting and delivery notes in docs/operations-dashboard.md and infra/observability/runbook.md
+- [X] T047 Validate that no frontend code connects directly to Ditto and that no polling fallback was introduced in frontend/src/ and backend/src/
+- [X] T048 Mark implementation completion state in specs/007-ditto-realtime-sync/tasks.md after all validation passes
 
 ---
 

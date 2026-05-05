@@ -57,10 +57,16 @@ function authenticateRealtimeRequest(request: IncomingMessage): SessionUser | nu
 export class RealtimeSessionManager {
   private readonly listeners = new Set<(event: NormalizedEvent<unknown>) => void>();
   private readonly sessions = new Set<RealtimeSession>();
+  private readonly lifecycleListeners = new Set<() => void>();
 
   addListener(listener: (event: NormalizedEvent<unknown>) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  addLifecycleListener(listener: () => void): () => void {
+    this.lifecycleListeners.add(listener);
+    return () => this.lifecycleListeners.delete(listener);
   }
 
   addSession(socket: WebSocket, user: SessionUser): () => void {
@@ -70,9 +76,11 @@ export class RealtimeSessionManager {
       user
     };
     this.sessions.add(session);
+    this.notifyLifecycleListeners();
 
     return () => {
       this.sessions.delete(session);
+      this.notifyLifecycleListeners();
     };
   }
 
@@ -116,6 +124,10 @@ export class RealtimeSessionManager {
 
   getFrontendRealtimeState(): RealtimeConnectionState {
     return this.getActiveSessionCount() > 0 ? 'live' : 'connecting';
+  }
+
+  private notifyLifecycleListeners(): void {
+    this.lifecycleListeners.forEach((listener) => listener());
   }
 }
 

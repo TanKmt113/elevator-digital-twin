@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "validate:phase6": "npm run build && npm test",
+    "validate:phase7": "npm run build && npm test",
     "validate:phase5": "npm run build && npm test",
     "validate:phase4": "npm run build && npm test",
     "validate:phase2": "npm run build && npm test",

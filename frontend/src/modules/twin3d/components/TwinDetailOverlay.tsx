@@ -11,7 +11,13 @@ export function TwinDetailOverlay({
   projectionCount = 0,
   performanceSample,
   webglMessage,
-  projectionFailures = 0
+  projectionFailures = 0,
+  activeSessions = 0,
+  duplicateEventsDropped = 0,
+  outOfOrderEventsRejected = 0,
+  outOfScopeEventsRejected = 0,
+  malformedEventsRejected = 0,
+  staleMessage
 }: {
   elevator?: ElevatorViewModel;
   sceneRuntime?: TwinSceneRuntimeState;
@@ -20,6 +26,12 @@ export function TwinDetailOverlay({
   performanceSample?: TwinRenderSample;
   webglMessage?: string;
   projectionFailures?: number;
+  activeSessions?: number;
+  duplicateEventsDropped?: number;
+  outOfOrderEventsRejected?: number;
+  outOfScopeEventsRejected?: number;
+  malformedEventsRejected?: number;
+  staleMessage?: string;
 }): React.JSX.Element {
   const runtimeCopy = getRuntimeCopy(sceneRuntime);
 
@@ -35,6 +47,7 @@ export function TwinDetailOverlay({
       <p className="mt-2 text-sm text-slate-300">{runtimeCopy.message}</p>
       <div className="mt-4 grid gap-2 text-xs text-slate-400">
         <p>Focus mode: <span className="capitalize text-slate-100">{focusMode}</span></p>
+        <p>Active sessions: <span className="text-slate-100">{activeSessions}</span></p>
         {performanceSample ? (
           <p>
             Scene load: <span className="capitalize text-slate-100">{performanceSample.density}</span> ({performanceSample.renderTimeMs}ms)
@@ -45,8 +58,17 @@ export function TwinDetailOverlay({
             Projection failures: <span className="text-amber-100">{projectionFailures}</span>
           </p>
         ) : null}
+        {duplicateEventsDropped > 0 || outOfOrderEventsRejected > 0 || outOfScopeEventsRejected > 0 || malformedEventsRejected > 0 ? (
+          <p>
+            Rejections:
+            <span className="text-slate-100">
+              {` dup ${duplicateEventsDropped} · order ${outOfOrderEventsRejected} · scope ${outOfScopeEventsRejected} · malformed ${malformedEventsRejected}`}
+            </span>
+          </p>
+        ) : null}
       </div>
       {webglMessage ? <p className="mt-3 text-xs text-amber-100">{webglMessage}</p> : null}
+      {staleMessage ? <p className="mt-3 text-xs text-amber-100">{staleMessage}</p> : null}
       {elevator ? (
         <div className="ops-twin-overlay-stack mt-4 grid gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
           <h4 className="text-base font-semibold text-slate-100">{elevator.elevatorId}</h4>

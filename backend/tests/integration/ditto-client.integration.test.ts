@@ -186,7 +186,9 @@ describe('DittoClient', () => {
       thingId: 'org.example:L72-ELEV-A',
       time: '2026-05-05T10:00:00.000Z'
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await vi.waitFor(() => {
+      expect(accepted).toHaveBeenCalledTimes(1);
+    });
     consumer.stop();
 
     expect(accepted).toHaveBeenCalledWith(

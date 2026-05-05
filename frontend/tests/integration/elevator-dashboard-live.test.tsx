@@ -100,6 +100,43 @@ describe('elevator dashboard live updates', () => {
     });
   });
 
+  it('keeps the last accepted elevator state while rejected-event counters increase', () => {
+    useElevatorStore.setState({
+      elevators: {
+        A: {
+          elevatorId: 'A',
+          buildingId: 'L72',
+          status: 'moving',
+          currentFloor: 6,
+          direction: 'up',
+          doorState: 'closed',
+          healthState: 'normal',
+          stale: false
+        }
+      }
+    });
+
+    handleRealtimeEvent({
+      eventType: 'system.connection.state',
+      payload: {
+        connectionState: 'degraded',
+        dataState: 'ready',
+        duplicateEventsDropped: 1,
+        outOfOrderEventsRejected: 2,
+        outOfScopeEventsRejected: 3,
+        malformedEventsRejected: 4
+      }
+    });
+
+    expect(useElevatorStore.getState().elevators.A?.currentFloor).toBe(6);
+    expect(useRealtimeStore.getState()).toMatchObject({
+      duplicateEventsDropped: 1,
+      outOfOrderEventsRejected: 2,
+      outOfScopeEventsRejected: 3,
+      malformedEventsRejected: 4
+    });
+  });
+
   it('switches to resyncing and invokes recovery callback when resync is required', () => {
     let resyncInvoked = false;
 

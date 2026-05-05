@@ -73,6 +73,14 @@ export function deriveAppShellState(
     };
   }
 
+  if (connectionState === 'resyncing') {
+    return {
+      bannerTone: 'info',
+      title: 'Resynchronizing live state',
+      message: 'Refreshing the latest accepted backend snapshot before normal live delivery resumes.'
+    };
+  }
+
   return {
     bannerTone: 'neutral',
     title: 'Twin synchronization is live',

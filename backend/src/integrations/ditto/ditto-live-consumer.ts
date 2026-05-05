@@ -1,4 +1,5 @@
 import WebSocket from 'ws';
+import { settings } from '../../config/settings.js';
 import {
   DITTO_ELEVATOR_FIELDS,
   type DittoClient,
@@ -12,7 +13,12 @@ import {
 import type { ElevatorTwin } from '../../contracts/elevator.js';
 
 function isDittoThing(value: unknown): value is DittoThing {
-  return Boolean(value && typeof value === 'object' && 'thingId' in value);
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'thingId' in value &&
+      ('attributes' in value || 'features' in value)
+  );
 }
 
 function parseThingIdFromTopic(topic: string | undefined): string | undefined {
@@ -97,6 +103,9 @@ function normalizeLiveThing(
 export class DittoLiveConsumer {
   private socket?: WebSocket;
   private unsubscribe?: () => void;
+  private reconnectTimer?: NodeJS.Timeout;
+  private reconnectAttempt = 0;
+  private stopped = false;
 
   constructor(
     private readonly client: Pick<
@@ -109,31 +118,73 @@ export class DittoLiveConsumer {
   ) {}
 
   start(): void {
+    this.stopped = false;
     this.unsubscribe = this.client.subscribe((payload) => {
       void this.handleIncomingPayload(payload);
     });
 
+    this.connectSocket();
+  }
+
+  stop(): void {
+    this.stopped = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = undefined;
+    }
+
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
+    this.socket?.removeAllListeners();
+    this.socket?.close();
+    this.socket = undefined;
+  }
+
+  private connectSocket(): void {
     try {
       this.onConnectionStateChange?.('connecting');
       this.socket = new WebSocket(this.client.getRealtimeUrl(), {
         headers: this.client.createAuthorizationHeaders()
       });
-      this.socket.on('open', () => this.onConnectionStateChange?.('live'));
+      this.socket.on('open', () => {
+        this.reconnectAttempt = 0;
+        this.onConnectionStateChange?.('live');
+      });
       this.socket.on('message', (message) => {
         void this.handleIncomingPayload(message.toString());
       });
-      this.socket.on('error', () => this.onConnectionStateChange?.('degraded'));
-      this.socket.on('close', () => this.onConnectionStateChange?.('degraded'));
+      this.socket.on('error', () => {
+        this.onConnectionStateChange?.('degraded');
+        this.scheduleReconnect();
+      });
+      this.socket.on('close', () => {
+        this.onConnectionStateChange?.('degraded');
+        this.scheduleReconnect();
+      });
     } catch {
       this.onConnectionStateChange?.('degraded');
+      this.scheduleReconnect();
     }
   }
 
-  stop(): void {
-    this.unsubscribe?.();
-    this.unsubscribe = undefined;
-    this.socket?.close();
-    this.socket = undefined;
+  private scheduleReconnect(): void {
+    if (this.stopped || this.reconnectTimer) {
+      return;
+    }
+
+    const backoff = settings.reconnectBackoffMs;
+    const delay =
+      backoff[Math.min(this.reconnectAttempt, backoff.length - 1)] ?? backoff[backoff.length - 1] ?? 1000;
+
+    this.reconnectAttempt += 1;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = undefined;
+      if (this.stopped) {
+        return;
+      }
+
+      this.connectSocket();
+    }, delay);
   }
 
   private async handleIncomingPayload(payload: unknown): Promise<void> {
