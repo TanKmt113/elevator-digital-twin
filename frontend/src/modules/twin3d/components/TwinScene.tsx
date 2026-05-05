@@ -19,9 +19,27 @@ export function deriveTwinSceneState(
   selectedElevatorId: string | undefined,
   sceneFocusMode: TwinSceneFocusMode
 ): DerivedTwinSceneState {
-  const assets = elevators.map((elevator) =>
-    mapElevatorStateToScene(elevator, elevator.elevatorId === selectedElevatorId)
+  const sortedElevators = [...elevators].sort((left, right) =>
+    left.elevatorId.localeCompare(right.elevatorId)
   );
+  const assets = sortedElevators.map((elevator, index) => {
+    const mappedAsset = mapElevatorStateToScene(
+      elevator,
+      elevator.elevatorId === selectedElevatorId
+    );
+
+    return {
+      ...mappedAsset,
+      shaftIndex: index,
+      x: index * 3.8,
+      worldPosition: {
+        x: index * 3.8,
+        y: mappedAsset.worldPosition.y,
+        z: mappedAsset.isSelected ? 0.35 : 0
+      },
+      shaftLabel: `Shaft ${index + 1}`
+    };
+  });
   const visibleAssets =
     sceneFocusMode === 'selected' && selectedElevatorId
       ? assets.filter((asset) => asset.elevatorId === selectedElevatorId)
@@ -34,6 +52,7 @@ export function deriveTwinSceneState(
 }
 
 export function TwinScene(): React.JSX.Element {
+  const sectionRef = React.useRef<HTMLElement | null>(null);
   const elevatorRecord = useElevatorStore((state) => state.elevators);
   const selection = useTwinSelection();
   const sceneRuntime = useRealtimeStore((state) => state.sceneRuntime);
@@ -54,6 +73,7 @@ export function TwinScene(): React.JSX.Element {
     visibleAssets.length,
     hasWebglSupport
   );
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
 
   React.useEffect(() => {
     const nextSupport = detectWebglSupport();
@@ -73,8 +93,36 @@ export function TwinScene(): React.JSX.Element {
     useRealtimeStore.getState().setProjectionFailures(projectionFailuresCount);
   }, [assets]);
 
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === sectionRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = React.useCallback(() => {
+    const element = sectionRef.current;
+    if (!element) {
+      return;
+    }
+
+    if (document.fullscreenElement === element) {
+      void document.exitFullscreen();
+      return;
+    }
+
+    void element.requestFullscreen();
+  }, []);
+
   return (
-    <section className="ops-panel ops-twin-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
+    <section
+      ref={sectionRef}
+      className={`ops-panel ops-twin-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${isFullscreen ? 'ops-twin-panel-fullscreen' : ''}`}
+    >
       <div className="ops-panel-head mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -87,11 +135,13 @@ export function TwinScene(): React.JSX.Element {
           canFocusSelected={Boolean(selection.selectedElevatorId)}
           onFocusOverview={selection.focusOverview}
           onFocusSelected={selection.focusSelected}
+          onToggleFullscreen={toggleFullscreen}
+          isFullscreen={isFullscreen}
         />
       </div>
-      <div className="ops-twin-grid grid gap-3 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className={`ops-twin-grid grid gap-3 ${isFullscreen ? 'ops-twin-grid-fullscreen' : 'lg:grid-cols-[minmax(0,1fr)_280px]'}`}>
         <div
-          className="ops-twin-stage grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 md:grid-cols-2 xl:grid-cols-3"
+          className={`ops-twin-stage grid min-h-56 gap-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-4 ${isFullscreen ? 'ops-twin-stage-fullscreen' : 'md:grid-cols-2 xl:grid-cols-3'}`}
           data-scene-runtime={sceneRuntime}
           data-focus-mode={selection.sceneFocusMode}
         >
@@ -108,6 +158,7 @@ export function TwinScene(): React.JSX.Element {
               assets={visibleAssets}
               focusMode={selection.sceneFocusMode}
               selectedElevatorId={selection.selectedElevatorId}
+              transitionState={selection.cameraTransitionState}
               hasWebglSupport={hasWebglSupport}
               onSelect={selection.selectElevator}
               onTransitionStateChange={selection.setCameraTransitionState}

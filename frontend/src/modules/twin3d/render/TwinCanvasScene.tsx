@@ -1,6 +1,9 @@
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
-import type { TwinSceneFocusMode } from '../../../store/elevator-store';
+import type {
+  TwinCameraTransitionState,
+  TwinSceneFocusMode
+} from '../../../store/elevator-store';
 import type { TwinSceneAsset } from '../services/map-elevator-state-to-scene';
 import { ElevatorShaftGroup } from './ElevatorShaftGroup';
 import { TwinCameraController } from './TwinCameraController';
@@ -11,6 +14,7 @@ export function TwinCanvasScene({
   assets,
   focusMode,
   selectedElevatorId,
+  transitionState,
   hasWebglSupport,
   onSelect,
   onTransitionStateChange
@@ -18,6 +22,7 @@ export function TwinCanvasScene({
   assets: TwinSceneAsset[];
   focusMode: TwinSceneFocusMode;
   selectedElevatorId?: string;
+  transitionState: TwinCameraTransitionState;
   hasWebglSupport: boolean;
   onSelect: (elevatorId: string) => void;
   onTransitionStateChange?: (state: 'idle' | 'transitioning') => void;
@@ -61,6 +66,7 @@ export function TwinCanvasScene({
           assets={assets}
           focusMode={focusMode}
           selectedElevatorId={selectedElevatorId}
+          transitionState={transitionState}
           onTransitionStateChange={onTransitionStateChange}
         />
       </Canvas>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { TwinSceneAsset } from '../services/map-elevator-state-to-scene';
 
@@ -21,14 +22,14 @@ export function ElevatorCabinMesh({
 
   return (
     <group
-      position={[asset.worldPosition.x, asset.worldPosition.y, asset.worldPosition.z]}
+      position={[0, asset.worldPosition.y, asset.worldPosition.z]}
       onClick={(event: ThreeEvent<MouseEvent>) => {
         event.stopPropagation();
         onSelect(asset.elevatorId);
       }}
     >
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.2, asset.cabinHeight, 1.2]} />
+        <boxGeometry args={[1.14, asset.cabinHeight, 1.08]} />
         <meshStandardMaterial color={bodyColor} metalness={0.24} roughness={0.48} />
       </mesh>
       <mesh position={[-0.23 - doorOffset, 0, 0.62]}>
@@ -45,6 +46,15 @@ export function ElevatorCabinMesh({
           <meshStandardMaterial emissive="#7dd3c7" color="#7dd3c7" emissiveIntensity={1.6} />
         </mesh>
       ) : null}
+      <Text
+        color="#f4fbfa"
+        fontSize={0.24}
+        anchorX="center"
+        anchorY="middle"
+        position={[0, asset.cabinHeight * 0.98, 0.72]}
+      >
+        {`F${asset.floorPosition + 1}`}
+      </Text>
     </group>
   );
 }

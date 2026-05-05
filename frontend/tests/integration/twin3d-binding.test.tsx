@@ -85,7 +85,11 @@ describe('twin3d binding', () => {
     });
 
     const anchor = deriveCameraAnchor([asset], 'selected', 'E5');
-    expect(anchor.target).toEqual([asset.worldPosition.x, asset.worldPosition.y, asset.worldPosition.z]);
+    expect(anchor.target).toEqual([
+      asset.worldPosition.x,
+      asset.worldPosition.y + 0.5,
+      asset.worldPosition.z
+    ]);
     expect(anchor.position[1]).toBeGreaterThan(anchor.target[1]);
   });
 
