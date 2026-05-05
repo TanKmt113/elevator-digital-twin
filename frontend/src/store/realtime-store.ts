@@ -8,11 +8,14 @@ export type RealtimeConnectionState =
   | 'resyncing';
 
 export type DashboardDataState = 'loading' | 'ready' | 'empty' | 'degraded';
+export type TwinSceneRuntimeState = 'loading' | 'ready' | 'empty' | 'stale' | 'degraded';
 
 interface RealtimeState {
   connected: boolean;
   connectionState: RealtimeConnectionState;
   dataState: DashboardDataState;
+  sceneRuntime: TwinSceneRuntimeState;
+  projectionCount: number;
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
   duplicateEventsDropped: number;
@@ -22,6 +25,7 @@ interface RealtimeState {
   setDataState: (dataState: DashboardDataState) => void;
   setConnected: (connected: boolean) => void;
   setStaleMessage: (message?: string) => void;
+  setSceneRuntime: (sceneRuntime: TwinSceneRuntimeState, projectionCount?: number) => void;
   applySynchronizationState: (state: Partial<Omit<RealtimeState, 'applySynchronizationState'>>) => void;
 }
 
@@ -29,6 +33,8 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   connected: false,
   connectionState: 'connecting',
   dataState: 'loading',
+  sceneRuntime: 'loading',
+  projectionCount: 0,
   lastBootstrapAt: undefined,
   lastLiveEventAt: undefined,
   duplicateEventsDropped: 0,
@@ -46,6 +52,7 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
       connectionState: connected ? 'live' : 'connecting'
     }),
   setStaleMessage: (staleMessage) => set({ staleMessage }),
+  setSceneRuntime: (sceneRuntime, projectionCount = 0) => set({ sceneRuntime, projectionCount }),
   applySynchronizationState: (state) =>
     set((current) => ({
       ...current,

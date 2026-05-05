@@ -13,19 +13,24 @@ export interface ElevatorViewModel {
   stale: boolean;
 }
 
+export type ElevatorSelectionSource = 'list' | 'detail' | '3d' | 'system';
+export type TwinSceneFocusMode = 'overview' | 'selected';
+
 interface ElevatorStoreState {
   elevators: Record<string, ElevatorViewModel>;
   selectedBuildingId: string;
   selectedElevatorId?: string;
-  selectionSource?: 'list' | 'detail' | '3d' | 'system';
+  selectionSource?: ElevatorSelectionSource;
   selectedAt?: string;
+  sceneFocusMode: TwinSceneFocusMode;
   upsertElevator: (elevator: ElevatorViewModel) => void;
   replaceElevators: (elevators: ElevatorViewModel[], buildingId?: string) => void;
   selectElevator: (
     elevatorId: string | undefined,
-    source: 'list' | 'detail' | '3d' | 'system',
+    source: ElevatorSelectionSource,
     buildingId?: string
   ) => void;
+  setSceneFocusMode: (mode: TwinSceneFocusMode) => void;
 }
 
 function getDefaultBuildingId(): string {
@@ -38,6 +43,7 @@ export const useElevatorStore = create<ElevatorStoreState>((set) => ({
   selectedElevatorId: undefined,
   selectionSource: undefined,
   selectedAt: undefined,
+  sceneFocusMode: 'overview',
   upsertElevator: (elevator) =>
     set((state) => ({
       elevators: {
@@ -55,7 +61,8 @@ export const useElevatorStore = create<ElevatorStoreState>((set) => ({
         selectedBuildingId: buildingId ?? state.selectedBuildingId,
         selectedElevatorId,
         selectionSource: selectedElevatorId ? state.selectionSource : undefined,
-        selectedAt: selectedElevatorId ? state.selectedAt : undefined
+        selectedAt: selectedElevatorId ? state.selectedAt : undefined,
+        sceneFocusMode: selectedElevatorId ? state.sceneFocusMode : 'overview'
       };
     }),
   selectElevator: (selectedElevatorId, selectionSource, buildingId) =>
@@ -63,6 +70,16 @@ export const useElevatorStore = create<ElevatorStoreState>((set) => ({
       selectedBuildingId: buildingId ?? state.selectedBuildingId,
       selectedElevatorId,
       selectionSource,
-      selectedAt: selectedElevatorId ? new Date().toISOString() : undefined
+      selectedAt: selectedElevatorId ? new Date().toISOString() : undefined,
+      sceneFocusMode: selectedElevatorId ? 'selected' : 'overview'
+    })),
+  setSceneFocusMode: (sceneFocusMode) =>
+    set((state) => ({
+      sceneFocusMode,
+      selectedElevatorId: sceneFocusMode === 'overview' ? state.selectedElevatorId : state.selectedElevatorId,
+      selectionSource:
+        sceneFocusMode === 'overview' && state.selectionSource === undefined
+          ? 'system'
+          : state.selectionSource
     }))
 }));

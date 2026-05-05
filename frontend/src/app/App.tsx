@@ -6,7 +6,12 @@ import { AlertPanel } from '../modules/alerts/components/AlertPanel';
 import { RiskWarningPanel } from '../modules/analytics/components/RiskWarningPanel';
 import { TwinScene } from '../modules/twin3d/components/TwinScene';
 import { useElevatorStore } from '../store/elevator-store';
-import { useRealtimeStore, type DashboardDataState, type RealtimeConnectionState } from '../store/realtime-store';
+import {
+  useRealtimeStore,
+  type DashboardDataState,
+  type RealtimeConnectionState,
+  type TwinSceneRuntimeState
+} from '../store/realtime-store';
 import { useSessionStore } from '../store/session-store';
 import { ApiError, fetchElevatorBootstrap } from '../services/api/client';
 
@@ -107,14 +112,39 @@ export function deriveRealtimeStateFromBootstrap(
   };
 }
 
+export function deriveSceneRuntimeState(
+  connectionState: RealtimeConnectionState,
+  dataState: DashboardDataState,
+  projectionCount: number
+): TwinSceneRuntimeState {
+  if (dataState === 'loading') {
+    return 'loading';
+  }
+
+  if (dataState === 'empty' || projectionCount === 0) {
+    return 'empty';
+  }
+
+  if (connectionState === 'stale' || connectionState === 'resyncing') {
+    return 'stale';
+  }
+
+  if (dataState === 'degraded' || connectionState === 'degraded') {
+    return 'degraded';
+  }
+
+  return 'ready';
+}
+
 export function App(): React.JSX.Element {
-  const elevators = Object.values(useElevatorStore((state) => state.elevators));
+  const elevatorRecord = useElevatorStore((state) => state.elevators);
   const selectedBuildingId = useElevatorStore((state) => state.selectedBuildingId);
   const connectionState = useRealtimeStore((state) => state.connectionState);
   const dataState = useRealtimeStore((state) => state.dataState);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
   const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
   const token = useSessionStore((state) => state.token);
+  const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
   const featuredElevator =
     elevators.find((elevator) => elevator.elevatorId === selectedElevatorId) ?? elevators[0];
@@ -138,9 +168,17 @@ export function App(): React.JSX.Element {
         }
 
         useElevatorStore.getState().replaceElevators(response.items, selectedBuildingId);
-        useRealtimeStore
-          .getState()
-          .applySynchronizationState(deriveRealtimeStateFromBootstrap(response.meta.synchronization, response.items.length));
+        const realtimeState = deriveRealtimeStateFromBootstrap(response.meta.synchronization, response.items.length);
+
+        useRealtimeStore.getState().applySynchronizationState({
+          ...realtimeState,
+          sceneRuntime: deriveSceneRuntimeState(
+            realtimeState.connectionState,
+            realtimeState.dataState,
+            response.items.length
+          ),
+          projectionCount: response.items.length
+        });
       })
       .catch((error: unknown) => {
         if (cancelled) {
@@ -162,7 +200,9 @@ export function App(): React.JSX.Element {
         useRealtimeStore.getState().applySynchronizationState({
           connectionState: 'degraded',
           dataState: 'degraded',
-          staleMessage: message
+          staleMessage: message,
+          sceneRuntime: 'degraded',
+          projectionCount: 0
         });
       });
 

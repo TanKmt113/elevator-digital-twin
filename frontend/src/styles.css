@@ -204,9 +204,75 @@
   font-weight: 700;
 }
 
+.ops-icon-button.is-active {
+  border-color: rgba(125, 211, 199, 0.58);
+  background: rgba(125, 211, 199, 0.18);
+}
+
+.ops-icon-button[disabled] {
+  opacity: 0.45;
+}
+
 .ops-twin-stage {
   min-height: 240px;
   align-content: start;
+  background:
+    linear-gradient(180deg, rgba(29, 54, 62, 0.22), rgba(4, 11, 16, 0.5)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(125, 211, 199, 0.05) 0,
+      rgba(125, 211, 199, 0.05) 1px,
+      transparent 1px,
+      transparent 92px
+    );
+}
+
+.ops-twin-car {
+  position: relative;
+  min-height: 122px;
+  overflow: hidden;
+}
+
+.ops-twin-car::after {
+  content: '';
+  position: absolute;
+  inset: auto 12px 12px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(125, 211, 199, 0.12), rgba(108, 199, 232, 0.46));
+}
+
+.ops-scene-tone {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-scene-tone-green {
+  background: rgba(74, 222, 128, 0.14);
+  color: #b4f0c6;
+}
+
+.ops-scene-tone-yellow {
+  background: rgba(250, 204, 21, 0.14);
+  color: #f7e0a2;
+}
+
+.ops-scene-tone-red {
+  background: rgba(248, 113, 113, 0.14);
+  color: #f6b1b1;
+}
+
+.ops-scene-tone-gray {
+  background: rgba(148, 163, 184, 0.16);
+  color: #d0dae6;
+}
+
+.ops-twin-overlay-stack {
+  max-height: 220px;
+  overflow: auto;
 }
 
 @media (max-width: 960px) {

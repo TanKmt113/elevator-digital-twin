@@ -15,17 +15,19 @@ Implementation scaffold for the Keangnam Landmark 72 smart building digital twin
 - Project-specific integration notes: [docs/ditto-integration.md](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-integration.md)
 - Backend Swagger UI: `http://localhost:3000/docs`
 
-## Phase 4 Ditto End-to-End Runtime
+## Phase 5 3D Operations Runtime
 
-- Active phase-4 feature: [specs/004-ditto-end-to-end/spec.md](specs/004-ditto-end-to-end/spec.md)
-- Active phase-4 implementation plan: [specs/004-ditto-end-to-end/plan.md](specs/004-ditto-end-to-end/plan.md)
-- Active phase-4 task list: [specs/004-ditto-end-to-end/tasks.md](specs/004-ditto-end-to-end/tasks.md)
+- Active phase-5 feature: [specs/005-3d-operations-runtime/spec.md](specs/005-3d-operations-runtime/spec.md)
+- Active phase-5 implementation plan: [specs/005-3d-operations-runtime/plan.md](specs/005-3d-operations-runtime/plan.md)
+- Active phase-5 task list: [specs/005-3d-operations-runtime/tasks.md](specs/005-3d-operations-runtime/tasks.md)
 
-## Phase 4 Validation
+## Phase 5 Validation
 
-Run the Ditto-backed runtime checks by workspace:
+Run the 3D-operations runtime checks by workspace:
 
-- Backend: `cd backend && npm run validate:phase4`
-- Frontend: `cd frontend && npm run validate:phase4`
+- Backend: `cd backend && npm run validate:phase5`
+- Frontend: `cd frontend && npm run validate:phase5`
 
-This phase validates Ditto bootstrap, backend-mediated live synchronization, degraded readiness, scoped operator access, and list/detail/3D consistency without starting or depending on the AI service.
+This phase validates the operator-facing 3D runtime on top of the Ditto-backed backend, including readable scene projections, synchronized selection, degraded-state visibility, and responsive scene behavior without starting or depending on the AI service.
+
+The frontend 3D runtime remains backend-mediated in this phase: operator views consume `/elevators` bootstrap and shared realtime state rather than calling Ditto directly.

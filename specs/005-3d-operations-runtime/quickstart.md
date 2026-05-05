@@ -62,8 +62,21 @@ VITE_OPERATOR_ROLE=operator
 - Live updates appear consistently in all dashboard projections.
 - Stale and degraded conditions are visible in the scene.
 - The scene remains responsive under representative local load.
+- The frontend reaches operational state only through backend APIs and backend-mediated realtime state, not direct Ditto calls.
 
 ## Validation Commands
+
+```sh
+cd backend
+npm run validate:phase5
+```
+
+```sh
+cd frontend
+npm run validate:phase5
+```
+
+Equivalent direct workspace commands:
 
 ```sh
 cd backend

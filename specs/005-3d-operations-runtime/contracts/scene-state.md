@@ -18,14 +18,20 @@ Each scene projection must carry:
 
 - `elevatorId`
 - `buildingId`
+- `shaftIndex`
 - `floorPosition`
+- `x`
+- `y`
+- `z`
 - `movementDirection`
 - `doorVisualState`
 - `healthTone`
+- `color`
 - `isSelected`
-- `isHighlighted`
+- `highlighted`
 - `isStale`
 - `visualStatus`
+- `label`
 
 ## Mapping Rules
 
@@ -33,6 +39,8 @@ Each scene projection must carry:
 - Missing or invalid source values map to governed `unknown` or degraded equivalents.
 - Scene readiness must not be marked `ready` when there are zero valid projections in scope.
 - Stale and degraded scene states must preserve the last accepted projection when available.
+- `maintenance`, `fault`, `offline`, and `stale` visuals must remain distinguishable without requiring raw Ditto payload access in the frontend.
+- Projection count and render-density sampling are part of the governed scene runtime and may be surfaced in operator overlays.
 
 ## Scene-Level Failure Semantics
 

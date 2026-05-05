@@ -28,9 +28,9 @@ description: "Task list for 3D Operations Runtime"
 
 **Purpose**: Establish phase-5 references, validation entry points, and 3D-specific test scaffolding.
 
-- [ ] T001 Update phase-5 references in README.md, AGENTS.md, and docs/operations-dashboard.md for specs/005-3d-operations-runtime/
-- [ ] T002 [P] Add phase-5 validation scripts and 3D runtime notes in backend/package.json, frontend/package.json, and specs/005-3d-operations-runtime/quickstart.md
-- [ ] T003 [P] Add 3D operations runtime test scaffolding in frontend/tests/integration/twin3d-operations.test.tsx and frontend/tests/e2e/twin3d-operations.spec.ts
+- [X] T001 Update phase-5 references in README.md, AGENTS.md, and docs/operations-dashboard.md for specs/005-3d-operations-runtime/
+- [X] T002 [P] Add phase-5 validation scripts and 3D runtime notes in backend/package.json, frontend/package.json, and specs/005-3d-operations-runtime/quickstart.md
+- [X] T003 [P] Add 3D operations runtime test scaffolding in frontend/tests/integration/twin3d-operations.test.tsx and frontend/tests/e2e/twin3d-operations.spec.ts
 
 ---
 
@@ -40,10 +40,10 @@ description: "Task list for 3D Operations Runtime"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Define shared scene focus and runtime contracts in frontend/src/store/elevator-store.ts and frontend/src/store/realtime-store.ts
-- [ ] T005 [P] Extend governed scene projection types and performance samples in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts and frontend/src/modules/twin3d/services/twin3d-performance.ts
-- [ ] T006 [P] Add shared selection and scene-runtime regression tests in frontend/tests/integration/twin3d-binding.test.tsx and frontend/tests/integration/app-shell.test.ts
-- [ ] T007 Expose scene synchronization and degraded-state foundations in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T004 Define shared scene focus and runtime contracts in frontend/src/store/elevator-store.ts and frontend/src/store/realtime-store.ts
+- [X] T005 [P] Extend governed scene projection types and performance samples in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts and frontend/src/modules/twin3d/services/twin3d-performance.ts
+- [X] T006 [P] Add shared selection and scene-runtime regression tests in frontend/tests/integration/twin3d-binding.test.tsx and frontend/tests/integration/app-shell.test.ts
+- [X] T007 Expose scene synchronization and degraded-state foundations in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
 
 **Checkpoint**: Shared 3D scene contracts, focus state, and synchronization semantics are ready.
 
@@ -57,16 +57,16 @@ description: "Task list for 3D Operations Runtime"
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T008 [P] [US1] Add scene bootstrap readability test in frontend/tests/integration/twin3d-operations.test.tsx
-- [ ] T009 [P] [US1] Add projection-mapping regression test for floor, door, and health cues in frontend/tests/integration/twin3d-binding.test.tsx
-- [ ] T010 [US1] Add local scene bootstrap validation coverage in frontend/tests/e2e/twin3d-operations.spec.ts
+- [X] T008 [P] [US1] Add scene bootstrap readability test in frontend/tests/integration/twin3d-operations.test.tsx
+- [X] T009 [P] [US1] Add projection-mapping regression test for floor, door, and health cues in frontend/tests/integration/twin3d-binding.test.tsx
+- [X] T010 [US1] Add local scene bootstrap validation coverage in frontend/tests/e2e/twin3d-operations.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Extend scene asset mapping for spatial position and visual state cues in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts
-- [ ] T012 [P] [US1] Render readable elevator stage states and explicit empty-scene behavior in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/ElevatorMesh.tsx
-- [ ] T013 [US1] Surface scene readiness and state interpretation in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
-- [ ] T014 [US1] Document 3D scene bootstrap validation in specs/005-3d-operations-runtime/quickstart.md and docs/operations-dashboard.md
+- [X] T011 [P] [US1] Extend scene asset mapping for spatial position and visual state cues in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts
+- [X] T012 [P] [US1] Render readable elevator stage states and explicit empty-scene behavior in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/ElevatorMesh.tsx
+- [X] T013 [US1] Surface scene readiness and state interpretation in frontend/src/app/App.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T014 [US1] Document 3D scene bootstrap validation in specs/005-3d-operations-runtime/quickstart.md and docs/operations-dashboard.md
 
 **Checkpoint**: The 3D scene is a readable spatial overview of the active building.
 
@@ -80,15 +80,15 @@ description: "Task list for 3D Operations Runtime"
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T015 [P] [US2] Add selection synchronization integration tests in frontend/tests/integration/twin3d-binding.test.tsx and frontend/tests/integration/elevator-dashboard-live.test.tsx
-- [ ] T016 [P] [US2] Add focus continuity regression coverage for resync and missing selection cases in frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T015 [P] [US2] Add selection synchronization integration tests in frontend/tests/integration/twin3d-binding.test.tsx and frontend/tests/integration/elevator-dashboard-live.test.tsx
+- [X] T016 [P] [US2] Add focus continuity regression coverage for resync and missing selection cases in frontend/tests/integration/twin3d-resilience.test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Extend shared selected-elevator and focus-mode state in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
-- [ ] T018 [P] [US2] Implement scene-to-list/detail selection synchronization in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
-- [ ] T019 [US2] Implement operator overview and selected-elevator focus controls in frontend/src/modules/twin3d/components/TwinControls.tsx and frontend/src/modules/twin3d/components/TwinScene.tsx
-- [ ] T020 [US2] Preserve or predictably clear focus across bootstrap refresh in frontend/src/app/App.tsx and frontend/src/store/elevator-store.ts
+- [X] T017 [P] [US2] Extend shared selected-elevator and focus-mode state in frontend/src/store/elevator-store.ts and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
+- [X] T018 [P] [US2] Implement scene-to-list/detail selection synchronization in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx
+- [X] T019 [US2] Implement operator overview and selected-elevator focus controls in frontend/src/modules/twin3d/components/TwinControls.tsx and frontend/src/modules/twin3d/components/TwinScene.tsx
+- [X] T020 [US2] Preserve or predictably clear focus across bootstrap refresh in frontend/src/app/App.tsx and frontend/src/store/elevator-store.ts
 
 **Checkpoint**: Selection and focus are shared reliably across list, detail, and 3D surfaces.
 
@@ -102,15 +102,15 @@ description: "Task list for 3D Operations Runtime"
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T021 [P] [US3] Add live scene update and degraded-state tests in frontend/tests/integration/elevator-dashboard-live.test.tsx and frontend/tests/integration/twin3d-resilience.test.tsx
-- [ ] T022 [P] [US3] Add projection failure-mode coverage for malformed or unknown scene values in frontend/tests/integration/twin3d-binding.test.tsx
+- [X] T021 [P] [US3] Add live scene update and degraded-state tests in frontend/tests/integration/elevator-dashboard-live.test.tsx and frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T022 [P] [US3] Add projection failure-mode coverage for malformed or unknown scene values in frontend/tests/integration/twin3d-binding.test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T023 [P] [US3] Extend scene asset state for maintenance, fault, offline, and degraded visuals in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts and frontend/src/modules/twin3d/components/ElevatorMesh.tsx
-- [ ] T024 [P] [US3] Apply realtime synchronization cues to scene overlay and empty states in frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx and frontend/src/app/App.tsx
-- [ ] T025 [US3] Wire live scene updates without disruptive focus resets in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
-- [ ] T026 [US3] Align scene stale and degraded semantics with shared realtime state in frontend/src/store/realtime-store.ts and frontend/src/services/realtime/elevator-events.ts
+- [X] T023 [P] [US3] Extend scene asset state for maintenance, fault, offline, and degraded visuals in frontend/src/modules/twin3d/services/map-elevator-state-to-scene.ts and frontend/src/modules/twin3d/components/ElevatorMesh.tsx
+- [X] T024 [P] [US3] Apply realtime synchronization cues to scene overlay and empty states in frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx and frontend/src/app/App.tsx
+- [X] T025 [US3] Wire live scene updates without disruptive focus resets in frontend/src/modules/twin3d/components/TwinScene.tsx and frontend/src/modules/twin3d/hooks/useTwinSelection.ts
+- [X] T026 [US3] Align scene stale and degraded semantics with shared realtime state in frontend/src/store/realtime-store.ts and frontend/src/services/realtime/elevator-events.ts
 
 **Checkpoint**: Live operational changes are reflected consistently in the 3D scene.
 
@@ -124,15 +124,15 @@ description: "Task list for 3D Operations Runtime"
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T027 [P] [US4] Add performance-signal and overlay-readability tests in frontend/tests/integration/twin3d-operations.test.tsx and frontend/tests/integration/twin3d-resilience.test.tsx
-- [ ] T028 [P] [US4] Add repeated selection and live-update operator validation coverage in frontend/tests/e2e/twin3d-operations.spec.ts
+- [X] T027 [P] [US4] Add performance-signal and overlay-readability tests in frontend/tests/integration/twin3d-operations.test.tsx and frontend/tests/integration/twin3d-resilience.test.tsx
+- [X] T028 [P] [US4] Add repeated selection and live-update operator validation coverage in frontend/tests/e2e/twin3d-operations.spec.ts
 
 ### Implementation for User Story 4
 
-- [ ] T029 [P] [US4] Implement overlay density and readability controls in frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx and frontend/src/styles.css
-- [ ] T030 [P] [US4] Implement render-budget and projection-count sampling in frontend/src/modules/twin3d/services/twin3d-performance.ts and frontend/src/modules/twin3d/components/TwinScene.tsx
-- [ ] T031 [US4] Stabilize scene updates under repeated selection and live changes in frontend/src/modules/twin3d/hooks/useTwinSelection.ts and frontend/src/modules/twin3d/components/TwinScene.tsx
-- [ ] T032 [US4] Document 3D runtime validation and performance expectations in specs/005-3d-operations-runtime/quickstart.md and docs/operations-dashboard.md
+- [X] T029 [P] [US4] Implement overlay density and readability controls in frontend/src/modules/twin3d/components/TwinDetailOverlay.tsx and frontend/src/styles.css
+- [X] T030 [P] [US4] Implement render-budget and projection-count sampling in frontend/src/modules/twin3d/services/twin3d-performance.ts and frontend/src/modules/twin3d/components/TwinScene.tsx
+- [X] T031 [US4] Stabilize scene updates under repeated selection and live changes in frontend/src/modules/twin3d/hooks/useTwinSelection.ts and frontend/src/modules/twin3d/components/TwinScene.tsx
+- [X] T032 [US4] Document 3D runtime validation and performance expectations in specs/005-3d-operations-runtime/quickstart.md and docs/operations-dashboard.md
 
 **Checkpoint**: The 3D scene remains usable and responsive under representative local load.
 
@@ -142,11 +142,11 @@ description: "Task list for 3D Operations Runtime"
 
 **Purpose**: Final contract alignment, validation, documentation, and release readiness.
 
-- [ ] T033 [P] Refresh final 3D scene contracts in specs/005-3d-operations-runtime/contracts/scene-state.md and specs/005-3d-operations-runtime/contracts/scene-interactions.md
-- [ ] T034 [P] Run and document phase-5 backend and frontend validation in backend/package.json, frontend/package.json, and specs/005-3d-operations-runtime/quickstart.md
-- [ ] T035 Harden phase-5 references and operator runbook notes in AGENTS.md, README.md, and docs/operations-dashboard.md
-- [ ] T036 Validate no frontend direct Ditto access and no AI-service dependency in frontend/src/ and specs/005-3d-operations-runtime/quickstart.md
-- [ ] T037 Mark implementation completion state in specs/005-3d-operations-runtime/tasks.md after all validation passes
+- [X] T033 [P] Refresh final 3D scene contracts in specs/005-3d-operations-runtime/contracts/scene-state.md and specs/005-3d-operations-runtime/contracts/scene-interactions.md
+- [X] T034 [P] Run and document phase-5 backend and frontend validation in backend/package.json, frontend/package.json, and specs/005-3d-operations-runtime/quickstart.md
+- [X] T035 Harden phase-5 references and operator runbook notes in AGENTS.md, README.md, and docs/operations-dashboard.md
+- [X] T036 Validate no frontend direct Ditto access and no AI-service dependency in frontend/src/ and specs/005-3d-operations-runtime/quickstart.md
+- [X] T037 Mark implementation completion state in specs/005-3d-operations-runtime/tasks.md after all validation passes
 
 ---
 

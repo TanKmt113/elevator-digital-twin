@@ -19,6 +19,11 @@ Define how selection and focus behave across the 3D scene and the rest of the op
 - `overview`: The scene shows the building-wide elevator fleet without locking on a single elevator.
 - `selected`: The scene visually focuses one selected elevator while preserving surrounding context.
 
+## Operator Controls
+
+- The scene exposes an overview action that returns to building-wide context without erasing the current selected elevator identity.
+- The scene exposes a selected-focus action that becomes active only when a selected elevator exists.
+
 ## Selection Continuity Rules
 
 - Live updates must not clear selection if the selected elevator remains in scope.
@@ -36,3 +41,4 @@ Define how selection and focus behave across the 3D scene and the rest of the op
 - Operators must have a reliable overview mode and a reliable selected-elevator focus mode.
 - Normal live updates must not cause disruptive camera jumps while the building scope remains unchanged.
 - Reset or overview actions must return the operator to a predictable building-wide view.
+- Repeated focus changes must not create render loops or uncontrolled state churn in the shared selection store.

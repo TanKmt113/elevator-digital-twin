@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveAppShellState } from '../../src/app/App';
+import { deriveAppShellState, deriveSceneRuntimeState } from '../../src/app/App';
 import { handleRealtimeEvent } from '../../src/services/realtime/elevator-events';
 import { useElevatorStore } from '../../src/store/elevator-store';
 import { useRealtimeStore } from '../../src/store/realtime-store';
@@ -33,6 +33,7 @@ describe('elevator dashboard live updates', () => {
     });
     expect(useElevatorStore.getState().elevators.A?.currentFloor).toBe(12);
     expect(useRealtimeStore.getState().dataState).toBe('ready');
+    expect(useRealtimeStore.getState().sceneRuntime).toBe('ready');
     expect(deriveAppShellState('live', 'ready', 1).title).toBe('Twin synchronization is live');
   });
 
@@ -52,9 +53,14 @@ describe('elevator dashboard live updates', () => {
       connected: false,
       connectionState: 'degraded',
       dataState: 'degraded',
+      sceneRuntime: 'degraded',
       duplicateEventsDropped: 2,
       outOfOrderEventsRejected: 1,
       staleMessage: 'ditto unavailable'
     });
+  });
+
+  it('keeps scene runtime stale during live synchronization delay', () => {
+    expect(deriveSceneRuntimeState('stale', 'ready', 2)).toBe('stale');
   });
 });

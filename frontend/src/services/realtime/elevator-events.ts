@@ -5,6 +5,7 @@ import {
   type DashboardDataState,
   type RealtimeConnectionState
 } from '../../store/realtime-store';
+import { deriveSceneRuntimeState } from '../../app/App';
 
 interface ElevatorStateEnvelope {
   eventType: string;
@@ -16,6 +17,8 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
     useElevatorStore.getState().upsertElevator(event.payload as ElevatorViewModel);
     useRealtimeStore.getState().setConnected(true);
     useRealtimeStore.getState().setDataState('ready');
+    const projectionCount = Object.keys(useElevatorStore.getState().elevators).length;
+    useRealtimeStore.getState().setSceneRuntime('ready', projectionCount);
   }
 
   if (event.eventType === 'system.connection.state') {
@@ -31,6 +34,15 @@ export function handleRealtimeEvent(event: ElevatorStateEnvelope): void {
     useRealtimeStore.getState().applySynchronizationState({
       connectionState: isConnectionState(payload.connectionState) ? payload.connectionState : undefined,
       dataState: isDataState(payload.dataState) ? payload.dataState : undefined,
+      sceneRuntime:
+        isConnectionState(payload.connectionState) && isDataState(payload.dataState)
+          ? deriveSceneRuntimeState(
+              payload.connectionState,
+              payload.dataState,
+              Object.keys(useElevatorStore.getState().elevators).length
+            )
+          : undefined,
+      projectionCount: Object.keys(useElevatorStore.getState().elevators).length,
       lastBootstrapAt: payload.lastBootstrapAt,
       lastLiveEventAt: payload.lastLiveEventAt,
       duplicateEventsDropped: payload.duplicateEventsDropped,

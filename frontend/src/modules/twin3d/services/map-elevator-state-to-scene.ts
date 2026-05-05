@@ -3,15 +3,28 @@ import type { ElevatorViewModel } from '../../../store/elevator-store';
 export interface TwinSceneAsset {
   elevatorId: string;
   buildingId?: string;
+  shaftIndex: number;
   floorPosition: number;
   y: number;
+  x: number;
+  z: number;
+  height: number;
   movementDirection: 'up' | 'down' | 'stationary' | 'unknown';
   doorVisualState: 'open' | 'closed' | 'transitioning' | 'unknown';
   healthTone: 'normal' | 'warning' | 'critical' | 'unknown';
+  visualStatus:
+    | 'moving'
+    | 'idle'
+    | 'maintenance'
+    | 'fault'
+    | 'offline'
+    | 'stale'
+    | 'unknown';
   color: 'green' | 'red' | 'yellow' | 'gray';
   isSelected: boolean;
   isStale: boolean;
   highlighted: boolean;
+  label: string;
 }
 
 export function mapElevatorStateToScene(
@@ -21,20 +34,84 @@ export function mapElevatorStateToScene(
   const healthTone = normalizeHealthTone(elevator.healthState);
   const doorVisualState = normalizeDoorVisualState(elevator.doorState);
   const isStale = elevator.stale;
+  const shaftIndex = deriveShaftIndex(elevator.elevatorId);
+  const visualStatus = deriveVisualStatus(elevator.status, healthTone, isStale);
 
   return {
     elevatorId: elevator.elevatorId,
     buildingId: elevator.buildingId,
+    shaftIndex,
     floorPosition: elevator.currentFloor,
     y: elevator.currentFloor * 3,
+    x: shaftIndex * 2.8,
+    z: highlighted ? 0.9 : 0,
+    height: 2.2,
     movementDirection: normalizeDirection(elevator.direction),
     doorVisualState,
     healthTone,
-    color: healthTone === 'critical' ? 'red' : isStale ? 'yellow' : healthTone === 'unknown' ? 'gray' : 'green',
+    visualStatus,
+    color: deriveColor(healthTone, visualStatus, isStale),
     isSelected: highlighted,
     isStale,
-    highlighted
+    highlighted,
+    label: `${elevator.elevatorId} @ floor ${elevator.currentFloor}`
   };
+}
+
+function deriveColor(
+  healthTone: TwinSceneAsset['healthTone'],
+  visualStatus: TwinSceneAsset['visualStatus'],
+  isStale: boolean
+): TwinSceneAsset['color'] {
+  if (visualStatus === 'fault' || healthTone === 'critical') {
+    return 'red';
+  }
+
+  if (isStale || visualStatus === 'maintenance') {
+    return 'yellow';
+  }
+
+  if (healthTone === 'unknown' || visualStatus === 'offline' || visualStatus === 'unknown') {
+    return 'gray';
+  }
+
+  return 'green';
+}
+
+function deriveVisualStatus(
+  status: string,
+  healthTone: TwinSceneAsset['healthTone'],
+  isStale: boolean
+): TwinSceneAsset['visualStatus'] {
+  if (isStale) {
+    return 'stale';
+  }
+
+  if (healthTone === 'critical' || status === 'fault') {
+    return 'fault';
+  }
+
+  if (status === 'maintenance') {
+    return 'maintenance';
+  }
+
+  if (status === 'offline') {
+    return 'offline';
+  }
+
+  if (status === 'moving') {
+    return 'moving';
+  }
+
+  if (status === 'idle') {
+    return 'idle';
+  }
+
+  return 'unknown';
+}
+
+function deriveShaftIndex(elevatorId: string): number {
+  return elevatorId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) % 6;
 }
 
 function normalizeDirection(value: string): TwinSceneAsset['movementDirection'] {

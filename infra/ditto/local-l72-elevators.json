@@ -17,7 +17,7 @@
             "currentFloor": 1,
             "targetFloor": 1,
             "direction": "stationary",
-            "doorState": "closed",
+            "doorState": "open",
             "loadPercentage": 22,
             "healthState": "normal",
             "lastUpdatedAt": "2026-05-04T10:00:00.000Z"
