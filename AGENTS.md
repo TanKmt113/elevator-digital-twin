@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/005-3d-operations-runtime/plan.md`
+`specs/006-true-3d-elevator-rendering/plan.md`
 <!-- SPECKIT END -->
