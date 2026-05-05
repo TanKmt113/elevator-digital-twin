@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateJwt } from '../../modules/auth/auth.middleware.js';
+import { authenticateJwt, hasBuildingScope } from '../../modules/auth/auth.middleware.js';
 import { requireRoles } from '../../modules/auth/rbac.js';
 import { ElevatorMonitoringService } from '../../modules/elevators/elevator-monitoring.service.js';
 import type { RealtimeSynchronizationState } from '../../contracts/elevator.js';
@@ -17,6 +17,10 @@ export function createElevatorRoutes(
       res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
       return;
     }
+    if (!hasBuildingScope(req, buildingId)) {
+      res.status(403).json({ code: 'AUTH_FORBIDDEN', message: 'Building scope is forbidden' });
+      return;
+    }
     res.json({
       items: service.listByBuilding(buildingId),
       meta: {
@@ -29,6 +33,10 @@ export function createElevatorRoutes(
     const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;
     if (!buildingId) {
       res.status(400).json({ code: 'BUILDING_ID_REQUIRED', message: 'buildingId query parameter is required' });
+      return;
+    }
+    if (!hasBuildingScope(req, buildingId)) {
+      res.status(403).json({ code: 'AUTH_FORBIDDEN', message: 'Building scope is forbidden' });
       return;
     }
     const twin = service.get(req.params.elevatorId);

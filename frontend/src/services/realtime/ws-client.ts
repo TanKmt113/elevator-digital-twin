@@ -1,6 +1,11 @@
 type RealtimeListener = (payload: unknown) => void;
 type ConnectionStateListener = (state: 'connecting' | 'live' | 'stale' | 'degraded') => void;
 
+function getReconnectDelayMs(): number {
+  const configured = Number(import.meta.env.VITE_WS_RECONNECT_MS ?? 1000);
+  return Number.isFinite(configured) && configured >= 0 ? configured : 1000;
+}
+
 function buildWebSocketUrl(buildingId: string, token?: string): string {
   const explicitUrl = import.meta.env.VITE_WS_URL?.replace(/\/$/, '');
   const baseUrl =
@@ -99,7 +104,7 @@ export class RealtimeClient {
     this.reconnectTimer = window.setTimeout(() => {
       this.reconnectTimer = undefined;
       this.open();
-    }, 1000);
+    }, getReconnectDelayMs());
   }
 
   private emitConnectionState(state: 'connecting' | 'live' | 'stale' | 'degraded'): void {

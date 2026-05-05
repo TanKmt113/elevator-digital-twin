@@ -26,6 +26,7 @@ import { ElevatorStatePublisher } from '../modules/realtime/publishers/elevator-
 import { EventRouter } from '../modules/realtime/event-router.js';
 import { DittoLiveConsumer } from '../integrations/ditto/ditto-live-consumer.js';
 import type { RealtimeSynchronizationState } from '../contracts/elevator.js';
+import { recordMalformedEventRejected } from '../observability/elevator-monitoring.metrics.js';
 
 interface CreateAppOptions {
   dittoClient?: DittoClient;
@@ -127,6 +128,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const commandStatusPublisher = new CommandStatusPublisher(sessions);
   const alertPublisher = new AlertPublisher(sessions);
   const riskPublisher = new RiskPublisher(sessions);
+  let lastDittoLiveState = monitoringService.getSynchronizationState().dittoLiveState;
 
   const buildSynchronizationState = (): RealtimeSynchronizationState => {
     monitoringService.setFrontendRealtimeState(
@@ -146,6 +148,21 @@ export function createApp(options: CreateAppOptions = {}) {
       payload: {
         ...buildSynchronizationState(),
         buildingId: buildingId ?? monitoringService.getSynchronizationState().buildingId
+      }
+    });
+  };
+
+  const publishResyncRequired = (buildingId?: string, reason = 'live_reconnected'): void => {
+    sessions.publish({
+      eventId: `resync-${Date.now()}`,
+      eventType: 'dashboard.resync.required',
+      schemaVersion: '1.0.0',
+      dataClass: 'realtime',
+      occurredAt: new Date().toISOString(),
+      payload: {
+        buildingId: buildingId ?? monitoringService.getSynchronizationState().buildingId,
+        reason,
+        requestedAt: new Date().toISOString()
       }
     });
   };
@@ -217,13 +234,22 @@ export function createApp(options: CreateAppOptions = {}) {
     },
     () => {
       const current = monitoringService.getSynchronizationState();
+      recordMalformedEventRejected();
+      logger.error('ditto_live_event_malformed', {
+        malformedEventsRejected: current.malformedEventsRejected + 1
+      });
       monitoringService.setRejectionStats({
         malformedEventsRejected: current.malformedEventsRejected + 1
       });
       publishSynchronizationState();
     },
     (state) => {
+      const previousState = lastDittoLiveState;
+      lastDittoLiveState = state;
       monitoringService.setDittoLiveState(state);
+      if (previousState && previousState !== 'live' && state === 'live') {
+        publishResyncRequired();
+      }
       publishSynchronizationState();
     }
   );

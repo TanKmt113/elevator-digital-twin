@@ -4,7 +4,7 @@ const env = loadEnv();
 
 export const settings = {
   env,
-  staleThresholdMs: 15_000,
-  reconnectBackoffMs: [500, 1000, 2000, 5000],
+  staleThresholdMs: env.staleThresholdMs,
+  reconnectBackoffMs: env.realtimeReconnectBackoffMs.length > 0 ? env.realtimeReconnectBackoffMs : [500, 1000, 2000, 5000],
   bootstrapTimeoutMs: env.dittoBootstrapTimeoutMs
 };

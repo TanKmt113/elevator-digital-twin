@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { deriveAppShellState } from '../../src/app/App';
 import { measureTwinRenderFrame } from '../../src/modules/twin3d/services/twin3d-performance';
 import { useElevatorStore } from '../../src/store/elevator-store';
+import { handleRealtimeEvent } from '../../src/services/realtime/elevator-events';
 
 describe('twin3d resilience', () => {
   it('flags frames that exceed the budget', () => {
@@ -55,6 +56,40 @@ describe('twin3d resilience', () => {
       ],
       'L72'
     );
+
+    expect(useElevatorStore.getState().selectedElevatorId).toBe('A');
+    expect(useElevatorStore.getState().sceneFocusMode).toBe('selected');
+  });
+
+  it('preserves selected elevator focus across resync-required state changes', () => {
+    useElevatorStore.setState({
+      elevators: {
+        A: {
+          elevatorId: 'A',
+          buildingId: 'L72',
+          status: 'moving',
+          currentFloor: 10,
+          direction: 'up',
+          doorState: 'closed',
+          healthState: 'normal',
+          stale: false
+        }
+      },
+      selectedBuildingId: 'L72',
+      selectedElevatorId: 'A',
+      selectionSource: '3d',
+      selectedAt: '2026-05-05T00:00:00.000Z',
+      sceneFocusMode: 'selected'
+    });
+
+    handleRealtimeEvent({
+      eventType: 'dashboard.resync.required',
+      payload: {
+        buildingId: 'L72',
+        reason: 'live_reconnected',
+        requestedAt: '2026-05-05T10:00:00.000Z'
+      }
+    });
 
     expect(useElevatorStore.getState().selectedElevatorId).toBe('A');
     expect(useElevatorStore.getState().sceneFocusMode).toBe('selected');

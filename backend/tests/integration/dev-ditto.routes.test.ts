@@ -5,12 +5,14 @@ describe('dev ditto seed routes', () => {
   it('registers the dev Ditto seed endpoint', () => {
     const router = createDevDittoRoutes({
       upsertPolicy: vi.fn(async () => undefined),
-      upsertThing: vi.fn(async () => undefined)
+      upsertThing: vi.fn(async () => undefined),
+      emit: vi.fn()
     });
     const routes =
       router?.stack.flatMap((layer) => (layer.route?.path ? [layer.route.path] : [])) ?? [];
 
     expect(routes).toContain('/dev/ditto/seed');
+    expect(routes).toContain('/dev/ditto/replay');
   });
 
   it('upserts the local dataset policy and all elevator things', async () => {

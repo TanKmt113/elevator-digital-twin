@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DittoClient, projectDittoElevatorThing } from '../../src/integrations/ditto/ditto-client.js';
+import { DittoLiveConsumer } from '../../src/integrations/ditto/ditto-live-consumer.js';
 
 describe('DittoClient', () => {
   it('builds listThings requests with auth and query params', async () => {
@@ -135,6 +136,68 @@ describe('DittoClient', () => {
         method: 'PUT',
         headers: expect.objectContaining({
           'Content-Type': 'application/json'
+        })
+      })
+    );
+  });
+
+  it('projects emitted Ditto live payloads into accepted realtime events', async () => {
+    let handler: ((payload: unknown) => void) | undefined;
+    const accepted = vi.fn();
+
+    const consumer = new DittoLiveConsumer(
+      {
+        subscribe(next) {
+          handler = next;
+          return () => {
+            handler = undefined;
+          };
+        },
+        getRealtimeUrl() {
+          return 'ws://127.0.0.1:65535/ws/2';
+        },
+        createAuthorizationHeaders() {
+          return {};
+        },
+        async getThing() {
+          return {
+            thingId: 'org.example:L72-ELEV-A',
+            attributes: { buildingId: 'L72' },
+            features: {
+              elevator: {
+                properties: {
+                  currentFloor: 7,
+                  status: 'moving',
+                  direction: 'up',
+                  doorState: 'closed',
+                  healthState: 'normal'
+                }
+              }
+            }
+          };
+        }
+      },
+      accepted
+    );
+
+    consumer.start();
+    handler?.({
+      id: 'evt-live-1',
+      thingId: 'org.example:L72-ELEV-A',
+      time: '2026-05-05T10:00:00.000Z'
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    consumer.stop();
+
+    expect(accepted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: 'evt-live-1',
+        eventType: 'elevator.state.changed',
+        payload: expect.objectContaining({
+          elevatorId: 'org.example:L72-ELEV-A',
+          currentFloor: 7,
+          buildingId: 'L72',
+          lastEventAt: '2026-05-05T10:00:00.000Z'
         })
       })
     );

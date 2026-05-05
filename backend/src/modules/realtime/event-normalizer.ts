@@ -33,6 +33,19 @@ export function normalizeTwinBootstrapProjection(
   });
 }
 
+export function normalizeTwinLiveProjection(
+  projection: DittoElevatorThingProjection,
+  occurredAt: string
+): ElevatorTwin | null {
+  const twin = normalizeTwinBootstrapProjection(projection);
+  return twin
+    ? {
+        ...twin,
+        lastEventAt: occurredAt
+      }
+    : null;
+}
+
 export function normalizeElevatorState(payload: Partial<ElevatorTwin> & Pick<ElevatorTwin, 'elevatorId' | 'buildingId'>): NormalizedEvent<ElevatorTwin> {
   return {
     eventId: `evt-${payload.elevatorId}-${Date.now()}`,

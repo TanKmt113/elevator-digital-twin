@@ -1,4 +1,9 @@
 import type { NormalizedEvent } from './event-normalizer.js';
+import {
+  recordDuplicateEventDropped,
+  recordOutOfOrderEventRejected,
+  recordOutOfScopeEventRejected
+} from '../../observability/elevator-monitoring.metrics.js';
 
 export class EventRouter {
   private readonly seen = new Set<string>();
@@ -10,6 +15,7 @@ export class EventRouter {
   route<T>(event: NormalizedEvent<T>, buildingScope?: string): NormalizedEvent<T> | null {
     if (this.seen.has(event.eventId)) {
       this.duplicateEventsDropped += 1;
+      recordDuplicateEventDropped();
       return null;
     }
 
@@ -17,6 +23,7 @@ export class EventRouter {
     const buildingId = this.getBuildingId(event.payload);
     if (buildingScope && buildingId && buildingId !== buildingScope) {
       this.outOfScopeEventsRejected += 1;
+      recordOutOfScopeEventRejected();
       return null;
     }
 
@@ -28,6 +35,7 @@ export class EventRouter {
       occurredAt < (this.latestAcceptedAt.get(subjectId) ?? 0)
     ) {
       this.outOfOrderEventsRejected += 1;
+      recordOutOfOrderEventRejected();
       return null;
     }
 

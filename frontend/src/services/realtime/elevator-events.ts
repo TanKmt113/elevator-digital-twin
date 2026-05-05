@@ -8,8 +8,27 @@ import {
 import { deriveSceneRuntimeState } from '../../app/App';
 
 interface ElevatorStateEnvelope {
+  eventId?: string;
   eventType: string;
   payload: ElevatorViewModel | Record<string, unknown>;
+}
+
+const seenRealtimeEventIds = new Set<string>();
+
+function rememberRealtimeEvent(eventId: string): boolean {
+  if (seenRealtimeEventIds.has(eventId)) {
+    return false;
+  }
+
+  seenRealtimeEventIds.add(eventId);
+  if (seenRealtimeEventIds.size > 200) {
+    const oldest = seenRealtimeEventIds.values().next().value;
+    if (oldest) {
+      seenRealtimeEventIds.delete(oldest);
+    }
+  }
+
+  return true;
 }
 
 export function handleRealtimeEvent(
@@ -17,6 +36,9 @@ export function handleRealtimeEvent(
   options?: { onResyncRequired?: () => void }
 ): void {
   if (event.eventType === 'elevator.state.changed') {
+    if (event.eventId && !rememberRealtimeEvent(event.eventId)) {
+      return;
+    }
     useElevatorStore.getState().upsertElevator(event.payload as ElevatorViewModel);
     useRealtimeStore.getState().setConnected(true);
     useRealtimeStore.getState().setDataState('ready');

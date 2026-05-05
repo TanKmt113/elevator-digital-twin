@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/api/server.js';
 import { createElevatorTwin } from '../../src/modules/elevators/elevator-twin.model.js';
+import { hasBuildingScope } from '../../src/modules/auth/auth.middleware.js';
 
 describe('elevators contract', () => {
   it('defines scoped list/detail endpoints and synchronization metadata', () => {
@@ -19,5 +20,32 @@ describe('elevators contract', () => {
 
     expect(monitoringService.get('A')).toMatchObject({ buildingId: 'L72' });
     expect(monitoringService.listByBuilding('L30')).toEqual([]);
+  });
+
+  it('enforces token building scope equality for elevator access', () => {
+    expect(
+      hasBuildingScope(
+        {
+          user: {
+            userId: 'operator-1',
+            role: 'operator',
+            buildingId: 'L72'
+          }
+        } as never,
+        'L72'
+      )
+    ).toBe(true);
+    expect(
+      hasBuildingScope(
+        {
+          user: {
+            userId: 'operator-1',
+            role: 'operator',
+            buildingId: 'L72'
+          }
+        } as never,
+        'L30'
+      )
+    ).toBe(false);
   });
 });

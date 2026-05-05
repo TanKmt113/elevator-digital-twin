@@ -5,7 +5,10 @@ import {
   type DittoThing,
   projectDittoElevatorThing
 } from './ditto-client.js';
-import { normalizeTwinBootstrapProjection, type NormalizedEvent } from '../../modules/realtime/event-normalizer.js';
+import {
+  normalizeTwinLiveProjection,
+  type NormalizedEvent
+} from '../../modules/realtime/event-normalizer.js';
 import type { ElevatorTwin } from '../../contracts/elevator.js';
 
 function isDittoThing(value: unknown): value is DittoThing {
@@ -69,13 +72,13 @@ function normalizeLiveThing(
   thing: DittoThing
 ): NormalizedEvent<ElevatorTwin> | null {
   const projection = projectDittoElevatorThing(thing);
-  const twin = normalizeTwinBootstrapProjection(projection);
+  const occurredAt = getEventTime(payload);
+  const twin = normalizeTwinLiveProjection(projection, occurredAt);
 
   if (!twin) {
     return null;
   }
 
-  const occurredAt = getEventTime(payload);
   return {
     eventId:
       (typeof payload.id === 'string' ? payload.id : undefined) ??

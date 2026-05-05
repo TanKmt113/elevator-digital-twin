@@ -14,6 +14,8 @@ export interface EnvConfig {
   dittoBearerToken?: string;
   twinSyncEnabled: boolean;
   dittoBootstrapTimeoutMs: number;
+  staleThresholdMs: number;
+  realtimeReconnectBackoffMs: number[];
   mongoUrl: string;
   timescaleUrl: string;
   redisUrl: string;
@@ -62,6 +64,11 @@ export function loadEnv(): EnvConfig {
     dittoBearerToken: process.env.DITTO_BEARER_TOKEN,
     twinSyncEnabled: process.env.TWIN_SYNC_ENABLED !== 'false',
     dittoBootstrapTimeoutMs: Number(process.env.DITTO_BOOTSTRAP_TIMEOUT_MS ?? 5000),
+    staleThresholdMs: Number(process.env.STALE_THRESHOLD_MS ?? 15000),
+    realtimeReconnectBackoffMs: (process.env.REALTIME_RECONNECT_BACKOFF_MS ?? '500,1000,2000,5000')
+      .split(',')
+      .map((value) => Number(value.trim()))
+      .filter((value) => Number.isFinite(value) && value >= 0),
     mongoUrl: process.env.MONGODB_URL ?? 'mongodb://localhost:27017/keangnam',
     timescaleUrl: process.env.TIMESCALE_URL ?? 'postgresql://postgres:postgres@localhost:5432/postgres',
     redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379'

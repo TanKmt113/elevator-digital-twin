@@ -20,3 +20,7 @@ export function authenticateJwt(req: AuthenticatedRequest, res: Response, next: 
     res.status(401).json({ code: 'AUTH_INVALID', message: 'Invalid token' });
   }
 }
+
+export function hasBuildingScope(req: AuthenticatedRequest, buildingId: string | undefined): boolean {
+  return Boolean(req.user?.buildingId && buildingId && req.user.buildingId === buildingId);
+}
