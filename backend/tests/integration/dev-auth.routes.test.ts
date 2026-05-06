@@ -47,9 +47,12 @@ describe('dev auth routes', () => {
 
     const [{ token }] = json.mock.calls[0] as [{ token: string }];
     expect(jwt.verify(token, settings.env.jwtSecret)).toMatchObject({
+      sub: 'dev-operator-1',
       userId: 'dev-operator-1',
       buildingId: 'L72',
-      role: 'operator'
+      role: 'operator',
+      roles: ['operator'],
+      buildings: ['L72']
     });
   });
 });

@@ -4,28 +4,28 @@ import { deriveAppShellState, deriveSceneRuntimeState } from '../../src/app/App'
 describe('app shell', () => {
   it('reports loading state before dashboard data is ready', () => {
     expect(deriveAppShellState('connecting', 'loading', 0)).toMatchObject({
-      title: 'Loading live building state',
+      title: 'Đang tải trạng thái tòa nhà',
       bannerTone: 'info'
     });
   });
 
   it('reports empty state when no elevator data is available', () => {
     expect(deriveAppShellState('live', 'empty', 0)).toMatchObject({
-      title: 'No elevators in active scope',
+      title: 'Chưa có thang máy trong phạm vi',
       bannerTone: 'neutral'
     });
   });
 
   it('reports degraded state when synchronization is stale', () => {
     expect(deriveAppShellState('stale', 'ready', 2)).toMatchObject({
-      title: 'Live updates are degraded',
+      title: 'Cập nhật trực tiếp đang suy giảm',
       bannerTone: 'warning'
     });
   });
 
   it('reports an explicit resyncing state while the dashboard refreshes accepted state', () => {
     expect(deriveAppShellState('resyncing', 'ready', 2)).toMatchObject({
-      title: 'Resynchronizing live state',
+      title: 'Đang đồng bộ lại dữ liệu',
       bannerTone: 'info'
     });
   });

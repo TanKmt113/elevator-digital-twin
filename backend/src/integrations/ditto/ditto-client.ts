@@ -3,6 +3,17 @@ import { settings } from '../../config/settings.js';
 
 type DittoHandler = (payload: unknown) => void;
 
+export class DittoRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly responseBody?: string
+  ) {
+    super(message);
+    this.name = 'DittoRequestError';
+  }
+}
+
 export interface DittoThingFeature {
   properties?: Record<string, unknown>;
 }
@@ -18,13 +29,39 @@ export interface DittoThing {
 export interface DittoElevatorThingProjection {
   elevatorId: string;
   buildingId?: string;
+  shaftId?: unknown;
   status?: unknown;
   currentFloor?: unknown;
   targetFloor?: unknown;
+  positionMeters?: unknown;
+  floorProgress?: unknown;
+  speedMps?: unknown;
+  accelerationMps2?: unknown;
   direction?: unknown;
   doorState?: unknown;
+  doorOpenPercent?: unknown;
+  doorObstruction?: unknown;
+  doorCycleCount?: unknown;
+  loadKg?: unknown;
+  ratedLoadKg?: unknown;
   loadPercentage?: unknown;
+  occupancyEstimate?: unknown;
+  mode?: unknown;
+  serviceMode?: unknown;
+  brakeState?: unknown;
+  motorState?: unknown;
+  controllerState?: unknown;
+  motorTempC?: unknown;
+  controllerTempC?: unknown;
+  powerKw?: unknown;
+  vibrationLevel?: unknown;
   healthState?: unknown;
+  faultCode?: unknown;
+  faultSeverity?: unknown;
+  lastFaultAt?: unknown;
+  activeCalls?: unknown;
+  stopQueue?: unknown;
+  etaSeconds?: unknown;
 }
 
 export interface DittoClientOptions {
@@ -58,17 +95,44 @@ export const DITTO_ELEVATOR_FIELDS = 'thingId,attributes,features';
 export function projectDittoElevatorThing(thing: DittoThing): DittoElevatorThingProjection {
   const properties = thing.features?.elevator?.properties;
   const buildingId = typeof thing.attributes?.buildingId === 'string' ? thing.attributes.buildingId : undefined;
+  const shaftId = thing.attributes?.shaftId;
 
   return {
     elevatorId: thing.thingId,
     buildingId,
+    shaftId,
     status: properties?.status,
     currentFloor: properties?.currentFloor,
     targetFloor: properties?.targetFloor,
+    positionMeters: properties?.positionMeters,
+    floorProgress: properties?.floorProgress,
+    speedMps: properties?.speedMps,
+    accelerationMps2: properties?.accelerationMps2,
     direction: properties?.direction,
     doorState: properties?.doorState,
+    doorOpenPercent: properties?.doorOpenPercent,
+    doorObstruction: properties?.doorObstruction,
+    doorCycleCount: properties?.doorCycleCount,
+    loadKg: properties?.loadKg,
+    ratedLoadKg: properties?.ratedLoadKg,
     loadPercentage: properties?.loadPercentage,
-    healthState: properties?.healthState
+    occupancyEstimate: properties?.occupancyEstimate,
+    mode: properties?.mode,
+    serviceMode: properties?.serviceMode,
+    brakeState: properties?.brakeState,
+    motorState: properties?.motorState,
+    controllerState: properties?.controllerState,
+    motorTempC: properties?.motorTempC,
+    controllerTempC: properties?.controllerTempC,
+    powerKw: properties?.powerKw,
+    vibrationLevel: properties?.vibrationLevel,
+    healthState: properties?.healthState,
+    faultCode: properties?.faultCode,
+    faultSeverity: properties?.faultSeverity,
+    lastFaultAt: properties?.lastFaultAt,
+    activeCalls: properties?.activeCalls,
+    stopQueue: properties?.stopQueue,
+    etaSeconds: properties?.etaSeconds
   };
 }
 
@@ -170,6 +234,26 @@ export class DittoClient {
     });
   }
 
+  async mergePatchThing(thingId: string, patch: Record<string, unknown>): Promise<void> {
+    const encodedThingId = encodeURIComponent(thingId);
+    await this.requestVoid(`/api/2/things/${encodedThingId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+      headers: { 'Content-Type': 'application/merge-patch+json' }
+    });
+  }
+
+  async getThingOrNull(thingId: string): Promise<DittoThing | null> {
+    try {
+      return await this.getThing(thingId);
+    } catch (error) {
+      if (error instanceof DittoRequestError && error.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await this.fetchImpl(`${this.httpUrl}${path}`, {
       ...init,
@@ -177,7 +261,12 @@ export class DittoClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Ditto request failed: ${response.status} ${response.statusText}`);
+      const text = await this.safeReadBody(response);
+      throw new DittoRequestError(
+        `Ditto request failed: ${response.status} ${response.statusText}`,
+        response.status,
+        text
+      );
     }
 
     return (await response.json()) as T;
@@ -190,7 +279,20 @@ export class DittoClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Ditto request failed: ${response.status} ${response.statusText}`);
+      const text = await this.safeReadBody(response);
+      throw new DittoRequestError(
+        `Ditto request failed: ${response.status} ${response.statusText}`,
+        response.status,
+        text
+      );
+    }
+  }
+
+  private async safeReadBody(response: Response): Promise<string | undefined> {
+    try {
+      return await response.text();
+    } catch {
+      return undefined;
     }
   }
 

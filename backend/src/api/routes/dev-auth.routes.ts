@@ -40,11 +40,17 @@ export function createDevAuthRoutes(): Router {
       return;
     }
 
+    const canonicalRole =
+      role === 'admin' ? 'platform_admin' : role === 'maintenance' ? 'operator' : 'operator';
     const token = jwt.sign(
       {
+        sub: userId,
+        email: `${userId}@dev.local`,
         userId,
         buildingId,
-        role
+        role,
+        roles: [canonicalRole],
+        buildings: [buildingId]
       },
       settings.env.jwtSecret,
       { expiresIn: '1d' }

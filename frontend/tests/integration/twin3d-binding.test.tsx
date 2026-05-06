@@ -5,6 +5,8 @@ import { ElevatorStatusBadge } from '../../src/modules/elevator/components/Eleva
 import { deriveCameraAnchor } from '../../src/modules/twin3d/contracts/camera-focus';
 import { TwinDetailOverlay } from '../../src/modules/twin3d/components/TwinDetailOverlay';
 import { mapElevatorStateToScene } from '../../src/modules/twin3d/services/map-elevator-state-to-scene';
+import { getElevatorCabinVisualState } from '../../src/modules/twin3d/render/ElevatorCabinMesh';
+import { interpolateTwinPosition } from '../../src/modules/twin3d/services/twin3d-performance';
 import { useElevatorStore } from '../../src/store/elevator-store';
 import { useRealtimeStore } from '../../src/store/realtime-store';
 
@@ -19,14 +21,84 @@ describe('twin3d binding', () => {
       healthState: 'normal',
       stale: false
     });
-    expect(asset.y).toBe(30);
+    expect(asset.y).toBe(27);
     expect(asset.shaftIndex).toBeGreaterThanOrEqual(0);
     expect(asset.floorPosition).toBe(10);
-    expect(asset.worldPosition.y).toBe(30);
+    expect(asset.worldPosition.y).toBe(27);
     expect(asset.movementDirection).toBe('up');
     expect(asset.doorVisualState).toBe('closed');
     expect(asset.healthTone).toBe('normal');
     expect(asset.visualStatus).toBe('moving');
+  });
+
+  it('maps enhanced position, door, load, and fault fields into scene projection', () => {
+    const asset = mapElevatorStateToScene({
+      elevatorId: 'org.example:L72-ELEV-A',
+      buildingId: 'L72',
+      shaftId: 'shaft-a',
+      status: 'fault',
+      currentFloor: 4,
+      targetFloor: 8,
+      positionMeters: 12.6,
+      direction: 'up',
+      doorState: 'opening',
+      doorOpenPercent: 45,
+      loadPercentage: 92,
+      mode: 'maintenance',
+      healthState: 'critical',
+      faultCode: 'DOOR-BLOCKED',
+      faultSeverity: 'critical',
+      stale: false
+    }, true);
+
+    expect(asset).toMatchObject({
+      shaftId: 'shaft-a',
+      worldPosition: expect.objectContaining({ x: 0, y: 12.6 }),
+      targetWorldPosition: expect.objectContaining({ x: 0, y: 21 }),
+      doorOpenRatio: 0.45,
+      loadTone: 'warning',
+      faultTone: 'critical',
+      modeTone: 'service',
+      color: 'red',
+      isSelected: true,
+      isPlayback: false
+    });
+  });
+
+  it('interpolates accepted cabin positions without overshooting', () => {
+    expect(interpolateTwinPosition({ x: 0, y: 0, z: 0 }, { x: 0, y: 12, z: 0 }, 0.5)).toEqual({
+      x: 0,
+      y: 6,
+      z: 0
+    });
+    expect(interpolateTwinPosition({ x: 0, y: 0, z: 0 }, { x: 0, y: 12, z: 0 }, 1.5).y).toBe(12);
+    expect(interpolateTwinPosition({ x: 0, y: 0, z: 0 }, { x: 0, y: 12, z: 0 }, -1).y).toBe(0);
+  });
+
+  it('renders cabin visual cues for door, fault, and selection state', () => {
+    const asset = mapElevatorStateToScene({
+      elevatorId: 'org.example:L72-ELEV-A',
+      buildingId: 'L72',
+      status: 'maintenance',
+      currentFloor: 4,
+      direction: 'stationary',
+      doorState: 'opening',
+      doorOpenPercent: 60,
+      loadPercentage: 88,
+      healthState: 'warning',
+      faultSeverity: 'warning',
+      stale: false
+    }, true);
+
+    const visual = getElevatorCabinVisualState(asset);
+    expect(asset.doorOpenRatio).toBe(0.6);
+    expect(asset.faultTone).toBe('warning');
+    expect(asset.loadTone).toBe('warning');
+    expect(visual).toMatchObject({
+      bodyColor: '#facc15',
+      faultEmissive: '#facc15',
+      doorPercentLabel: 'F4 60%'
+    });
   });
 
   it('maps stale and transitioning state without raw Twin fields', () => {
@@ -132,6 +204,6 @@ describe('twin3d binding', () => {
 
     expect(state.visibleAssets.map((asset) => asset.elevatorId)).toEqual(['E1']);
     expect(state.visibleAssets[0]?.isSelected).toBe(true);
-    expect(renderToStaticMarkup(<TwinScene />)).toContain('Twin Scene');
+    expect(renderToStaticMarkup(<TwinScene />)).toContain('Mô hình Twin 3D');
   });
 });

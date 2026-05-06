@@ -5,8 +5,11 @@ export function ElevatorHistoryChart({ points }: { points: HistoryPoint[] }): Re
   return (
     <section>
       {points.map((point) => (
-        <p key={point.recordedAt}>
-          {point.recordedAt}: floor {point.currentFloor ?? 'n/a'}
+        <p key={point.recordedAt ?? point.capturedAt}>
+          {point.recordedAt ?? point.capturedAt}: floor {point.currentFloor ?? 'n/a'}
+          {point.doorOpenPercent !== undefined ? ` · door ${point.doorOpenPercent}%` : ''}
+          {point.loadPercentage !== undefined ? ` · load ${point.loadPercentage}%` : ''}
+          {point.partial ? ' · partial' : ''}
         </p>
       ))}
     </section>

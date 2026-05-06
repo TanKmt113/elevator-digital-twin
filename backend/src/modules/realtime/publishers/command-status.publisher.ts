@@ -8,8 +8,8 @@ export class CommandStatusPublisher {
     this.sessions.publish({
       eventId: `evt-${command.commandId}`,
       eventType: 'elevator.command.status',
-      schemaVersion: '1.0.0',
-      dataClass: 'realtime',
+      schemaVersion: '1.1.0',
+      dataClass: 'config',
       occurredAt: new Date().toISOString(),
       correlationId: command.correlationId,
       payload: command

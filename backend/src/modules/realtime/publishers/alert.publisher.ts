@@ -8,7 +8,7 @@ export class AlertPublisher {
     this.sessions.publish({
       eventId: `evt-${alert.alertId}`,
       eventType: 'elevator.alert.raised',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'alarm',
       occurredAt: new Date().toISOString(),
       payload: alert
@@ -19,7 +19,7 @@ export class AlertPublisher {
     this.sessions.publish({
       eventId: `evt-${alert.alertId}-updated`,
       eventType: 'elevator.alert.updated',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'alarm',
       occurredAt: new Date().toISOString(),
       payload: alert

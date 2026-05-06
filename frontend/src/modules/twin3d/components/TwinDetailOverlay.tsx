@@ -39,28 +39,28 @@ export function TwinDetailOverlay({
     <aside className="ops-twin-overlay rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-4 text-sm text-slate-300 backdrop-blur">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="ops-label">Scene Runtime</p>
+          <p className="ops-label">Trạng thái cảnh</p>
           <h3 className="ops-item-title text-base font-semibold text-slate-100">{runtimeCopy.title}</h3>
         </div>
-        <span className="ops-count-chip">{projectionCount} projections</span>
+        <span className="ops-count-chip">{projectionCount} projection</span>
       </div>
       <p className="mt-2 text-sm text-slate-300">{runtimeCopy.message}</p>
       <div className="mt-4 grid gap-2 text-xs text-slate-400">
-        <p>Focus mode: <span className="capitalize text-slate-100">{focusMode}</span></p>
-        <p>Active sessions: <span className="text-slate-100">{activeSessions}</span></p>
+        <p>Chế độ xem: <span className="capitalize text-slate-100">{focusMode}</span></p>
+        <p>Phiên đang mở: <span className="text-slate-100">{activeSessions}</span></p>
         {performanceSample ? (
           <p>
-            Scene load: <span className="capitalize text-slate-100">{performanceSample.density}</span> ({performanceSample.renderTimeMs}ms)
+            Tải cảnh: <span className="capitalize text-slate-100">{performanceSample.density}</span> ({performanceSample.renderTimeMs}ms)
           </p>
         ) : null}
         {projectionFailures > 0 ? (
           <p>
-            Projection failures: <span className="text-amber-100">{projectionFailures}</span>
+            Lỗi projection: <span className="text-amber-100">{projectionFailures}</span>
           </p>
         ) : null}
         {duplicateEventsDropped > 0 || outOfOrderEventsRejected > 0 || outOfScopeEventsRejected > 0 || malformedEventsRejected > 0 ? (
           <p>
-            Rejections:
+            Bị từ chối:
             <span className="text-slate-100">
               {` dup ${duplicateEventsDropped} · order ${outOfOrderEventsRejected} · scope ${outOfScopeEventsRejected} · malformed ${malformedEventsRejected}`}
             </span>
@@ -72,15 +72,20 @@ export function TwinDetailOverlay({
       {elevator ? (
         <div className="ops-twin-overlay-stack mt-4 grid gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
           <h4 className="text-base font-semibold text-slate-100">{elevator.elevatorId}</h4>
-          <p>Floor: {elevator.currentFloor}</p>
-          <p>Status: <span className="capitalize text-slate-100">{elevator.status}</span></p>
-          <p>Door: <span className="capitalize text-slate-100">{elevator.doorState}</span></p>
-          <p>Health: <span className="capitalize text-slate-100">{elevator.healthState}</span></p>
-          {elevator.stale ? <p className="text-amber-100">Last accepted state is stale.</p> : null}
+          <p>Tầng: {elevator.currentFloor}</p>
+          <p>Vị trí: <span className="text-slate-100">{elevator.positionMeters ?? 'không rõ'} m</span></p>
+          <p>Trạng thái: <span className="capitalize text-slate-100">{elevator.status}</span></p>
+          <p>Cửa: <span className="capitalize text-slate-100">{elevator.doorState}</span> ({elevator.doorOpenPercent ?? 'n/a'}%)</p>
+          <p>Tải: <span className="text-slate-100">{elevator.loadPercentage ?? 'n/a'}%</span></p>
+          <p>Chế độ: <span className="capitalize text-slate-100">{elevator.mode ?? 'không rõ'}</span></p>
+          <p>Sức khỏe: <span className="capitalize text-slate-100">{elevator.healthState}</span></p>
+          {elevator.isPlayback ? <p className="text-sky-100">Đang hiển thị projection lịch sử.</p> : null}
+          {elevator.faultCode ? <p className="text-amber-100">Lỗi: {elevator.faultCode}</p> : null}
+          {elevator.stale ? <p className="text-amber-100">Trạng thái cuối đã cũ.</p> : null}
         </div>
       ) : (
         <div className="mt-4 rounded-2xl border border-dashed border-white/10 px-3 py-4 text-slate-400">
-          No selected elevator is currently in focus.
+          Chưa có thang máy nào được chọn.
         </div>
       )}
     </aside>
@@ -90,41 +95,41 @@ export function TwinDetailOverlay({
 function getRuntimeCopy(sceneRuntime: TwinSceneRuntimeState): { title: string; message: string } {
   if (sceneRuntime === 'ready') {
     return {
-      title: 'Scene is synchronized',
-      message: 'Building-wide projections are aligned with the latest accepted dashboard state.'
+      title: 'Cảnh đã đồng bộ',
+      message: 'Các projection đang khớp với trạng thái vận hành mới nhất.'
     };
   }
 
   if (sceneRuntime === 'empty') {
     return {
-      title: 'Scene scope is empty',
-      message: 'No valid elevator projections are currently available for the active building.'
+      title: 'Phạm vi cảnh đang trống',
+      message: 'Chưa có projection thang máy hợp lệ cho tòa nhà hiện tại.'
     };
   }
 
   if (sceneRuntime === 'stale') {
     return {
-      title: 'Scene is stale',
-      message: 'The scene is preserving the last accepted elevator positions while live updates recover.'
+      title: 'Cảnh đã cũ',
+      message: 'Cảnh đang giữ vị trí thang máy cuối cùng trong lúc kết nối phục hồi.'
     };
   }
 
   if (sceneRuntime === 'degraded') {
     return {
-      title: 'Scene is degraded',
-      message: 'At least part of the scene is unreliable, incomplete, or behind the current backend state.'
+      title: 'Cảnh đang suy giảm',
+      message: 'Một phần dữ liệu cảnh chưa đầy đủ hoặc đang chậm hơn backend.'
     };
   }
 
   if (sceneRuntime === 'unavailable') {
     return {
-      title: 'Scene is unavailable',
-      message: 'The browser could not initialize the true 3D scene, so the dashboard is showing a controlled fallback.'
+      title: 'Không thể hiển thị cảnh',
+      message: 'Trình duyệt không khởi tạo được 3D nên dashboard dùng chế độ thay thế.'
     };
   }
 
   return {
-    title: 'Scene is loading',
-    message: 'Twin projections are being prepared for the active building scope.'
+    title: 'Đang tải cảnh',
+    message: 'Đang chuẩn bị projection Twin cho phạm vi tòa nhà hiện tại.'
   };
 }

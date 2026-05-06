@@ -11,7 +11,7 @@ export function ElevatorStatusBadge({ status, stale }: { status: string; stale: 
 
   return (
     <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] ${tone}`}>
-      {stale ? `STALE ${status}` : status}
+      {stale ? `DỮ LIỆU CŨ ${status}` : status}
     </span>
   );
 }

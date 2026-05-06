@@ -1,4 +1,4 @@
-import type { ControlCommand } from '../../contracts/command.js';
+import type { ControlCommand, ElevatorCommandType } from '../../contracts/command.js';
 import { recordCommandAccepted, recordCommandRejected } from '../../observability/command.metrics.js';
 import type { AuthenticatedRequest } from '../auth/auth.middleware.js';
 import { CommandAuditRepository } from './command-audit.repository.js';
@@ -8,8 +8,10 @@ import { CommandPolicyService } from './command-policy.service.js';
 
 export interface CommandRequestPayload {
   elevatorId: string;
-  commandType: 'move_to_floor' | 'stop' | 'reset';
+  buildingId?: string;
+  commandType: ElevatorCommandType;
   requestedFloor?: number;
+  parameters?: Record<string, unknown>;
 }
 
 export class CommandExecutionService {
@@ -21,7 +23,16 @@ export class CommandExecutionService {
 
   submit(payload: CommandRequestPayload, actor: NonNullable<AuthenticatedRequest['user']>): ControlCommand {
     const twin = this.monitoringService.get(payload.elevatorId);
-    const decision = this.policyService.evaluate(twin, payload.commandType);
+    const twinBuilding = twin?.buildingId;
+    const allowedBuilding =
+      actor.isPlatformAdmin ||
+      (twinBuilding &&
+        (actor.buildingIds.includes(twinBuilding) || actor.buildingId === twinBuilding));
+    const scopeDecision =
+      twin && twinBuilding && !allowedBuilding
+        ? { allowed: false, reason: 'Command blocked by building scope' }
+        : this.policyService.evaluate(twin, payload.commandType);
+    const decision = scopeDecision;
 
     if (!decision.allowed) {
       recordCommandRejected();
@@ -33,6 +44,7 @@ export class CommandExecutionService {
       this.auditRepository.append({
         commandId: rejected.commandId,
         elevatorId: rejected.elevatorId,
+        correlationId: rejected.correlationId,
         actorUserId: actor.userId,
         timestamp: new Date().toISOString(),
         outcome: 'rejected',
@@ -46,6 +58,7 @@ export class CommandExecutionService {
     this.auditRepository.append({
       commandId: accepted.commandId,
       elevatorId: accepted.elevatorId,
+      correlationId: accepted.correlationId,
       actorUserId: actor.userId,
       timestamp: new Date().toISOString(),
       outcome: 'accepted',

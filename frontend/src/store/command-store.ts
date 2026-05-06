@@ -2,10 +2,24 @@ interface ControlCommand {
   commandId: string;
   correlationId: string;
   elevatorId: string;
-  commandType: 'move_to_floor' | 'stop' | 'reset';
+  buildingId?: string;
+  commandType:
+    | 'call_floor'
+    | 'set_service_mode'
+    | 'clear_fault'
+    | 'lock_elevator'
+    | 'unlock_elevator'
+    | 'simulate_event'
+    | 'move_to_floor'
+    | 'stop'
+    | 'reset';
   requestedFloor?: number;
-  status: 'accepted' | 'rejected' | 'in_progress' | 'completed' | 'failed' | 'expired';
+  parameters?: Record<string, unknown>;
+  status: 'pending' | 'accepted' | 'rejected' | 'executing' | 'succeeded' | 'failed' | 'timed_out' | 'in_progress' | 'completed' | 'expired';
+  policyDecision?: 'allowed' | 'rejected';
+  updatedAt?: string;
   message: string;
+  simulated?: boolean;
 }
 
 import { create } from 'zustand';

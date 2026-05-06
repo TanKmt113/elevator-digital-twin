@@ -16,7 +16,7 @@ describe('risk warning panel state', () => {
     });
     expect(useRiskStore.getState().warnings.r1?.riskLevel).toBe('high');
     expect(useRiskStore.getState().warnings.r1?.modelVersion).toBe('model-v2');
-    expect(deriveRiskVerificationState(useRiskStore.getState().warnings.r1).label).toBe('Verified');
+    expect(deriveRiskVerificationState(useRiskStore.getState().warnings.r1).label).toBe('Đã xác minh');
   });
 
   it('marks warnings without model metadata as unverified', () => {
@@ -28,6 +28,6 @@ describe('risk warning panel state', () => {
         predictedWindowHours: 96,
         generatedAt: new Date().toISOString()
       }).label
-    ).toBe('Unverified');
+    ).toBe('Chưa xác minh');
   });
 });

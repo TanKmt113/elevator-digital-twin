@@ -9,7 +9,10 @@ export function createCommandRoutes(
   publisher: CommandStatusPublisher
 ): Router {
   const router = Router();
-  router.use(authenticateJwt, requireRoles('operator', 'admin'));
+  router.use(
+    authenticateJwt,
+    requireRoles('operator', 'admin', 'maintenance', 'building_admin', 'platform_admin')
+  );
 
   router.post('/commands', (req: AuthenticatedRequest, res) => {
     if (!req.user) {

@@ -10,7 +10,13 @@ describe('command failures', () => {
     const service = new CommandExecutionService(monitoring);
     const result = service.submit(
       { elevatorId: 'A', commandType: 'move_to_floor', requestedFloor: 10 },
-      { userId: 'u1', role: 'operator', buildingId: 'L72' }
+      {
+        userId: 'u1',
+        role: 'operator',
+        buildingId: 'L72',
+        buildingIds: ['L72'],
+        isPlatformAdmin: false
+      }
     );
     expect(result.status).toBe('rejected');
   });

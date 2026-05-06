@@ -20,27 +20,27 @@ export function AlertPanel(): React.JSX.Element {
       <div className="ops-panel-head mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Incident Queue
+            Hàng đợi sự cố
           </p>
-          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Alerts</h2>
+          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Cảnh báo</h2>
         </div>
         <label className="ops-select-label flex items-center gap-2 text-sm text-slate-300">
-          Severity
+          Mức độ
           <select
             className="ops-select rounded-full border border-white/10 bg-slate-900 px-3 py-1 text-sm text-slate-100"
             value={severity}
             onChange={(event) => setSeverity(event.target.value as 'all' | 'warning' | 'critical')}
           >
-          <option value="all">All</option>
-          <option value="warning">Warning</option>
-          <option value="critical">Critical</option>
+          <option value="all">Tất cả</option>
+          <option value="warning">Cảnh báo</option>
+          <option value="critical">Nghiêm trọng</option>
         </select>
         </label>
       </div>
       <div className="ops-list grid gap-3">
         {visible.length === 0 ? (
           <article className="ops-empty rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
-            No alerts match the current filter.
+            Không có cảnh báo phù hợp với bộ lọc hiện tại.
           </article>
         ) : null}
         {visible.map((alert) => (

@@ -2,8 +2,12 @@ import React from 'react';
 import type { ElevatorViewModel, TwinSceneFocusMode } from '../../../store/elevator-store';
 import { useElevatorStore } from '../../../store/elevator-store';
 import { useRealtimeStore } from '../../../store/realtime-store';
+import { useHistoryStore } from '../../../store/history-store';
 import { mapElevatorStateToScene } from '../services/map-elevator-state-to-scene';
-import { measureTwinRenderFrame } from '../services/twin3d-performance';
+import {
+  estimateTwinSceneRenderTimeMs,
+  measureTwinRenderFrame
+} from '../services/twin3d-performance';
 import { useTwinSelection } from '../hooks/useTwinSelection';
 import { TwinControls } from './TwinControls';
 import { TwinDetailOverlay } from './TwinDetailOverlay';
@@ -30,14 +34,19 @@ export function deriveTwinSceneState(
 
     return {
       ...mappedAsset,
-      shaftIndex: index,
-      x: index * 3.8,
+      shaftIndex: mappedAsset.shaftIndex >= 0 ? mappedAsset.shaftIndex : index,
+      x: mappedAsset.worldPosition.x,
       worldPosition: {
-        x: index * 3.8,
+        x: mappedAsset.worldPosition.x,
         y: mappedAsset.worldPosition.y,
         z: mappedAsset.isSelected ? 0.35 : 0
       },
-      shaftLabel: `Shaft ${index + 1}`
+      targetWorldPosition: {
+        x: mappedAsset.targetWorldPosition.x,
+        y: mappedAsset.targetWorldPosition.y,
+        z: mappedAsset.isSelected ? 0.35 : 0
+      },
+      shaftLabel: mappedAsset.shaftLabel || `Shaft ${index + 1}`
     };
   });
   const visibleAssets =
@@ -66,16 +75,32 @@ export function TwinScene(): React.JSX.Element {
   const outOfScopeEventsRejected = useRealtimeStore((state) => state.outOfScopeEventsRejected);
   const malformedEventsRejected = useRealtimeStore((state) => state.malformedEventsRejected);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
+  const playbackElevatorId = useHistoryStore((state) => state.playbackElevatorId);
+  const playbackProjection = useHistoryStore((state) =>
+    state.playbackElevatorId ? state.playbackProjectionByElevator[state.playbackElevatorId] : undefined
+  );
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
+  const sceneElevators = React.useMemo(
+    () =>
+      playbackElevatorId && playbackProjection
+        ? elevators.map((elevator) =>
+            elevator.elevatorId === playbackElevatorId ? playbackProjection : elevator
+          )
+        : elevators,
+    [elevators, playbackElevatorId, playbackProjection]
+  );
   const { assets, visibleAssets } = React.useMemo(
-    () => deriveTwinSceneState(elevators, selection.selectedElevatorId, selection.sceneFocusMode),
-    [elevators, selection.selectedElevatorId, selection.sceneFocusMode]
+    () => deriveTwinSceneState(sceneElevators, selection.selectedElevatorId, selection.sceneFocusMode),
+    [sceneElevators, selection.selectedElevatorId, selection.sceneFocusMode]
   );
   const selectedElevator = elevators.find(
     (elevator) => elevator.elevatorId === selection.selectedElevatorId
   );
   const performanceSample = measureTwinRenderFrame(
-    Math.min(8 + visibleAssets.length * 2, 24),
+    estimateTwinSceneRenderTimeMs({
+      visibleProjectionCount: visibleAssets.length,
+      isPlayback: Boolean(playbackElevatorId)
+    }),
     visibleAssets.length,
     hasWebglSupport
   );
@@ -133,9 +158,9 @@ export function TwinScene(): React.JSX.Element {
       <div className="ops-panel-head mb-4 flex items-center justify-between gap-3">
         <div>
           <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Spatial View
+            Không gian 3D
           </p>
-          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Twin Scene</h2>
+          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Mô hình Twin 3D</h2>
         </div>
         <TwinControls
           focusMode={selection.sceneFocusMode}
@@ -155,10 +180,10 @@ export function TwinScene(): React.JSX.Element {
           {visibleAssets.length === 0 ? (
             <article className="ops-empty-inline text-sm text-slate-400">
               {sceneRuntime === 'empty'
-                ? 'No Twin assets are currently available for the active scope.'
+                ? 'Chưa có đối tượng Twin trong phạm vi hiện tại.'
                 : sceneRuntime === 'unavailable'
-                  ? 'True 3D rendering is unavailable in the current browser/runtime.'
-                  : 'No elevator is currently available for the selected scene focus.'}
+                  ? 'Trình duyệt hiện tại không hỗ trợ hiển thị 3D.'
+                  : 'Không có thang máy phù hợp với chế độ xem đã chọn.'}
             </article>
           ) : (
             <TwinCanvasScene
@@ -167,6 +192,7 @@ export function TwinScene(): React.JSX.Element {
               selectedElevatorId={selection.selectedElevatorId}
               transitionState={selection.cameraTransitionState}
               hasWebglSupport={hasWebglSupport}
+              isPlayback={Boolean(playbackElevatorId)}
               onSelect={selection.selectElevator}
               onTransitionStateChange={selection.setCameraTransitionState}
             />

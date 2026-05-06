@@ -10,6 +10,21 @@ const COLOR_MAP: Record<TwinSceneAsset['color'], string> = {
   gray: '#94a3b8'
 };
 
+export function getElevatorCabinVisualState(asset: TwinSceneAsset): {
+  doorOffset: number;
+  bodyColor: string;
+  faultEmissive: string;
+  doorPercentLabel: string;
+} {
+  return {
+    doorOffset: asset.doorOpenRatio * 0.28,
+    bodyColor: COLOR_MAP[asset.color],
+    faultEmissive:
+      asset.faultTone === 'critical' ? '#ef4444' : asset.faultTone === 'warning' ? '#facc15' : '#000000',
+    doorPercentLabel: `F${asset.floorPosition} ${Math.round(asset.doorOpenRatio * 100)}%`
+  };
+}
+
 export function ElevatorCabinMesh({
   asset,
   onSelect
@@ -17,8 +32,7 @@ export function ElevatorCabinMesh({
   asset: TwinSceneAsset;
   onSelect: (elevatorId: string) => void;
 }): React.JSX.Element {
-  const doorOffset = asset.doorOpenRatio * 0.28;
-  const bodyColor = COLOR_MAP[asset.color];
+  const { doorOffset, bodyColor, faultEmissive, doorPercentLabel } = getElevatorCabinVisualState(asset);
 
   return (
     <group
@@ -30,7 +44,17 @@ export function ElevatorCabinMesh({
     >
       <mesh castShadow receiveShadow>
         <boxGeometry args={[1.14, asset.cabinHeight, 1.08]} />
-        <meshStandardMaterial color={bodyColor} metalness={0.24} roughness={0.48} />
+        <meshStandardMaterial
+          color={bodyColor}
+          emissive={faultEmissive}
+          emissiveIntensity={asset.faultTone === 'none' ? 0 : 0.55}
+          metalness={0.24}
+          roughness={0.48}
+        />
+      </mesh>
+      <mesh position={[0, -asset.cabinHeight * 0.54, 0.64]}>
+        <boxGeometry args={[Math.max(0.12, asset.doorOpenRatio * 1.05), 0.06, 0.08]} />
+        <meshStandardMaterial color={asset.doorOpenRatio > 0.8 ? '#67e8f9' : '#facc15'} />
       </mesh>
       <mesh position={[-0.23 - doorOffset, 0, 0.62]}>
         <boxGeometry args={[0.34, asset.cabinHeight * 0.9, 0.08]} />
@@ -47,13 +71,13 @@ export function ElevatorCabinMesh({
         </mesh>
       ) : null}
       <Text
-        color="#f4fbfa"
-        fontSize={0.24}
+        color={asset.loadTone === 'critical' ? '#fecaca' : asset.loadTone === 'warning' ? '#fde68a' : '#f4fbfa'}
+        fontSize={0.2}
         anchorX="center"
         anchorY="middle"
         position={[0, asset.cabinHeight * 0.98, 0.72]}
       >
-        {`F${asset.floorPosition + 1}`}
+        {doorPercentLabel}
       </Text>
     </group>
   );

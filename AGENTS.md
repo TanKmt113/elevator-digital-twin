@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/007-ditto-realtime-sync/plan.md`
+`specs/009-admin-users-ditto-thing-management/plan.md`
 <!-- SPECKIT END -->

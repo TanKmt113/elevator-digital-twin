@@ -17,6 +17,33 @@ describe('elevator monitoring', () => {
     });
   });
 
+  it('returns a merged detail projection when the latest accepted update is partial', () => {
+    const service = new ElevatorMonitoringService();
+    service.upsert(createElevatorTwin({
+      elevatorId: 'A',
+      buildingId: 'L72',
+      currentFloor: 10,
+      positionMeters: 30,
+      loadKg: 300,
+      doorOpenPercent: 0
+    }));
+
+    service.upsert(createElevatorTwin({
+      elevatorId: 'A',
+      buildingId: 'L72',
+      currentFloor: 11,
+      doorOpenPercent: 40
+    }));
+
+    expect(service.get('A')).toMatchObject({
+      buildingId: 'L72',
+      currentFloor: 11,
+      positionMeters: 30,
+      loadKg: 300,
+      doorOpenPercent: 40
+    });
+  });
+
   it('rejects duplicate, out-of-order, and out-of-scope live events without mutating accepted state', () => {
     const service = new ElevatorMonitoringService();
     service.upsert(createElevatorTwin({ elevatorId: 'A', buildingId: 'L72', currentFloor: 10 }));
@@ -25,7 +52,7 @@ describe('elevator monitoring', () => {
     const accepted: NormalizedEvent<{ elevatorId: string; buildingId: string; currentFloor: number }> = {
       eventId: 'evt-accepted',
       eventType: 'elevator.state.changed',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'realtime',
       occurredAt: '2026-05-05T10:00:01.000Z',
       payload: { elevatorId: 'A', buildingId: 'L72', currentFloor: 11 }

@@ -16,8 +16,10 @@ import {
   recordSynchronizationDegraded,
   recordTwinBootstrapCompleted,
   recordTwinBootstrapFailed,
-  recordTwinBootstrapStarted
+  recordTwinBootstrapStarted,
+  recordNormalizationFailure
 } from '../../observability/elevator-monitoring.metrics.js';
+import { logger } from '../../observability/logger.js';
 
 function createInitialSynchronizationState(staleThresholdMs: number): RealtimeSynchronizationState {
   return {
@@ -32,7 +34,10 @@ function createInitialSynchronizationState(staleThresholdMs: number): RealtimeSy
     duplicateEventsDropped: 0,
     outOfOrderEventsRejected: 0,
     outOfScopeEventsRejected: 0,
-    malformedEventsRejected: 0
+    malformedEventsRejected: 0,
+    hydrationFailures: 0,
+    normalizationFailures: 0,
+    commandPolicyRejections: 0
   };
 }
 
@@ -143,10 +148,25 @@ export class ElevatorMonitoringService {
   }
 
   upsert(twin: ElevatorTwin): ElevatorTwin {
-    const saved = this.repository.save({
-      ...twin,
-      stale: this.stalenessPolicy.isStale(twin.lastEventAt)
-    });
+    let saved: ElevatorTwin;
+    try {
+      saved = this.repository.save({
+        ...twin,
+        stale: this.stalenessPolicy.isStale(twin.lastEventAt)
+      });
+    } catch (error) {
+      recordNormalizationFailure();
+      this.synchronizationState = {
+        ...this.synchronizationState,
+        normalizationFailures: (this.synchronizationState.normalizationFailures ?? 0) + 1
+      };
+      logger.error('elevator_twin_normalization_rejected', {
+        elevatorId: twin.elevatorId,
+        buildingId: twin.buildingId,
+        error: error instanceof Error ? error.message : 'unknown_validation_error'
+      });
+      throw error;
+    }
     this.synchronizationState = {
       ...this.synchronizationState,
       buildingId: saved.buildingId,
@@ -182,6 +202,9 @@ export class ElevatorMonitoringService {
     outOfOrderEventsRejected?: number;
     outOfScopeEventsRejected?: number;
     malformedEventsRejected?: number;
+    hydrationFailures?: number;
+    normalizationFailures?: number;
+    commandPolicyRejections?: number;
   }): void {
     this.synchronizationState = {
       ...this.synchronizationState,
@@ -192,7 +215,11 @@ export class ElevatorMonitoringService {
       outOfScopeEventsRejected:
         stats.outOfScopeEventsRejected ?? this.synchronizationState.outOfScopeEventsRejected,
       malformedEventsRejected:
-        stats.malformedEventsRejected ?? this.synchronizationState.malformedEventsRejected
+        stats.malformedEventsRejected ?? this.synchronizationState.malformedEventsRejected,
+      hydrationFailures: stats.hydrationFailures ?? this.synchronizationState.hydrationFailures,
+      normalizationFailures: stats.normalizationFailures ?? this.synchronizationState.normalizationFailures,
+      commandPolicyRejections:
+        stats.commandPolicyRejections ?? this.synchronizationState.commandPolicyRejections
     };
   }
 

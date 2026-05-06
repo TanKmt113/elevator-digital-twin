@@ -22,6 +22,9 @@ import { DittoClient } from '../integrations/ditto/ditto-client.js';
 import { settings } from '../config/settings.js';
 import { createDevDittoRoutes } from './routes/dev-ditto.routes.js';
 import { createDevAuthRoutes } from './routes/dev-auth.routes.js';
+import { createApiV1Router } from './routes/api-v1.routes.js';
+import { InMemoryUserRepository } from '../modules/users/in-memory-user.repository.js';
+import { InMemoryAuditRepository } from '../modules/audit/audit.repository.js';
 import { ElevatorStatePublisher } from '../modules/realtime/publishers/elevator-state.publisher.js';
 import { EventRouter } from '../modules/realtime/event-router.js';
 import { DittoLiveConsumer } from '../integrations/ditto/ditto-live-consumer.js';
@@ -32,6 +35,29 @@ interface CreateAppOptions {
   dittoClient?: DittoClient;
   seedAnalytics?: boolean;
   bootstrapTwin?: boolean;
+  userRepository?: InMemoryUserRepository;
+  auditRepository?: InMemoryAuditRepository;
+}
+
+async function bootstrapAdminFromEnv(repo: InMemoryUserRepository): Promise<void> {
+  const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!email || !password || repo.list().length > 0) {
+    return;
+  }
+  try {
+    await repo.createUser({
+      email,
+      password,
+      roles: ['platform_admin'],
+      buildingIds: []
+    });
+    logger.info('bootstrap_admin_created', { email });
+  } catch (error) {
+    logger.error('bootstrap_admin_failed', {
+      message: error instanceof Error ? error.message : 'unknown'
+    });
+  }
 }
 
 const openApiSpecPath = new URL('../../../specs/004-ditto-end-to-end/contracts/backend-api.yaml', import.meta.url);
@@ -84,7 +110,7 @@ export function applyCorsHeaders(req: Request, res: Response, next: NextFunction
   if (isAllowedCorsOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin as string);
     res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Correlation-Id');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   }
 
@@ -102,6 +128,15 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(express.json());
 
   const dittoClient = options.dittoClient ?? new DittoClient();
+  const auditRepository = options.auditRepository ?? new InMemoryAuditRepository();
+  const userRepository = options.userRepository ?? new InMemoryUserRepository();
+  if (!options.userRepository) {
+    if (process.env.NODE_ENV === 'test') {
+      userRepository.seedTestPlatformAdmin();
+    } else {
+      void bootstrapAdminFromEnv(userRepository);
+    }
+  }
   const monitoringService = new ElevatorMonitoringService(undefined, undefined, dittoClient);
   const commandExecutionService = new CommandExecutionService(monitoringService);
   const alertsService = new AlertsService();
@@ -142,7 +177,7 @@ export function createApp(options: CreateAppOptions = {}) {
     sessions.publish({
       eventId: `sync-${Date.now()}`,
       eventType: 'system.connection.state',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'realtime',
       occurredAt: new Date().toISOString(),
       payload: {
@@ -156,7 +191,7 @@ export function createApp(options: CreateAppOptions = {}) {
     sessions.publish({
       eventId: `resync-${Date.now()}`,
       eventType: 'dashboard.resync.required',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'realtime',
       occurredAt: new Date().toISOString(),
       payload: {
@@ -171,6 +206,16 @@ export function createApp(options: CreateAppOptions = {}) {
     publishSynchronizationState();
   });
 
+  app.use(
+    '/api/v1',
+    createApiV1Router({
+      userRepository,
+      auditRepository,
+      dittoClient,
+      defaultElevatorPolicyId: settings.env.defaultElevatorPolicyId,
+      onThingMutated: () => monitoringService.refreshFromDitto()
+    })
+  );
   app.use(createDevAuthRoutes());
   app.use(createDevDittoRoutes(dittoClient));
   app.use(createElevatorRoutes(monitoringService, buildSynchronizationState));

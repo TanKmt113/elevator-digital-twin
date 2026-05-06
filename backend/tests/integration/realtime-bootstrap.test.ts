@@ -127,7 +127,7 @@ describe('realtime bootstrap', () => {
     publisher.publishEvent({
       eventId: 'ditto-live-evt-1',
       eventType: 'elevator.state.changed',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'realtime',
       occurredAt: '2026-05-05T10:10:00.000Z',
       payload: createElevatorTwin({

@@ -1,9 +1,10 @@
 import { parse } from 'node:url';
 import type { IncomingMessage, Server } from 'http';
 import type { Duplex } from 'stream';
-import jwt from 'jsonwebtoken';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import WebSocket, { WebSocketServer } from 'ws';
 import { settings } from '../../config/settings.js';
+import { normalizeJwtPayload } from '../auth/auth.types.js';
 import type { RealtimeConnectionState } from '../../contracts/elevator.js';
 import type { NormalizedEvent } from './event-normalizer.js';
 
@@ -43,12 +44,30 @@ function authenticateRealtimeRequest(request: IncomingMessage): SessionUser | nu
   }
 
   try {
-    const decoded = jwt.verify(token, settings.env.jwtSecret) as SessionUser;
-    if (decoded.buildingId !== requestedBuildingId) {
+    const decoded = jwt.verify(token, settings.env.jwtSecret) as string | JwtPayload;
+    if (typeof decoded === 'string') {
+      return null;
+    }
+    const principal = normalizeJwtPayload(decoded);
+    if (!principal.userId) {
+      return null;
+    }
+    if (principal.isPlatformAdmin) {
+      return {
+        userId: principal.userId,
+        role: 'platform_admin',
+        buildingId: requestedBuildingId
+      };
+    }
+    if (!principal.buildings.includes(requestedBuildingId)) {
       return null;
     }
 
-    return decoded;
+    return {
+      userId: principal.userId,
+      role: principal.roles[0] ?? 'operator',
+      buildingId: requestedBuildingId
+    };
   } catch {
     return null;
   }

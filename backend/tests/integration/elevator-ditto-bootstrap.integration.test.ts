@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DittoClient, type DittoThing } from '../../src/integrations/ditto/ditto-client.js';
+import type { ElevatorTwin } from '../../src/contracts/elevator.js';
 import { ElevatorMonitoringService } from '../../src/modules/elevators/elevator-monitoring.service.js';
+import { createElevatorTwin } from '../../src/modules/elevators/elevator-twin.model.js';
 
 class FakeDittoClient extends DittoClient {
   constructor(private things: DittoThing[]) {
@@ -32,10 +34,28 @@ describe('elevator Ditto bootstrap', () => {
               status: 'moving',
               currentFloor: 12,
               targetFloor: 18,
+              positionMeters: 33.6,
+              floorProgress: 0.2,
+              speedMps: 1.6,
+              accelerationMps2: 0.1,
               direction: 'up',
               doorState: 'closed',
+              doorOpenPercent: 0,
+              loadKg: 610,
+              ratedLoadKg: 1000,
               loadPercentage: 61.5,
-              healthState: 'normal'
+              mode: 'normal',
+              brakeState: 'released',
+              motorState: 'running',
+              controllerState: 'normal',
+              motorTempC: 41,
+              controllerTempC: 34,
+              powerKw: 14.2,
+              vibrationLevel: 0.21,
+              healthState: 'normal',
+              activeCalls: [{ floor: 18, direction: 'up', type: 'destination' }],
+              stopQueue: [18],
+              etaSeconds: 18
             }
           }
         }
@@ -65,6 +85,12 @@ describe('elevator Ditto bootstrap', () => {
       buildingId: 'L72',
       currentFloor: 12,
       targetFloor: 18,
+      positionMeters: 33.6,
+      doorOpenPercent: 0,
+      loadKg: 610,
+      mode: 'normal',
+      motorState: 'running',
+      stopQueue: [18],
       direction: 'up',
       doorState: 'closed'
     });
@@ -158,6 +184,43 @@ describe('elevator Ditto bootstrap', () => {
       currentFloor: 3,
       status: 'moving',
       targetFloor: 3
+    });
+  });
+
+  it('materializes partial accepted updates over the last complete twin state', () => {
+    const service = new ElevatorMonitoringService(undefined, undefined, undefined);
+    service.upsert(createElevatorTwin({
+      elevatorId: 'org.example:L72-ELEV-A',
+      buildingId: 'L72',
+      currentFloor: 4,
+      positionMeters: 12.6,
+      loadKg: 340,
+      doorOpenPercent: 0,
+      lastEventAt: '2026-05-06T01:18:13.576Z'
+    }));
+
+    service.upsert({
+      elevatorId: 'org.example:L72-ELEV-A',
+      buildingId: 'L72',
+      schemaVersion: '1.1.0',
+      deviceType: 'elevator',
+      status: 'moving',
+      currentFloor: 5,
+      direction: 'up',
+      doorState: 'closing',
+      healthState: 'normal',
+      doorOpenPercent: 40,
+      lastEventAt: '2026-05-06T01:18:14.576Z',
+      stale: false
+    } as ElevatorTwin);
+
+    expect(service.get('org.example:L72-ELEV-A')).toMatchObject({
+      elevatorId: 'org.example:L72-ELEV-A',
+      buildingId: 'L72',
+      currentFloor: 5,
+      positionMeters: 12.6,
+      loadKg: 340,
+      doorOpenPercent: 40
     });
   });
 });

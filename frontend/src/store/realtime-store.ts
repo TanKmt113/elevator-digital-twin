@@ -35,6 +35,9 @@ interface RealtimeState {
   outOfOrderEventsRejected: number;
   outOfScopeEventsRejected: number;
   malformedEventsRejected: number;
+  hydrationFailures: number;
+  normalizationFailures: number;
+  commandPolicyRejections: number;
   staleMessage?: string;
   setConnectionState: (connectionState: RealtimeConnectionState) => void;
   setDataState: (dataState: DashboardDataState) => void;
@@ -65,6 +68,9 @@ export const useRealtimeStore = create<RealtimeState>((set) => ({
   outOfOrderEventsRejected: 0,
   outOfScopeEventsRejected: 0,
   malformedEventsRejected: 0,
+  hydrationFailures: 0,
+  normalizationFailures: 0,
+  commandPolicyRejections: 0,
   staleMessage: undefined,
   setConnectionState: (connectionState) =>
     set({

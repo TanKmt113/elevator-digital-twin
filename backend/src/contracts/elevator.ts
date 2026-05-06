@@ -16,18 +16,65 @@ export type RealtimeConnectionState =
   | 'degraded'
   | 'resyncing';
 
+export type ElevatorMode =
+  | 'normal'
+  | 'inspection'
+  | 'fire_service'
+  | 'independent_service'
+  | 'maintenance'
+  | 'emergency'
+  | 'unknown';
+
+export type BrakeState = 'engaged' | 'released' | 'unknown';
+export type MotorState = 'idle' | 'running' | 'fault' | 'unknown';
+export type ControllerState = 'normal' | 'warning' | 'fault' | 'unknown';
+export type FaultSeverity = 'info' | 'warning' | 'critical';
+
+export interface ElevatorCall {
+  floor: number;
+  direction?: 'up' | 'down' | 'destination' | 'unknown';
+  type?: 'hall' | 'car' | 'destination' | 'unknown';
+}
+
 export interface ElevatorTwin {
   elevatorId: string;
   buildingId: string;
-  schemaVersion: '1.0.0';
+  shaftId?: string;
+  schemaVersion: '1.0.0' | '1.1.0';
   deviceType: 'elevator';
   status: ElevatorStatus;
   currentFloor: number;
   targetFloor?: number;
+  positionMeters?: number;
+  floorProgress?: number;
+  speedMps?: number;
+  accelerationMps2?: number;
   direction: 'up' | 'down' | 'stationary' | 'unknown';
   doorState: 'open' | 'closed' | 'opening' | 'closing' | 'blocked' | 'unknown';
+  doorOpenPercent?: number;
+  doorObstruction?: boolean;
+  doorCycleCount?: number;
+  loadKg?: number;
+  ratedLoadKg?: number;
   loadPercentage?: number;
+  occupancyEstimate?: number;
+  mode?: ElevatorMode;
+  serviceMode?: string;
+  brakeState?: BrakeState;
+  motorState?: MotorState;
+  controllerState?: ControllerState;
+  motorTempC?: number;
+  controllerTempC?: number;
+  powerKw?: number;
+  vibrationLevel?: number;
   healthState: 'normal' | 'warning' | 'critical' | 'unknown';
+  faultCode?: string;
+  faultSeverity?: FaultSeverity;
+  lastFaultAt?: string;
+  activeCalls?: ElevatorCall[];
+  stopQueue?: number[];
+  etaSeconds?: number;
+  fieldFreshness?: Record<string, string>;
   lastEventAt: string;
   stale: boolean;
 }
@@ -60,5 +107,8 @@ export interface RealtimeSynchronizationState {
   outOfOrderEventsRejected: number;
   outOfScopeEventsRejected: number;
   malformedEventsRejected: number;
+  hydrationFailures?: number;
+  normalizationFailures?: number;
+  commandPolicyRejections?: number;
   lastFailureReason?: string;
 }

@@ -25,13 +25,47 @@ Expected mapping into the app contract:
 
 - `thingId` -> `elevatorId`
 - `attributes.buildingId` -> `buildingId`
+- `attributes.shaftId` -> 3D shaft binding when present
 - `features.elevator.properties.currentFloor` -> `currentFloor`
 - `features.elevator.properties.targetFloor` -> `targetFloor`
+- `features.elevator.properties.positionMeters` -> `positionMeters`
+- `features.elevator.properties.floorProgress` -> `floorProgress`
+- `features.elevator.properties.speedMps` -> `speedMps`
+- `features.elevator.properties.accelerationMps2` -> `accelerationMps2`
 - `features.elevator.properties.direction` -> `direction`
 - `features.elevator.properties.doorState` -> `doorState`
+- `features.elevator.properties.doorOpenPercent` -> `doorOpenPercent`
+- `features.elevator.properties.doorObstruction` -> `doorObstruction`
+- `features.elevator.properties.doorCycleCount` -> `doorCycleCount`
+- `features.elevator.properties.loadKg` -> `loadKg`
+- `features.elevator.properties.ratedLoadKg` -> `ratedLoadKg`
 - `features.elevator.properties.loadPercentage` -> `loadPercentage`
 - `features.elevator.properties.status` -> `status`
+- `features.elevator.properties.mode` -> `mode`
+- `features.elevator.properties.brakeState` -> `brakeState`
+- `features.elevator.properties.motorState` -> `motorState`
+- `features.elevator.properties.controllerState` -> `controllerState`
+- `features.elevator.properties.motorTempC` -> `motorTempC`
+- `features.elevator.properties.controllerTempC` -> `controllerTempC`
+- `features.elevator.properties.powerKw` -> `powerKw`
+- `features.elevator.properties.vibrationLevel` -> `vibrationLevel`
 - `features.elevator.properties.healthState` -> `healthState`
+- `features.elevator.properties.faultCode` -> `faultCode`
+- `features.elevator.properties.faultSeverity` -> `faultSeverity`
+- `features.elevator.properties.lastFaultAt` -> `lastFaultAt`
+- `features.elevator.properties.activeCalls` -> `activeCalls`
+- `features.elevator.properties.stopQueue` -> `stopQueue`
+- `features.elevator.properties.etaSeconds` -> `etaSeconds`
+
+## Enhanced Digital Twin Contract
+
+Phase 8 expands the normalized elevator contract from basic floor/status state to an operator-grade Twin. The authoritative source is still Ditto, but frontend surfaces continue to consume only backend-normalized REST and realtime events. Partial Ditto merge events must be hydrated or merged by the backend before publication so browser clients receive a complete, scoped elevator projection.
+
+Spec Kit references:
+
+- [Enhanced elevator state contract](../specs/008-enhanced-elevator-twin/contracts/enhanced-elevator-state.md)
+- [Enhanced realtime events](../specs/008-enhanced-elevator-twin/contracts/realtime-events.md)
+- [Scene projection contract](../specs/008-enhanced-elevator-twin/contracts/scene-projection.md)
 
 ## Backend Configuration
 

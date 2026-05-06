@@ -65,6 +65,9 @@ export function handleRealtimeEvent(
       outOfOrderEventsRejected?: number;
       outOfScopeEventsRejected?: number;
       malformedEventsRejected?: number;
+      hydrationFailures?: number;
+      normalizationFailures?: number;
+      commandPolicyRejections?: number;
       lastFailureReason?: string;
     };
     useRealtimeStore.getState().applySynchronizationState({
@@ -92,6 +95,9 @@ export function handleRealtimeEvent(
       outOfOrderEventsRejected: payload.outOfOrderEventsRejected,
       outOfScopeEventsRejected: payload.outOfScopeEventsRejected,
       malformedEventsRejected: payload.malformedEventsRejected,
+      hydrationFailures: payload.hydrationFailures,
+      normalizationFailures: payload.normalizationFailures,
+      commandPolicyRejections: payload.commandPolicyRejections,
       staleMessage: payload.lastFailureReason
     });
   }

@@ -5,10 +5,12 @@ import type {
   TwinSceneFocusMode
 } from '../../../store/elevator-store';
 import type { TwinSceneAsset } from '../services/map-elevator-state-to-scene';
+import { DEFAULT_BUILDING_SHAFT_LAYOUT } from '../services/map-elevator-state-to-scene';
 import { ElevatorShaftGroup } from './ElevatorShaftGroup';
 import { TwinCameraController } from './TwinCameraController';
 import { TwinLightingRig } from './TwinLightingRig';
 import { TwinStageGeometry } from './TwinStageGeometry';
+import { resolveTwinCanvasDpr } from '../services/twin3d-performance';
 
 export function TwinCanvasScene({
   assets,
@@ -16,6 +18,7 @@ export function TwinCanvasScene({
   selectedElevatorId,
   transitionState,
   hasWebglSupport,
+  isPlayback = false,
   onSelect,
   onTransitionStateChange
 }: {
@@ -24,6 +27,8 @@ export function TwinCanvasScene({
   selectedElevatorId?: string;
   transitionState: TwinCameraTransitionState;
   hasWebglSupport: boolean;
+  /** When true, lower DPR during dense L72-style overview replay to protect frame budget. */
+  isPlayback?: boolean;
   onSelect: (elevatorId: string) => void;
   onTransitionStateChange?: (state: 'idle' | 'transitioning') => void;
 }): React.JSX.Element {
@@ -46,11 +51,17 @@ export function TwinCanvasScene({
   }
 
   const shaftCount = Math.max(...assets.map((asset) => asset.shaftIndex + 1), 1);
-  const floorCount = Math.max(...assets.map((asset) => asset.floorPosition + 1), 4);
+  const floorCount = Math.max(
+    DEFAULT_BUILDING_SHAFT_LAYOUT.maxFloor - DEFAULT_BUILDING_SHAFT_LAYOUT.minFloor + 1,
+    ...assets.map((asset) => asset.floorPosition + 1),
+    4
+  );
+
+  const canvasDpr = resolveTwinCanvasDpr(assets.length, isPlayback);
 
   return (
     <div className="ops-twin-canvas-shell">
-      <Canvas camera={{ fov: 40, position: [12, 12, 12] }} shadows>
+      <Canvas dpr={canvasDpr} camera={{ fov: 40, position: [12, 12, 12] }} shadows>
         <color attach="background" args={['#071018']} />
         <TwinLightingRig />
         <TwinStageGeometry floorCount={floorCount} shaftCount={shaftCount} />

@@ -9,7 +9,10 @@ export function createElevatorRoutes(
   getSynchronizationState: () => RealtimeSynchronizationState = () => service.getSynchronizationState()
 ): Router {
   const router = Router();
-  router.use(authenticateJwt, requireRoles('operator', 'admin', 'maintenance'));
+  router.use(
+    authenticateJwt,
+    requireRoles('operator', 'admin', 'maintenance', 'viewer', 'building_admin', 'platform_admin')
+  );
 
   router.get('/elevators', async (req, res) => {
     const buildingId = typeof req.query.buildingId === 'string' ? req.query.buildingId : undefined;

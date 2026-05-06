@@ -12,6 +12,7 @@ import {
   type NormalizedEvent
 } from '../../modules/realtime/event-normalizer.js';
 import type { ElevatorTwin } from '../../contracts/elevator.js';
+import { recordHydrationFailure } from '../../observability/elevator-monitoring.metrics.js';
 
 function isDittoThing(value: unknown): value is DittoThing {
   return Boolean(
@@ -118,6 +119,7 @@ async function resolveThingFromPayload(
       timeout: '3s'
     });
   } catch {
+    recordHydrationFailure();
     return null;
   }
 }
@@ -139,7 +141,7 @@ function normalizeLiveThing(
       (typeof payload.id === 'string' ? payload.id : undefined) ??
       `evt-${thing.thingId}-${occurredAt}`,
     eventType: 'elevator.state.changed',
-    schemaVersion: '1.0.0',
+    schemaVersion: '1.1.0',
     dataClass: 'realtime',
     occurredAt,
     payload: {
@@ -189,7 +191,12 @@ export class DittoLiveConsumer {
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.socket?.removeAllListeners();
-    this.socket?.close();
+    if (this.socket?.readyState === WebSocket.CONNECTING) {
+      this.socket.on('error', () => undefined);
+      this.socket.terminate();
+    } else {
+      this.socket?.close();
+    }
     this.socket = undefined;
   }
 

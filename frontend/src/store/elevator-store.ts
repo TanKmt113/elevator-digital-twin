@@ -3,14 +3,49 @@ import { create } from 'zustand';
 export interface ElevatorViewModel {
   elevatorId: string;
   buildingId?: string;
+  shaftId?: string;
+  schemaVersion?: '1.0.0' | '1.1.0';
+  deviceType?: 'elevator';
   status: string;
   currentFloor: number;
   targetFloor?: number;
+  positionMeters?: number;
+  floorProgress?: number;
+  speedMps?: number;
+  accelerationMps2?: number;
   direction: string;
   doorState: string;
+  doorOpenPercent?: number;
+  doorObstruction?: boolean;
+  doorCycleCount?: number;
+  loadKg?: number;
+  ratedLoadKg?: number;
   loadPercentage?: number;
+  occupancyEstimate?: number;
+  mode?: string;
+  serviceMode?: string;
+  brakeState?: string;
+  motorState?: string;
+  controllerState?: string;
+  motorTempC?: number;
+  controllerTempC?: number;
+  powerKw?: number;
+  vibrationLevel?: number;
   healthState: string;
+  faultCode?: string;
+  faultSeverity?: string;
+  lastFaultAt?: string;
+  activeCalls?: Array<{
+    floor: number;
+    direction?: string;
+    type?: string;
+  }>;
+  stopQueue?: number[];
+  etaSeconds?: number;
+  fieldFreshness?: Record<string, string>;
+  lastEventAt?: string;
   stale: boolean;
+  isPlayback?: boolean;
 }
 
 export type ElevatorSelectionSource = 'list' | 'detail' | '3d' | 'system';
@@ -54,7 +89,10 @@ export const useElevatorStore = create<ElevatorStoreState>((set) => ({
     set((state) => ({
       elevators: {
         ...state.elevators,
-        [elevator.elevatorId]: elevator
+        [elevator.elevatorId]: {
+          ...state.elevators[elevator.elevatorId],
+          ...elevator
+        }
       }
     })),
   replaceElevators: (elevators, buildingId) =>

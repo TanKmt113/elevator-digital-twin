@@ -39,7 +39,7 @@ export function ElevatorShaftGroup({
         anchorY="middle"
         position={[0, shaftHeight + 0.2, 0]}
       >
-        {asset.elevatorId.replace('org.example:', '')}
+        {asset.shaftLabel}
       </Text>
       <Text
         color={asset.color === 'red' ? '#f9a8a8' : asset.color === 'yellow' ? '#fde68a' : '#9fe6ff'}
@@ -48,7 +48,7 @@ export function ElevatorShaftGroup({
         anchorY="middle"
         position={[0, shaftHeight - 0.65, 0.45]}
       >
-        {`${asset.visualStatus.toUpperCase()} • F${asset.floorPosition + 1}`}
+        {`${asset.visualStatus.toUpperCase()} • F${asset.floorPosition}`}
       </Text>
       <mesh position={[0, asset.worldPosition.y, -0.95]}>
         <boxGeometry args={[1.6, 0.03, 0.12]} />

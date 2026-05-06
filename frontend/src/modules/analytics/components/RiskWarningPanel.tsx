@@ -7,20 +7,20 @@ export function deriveRiskVerificationState(warning?: RiskWarningViewModel): {
 } {
   if (!warning?.modelVersion || !warning.validationRunId) {
     return {
-      label: 'Unverified',
+      label: 'Chưa xác minh',
       toneClass: 'bg-amber-300/10 text-amber-100'
     };
   }
 
   if (warning.verificationStatus === 'failed' || warning.modelTrace?.validationStatus === 'failed') {
     return {
-      label: 'Failed',
+      label: 'Không đạt',
       toneClass: 'bg-rose-400/10 text-rose-100'
     };
   }
 
   return {
-    label: 'Verified',
+    label: 'Đã xác minh',
     toneClass: 'bg-emerald-400/10 text-emerald-100'
   };
 }
@@ -30,13 +30,13 @@ export function RiskWarningPanel(): React.JSX.Element {
   return (
     <section className="ops-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
       <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-        Predictive Maintenance
+        Bảo trì dự đoán
       </p>
-      <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Predictive Warnings</h2>
+      <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Cảnh báo dự đoán</h2>
       <div className="ops-list mt-4 grid gap-3">
         {warnings.length === 0 ? (
           <article className="ops-empty rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
-            No predictive warnings are active.
+            Hiện không có cảnh báo dự đoán nào.
           </article>
         ) : null}
         {warnings.map((warning) => (
@@ -53,7 +53,7 @@ export function RiskWarningPanel(): React.JSX.Element {
                 {warning.riskLevel}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-300">Risk window: {warning.predictedWindowHours}h</p>
+            <p className="mt-2 text-sm text-slate-300">Khung rủi ro: {warning.predictedWindowHours} giờ</p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
               <span className={`rounded-full px-2.5 py-1 font-semibold ${verification.toneClass}`}>
                 {verification.label}

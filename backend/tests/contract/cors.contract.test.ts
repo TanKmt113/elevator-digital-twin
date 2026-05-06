@@ -23,7 +23,10 @@ describe('cors contract', () => {
     );
 
     expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'http://localhost:5173');
-    expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    expect(setHeader).toHaveBeenCalledWith(
+      'Access-Control-Allow-Headers',
+      'Authorization, Content-Type, X-Correlation-Id'
+    );
     expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     expect(next).toHaveBeenCalled();
   });

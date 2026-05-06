@@ -1,8 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TwinScene } from '../../src/modules/twin3d/components/TwinScene';
 import { deriveTwinSceneState } from '../../src/modules/twin3d/components/TwinScene';
-import { measureTwinRenderFrame } from '../../src/modules/twin3d/services/twin3d-performance';
+import {
+  estimateTwinSceneRenderTimeMs,
+  measureTwinRenderFrame,
+  resolveTwinCanvasDpr
+} from '../../src/modules/twin3d/services/twin3d-performance';
 import { useElevatorStore } from '../../src/store/elevator-store';
 import { useRealtimeStore } from '../../src/store/realtime-store';
 
@@ -69,7 +73,7 @@ describe('twin3d rendering runtime', () => {
   it('renders a controlled fallback when webgl is unavailable', () => {
     seedRenderScene();
     const html = renderToStaticMarkup(<TwinScene />);
-    expect(html).toContain('Twin Scene');
+    expect(html).toContain('Mô hình Twin 3D');
   });
 
   it('tracks dense render load with projection count and frame budget', () => {
@@ -78,5 +82,29 @@ describe('twin3d rendering runtime', () => {
       frameBudgetExceeded: true,
       projectionCount: 12
     });
+  });
+});
+
+describe('twin3d performance (L72 replay)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('raises estimated render time during playback for many visible cabins', () => {
+    expect(
+      estimateTwinSceneRenderTimeMs({ visibleProjectionCount: 12, isPlayback: true })
+    ).toBeGreaterThan(
+      estimateTwinSceneRenderTimeMs({ visibleProjectionCount: 12, isPlayback: false })
+    );
+  });
+
+  it('resolveTwinCanvasDpr forces 1 for dense playback stacks', () => {
+    vi.stubGlobal('window', { devicePixelRatio: 2 } as Window);
+    expect(resolveTwinCanvasDpr(10, true)).toBe(1);
+  });
+
+  it('resolveTwinCanvasDpr caps pixel ratio when many cabins render outside playback', () => {
+    vi.stubGlobal('window', { devicePixelRatio: 2 } as Window);
+    expect(resolveTwinCanvasDpr(12, false)).toBe(1.25);
   });
 });

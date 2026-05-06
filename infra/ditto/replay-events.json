@@ -15,10 +15,30 @@
             "status": "moving",
             "currentFloor": 3,
             "targetFloor": 8,
+            "positionMeters": 6.4,
+            "floorProgress": 0.55,
+            "speedMps": 1.4,
+            "accelerationMps2": 0.15,
             "direction": "up",
             "doorState": "closed",
+            "doorOpenPercent": 0,
+            "doorObstruction": false,
+            "loadKg": 340,
+            "ratedLoadKg": 1000,
             "loadPercentage": 34,
-            "healthState": "normal"
+            "occupancyEstimate": 5,
+            "mode": "normal",
+            "brakeState": "released",
+            "motorState": "running",
+            "controllerState": "normal",
+            "motorTempC": 38,
+            "controllerTempC": 31,
+            "powerKw": 11.2,
+            "vibrationLevel": 0.18,
+            "healthState": "normal",
+            "activeCalls": [],
+            "stopQueue": [8],
+            "etaSeconds": 16
           }
         }
       }
@@ -40,10 +60,30 @@
             "status": "idle",
             "currentFloor": 18,
             "targetFloor": 18,
+            "positionMeters": 51,
+            "floorProgress": 0,
+            "speedMps": 0,
+            "accelerationMps2": 0,
             "direction": "stationary",
             "doorState": "open",
+            "doorOpenPercent": 100,
+            "doorObstruction": false,
+            "loadKg": 120,
+            "ratedLoadKg": 1000,
             "loadPercentage": 12,
-            "healthState": "normal"
+            "occupancyEstimate": 2,
+            "mode": "normal",
+            "brakeState": "engaged",
+            "motorState": "idle",
+            "controllerState": "normal",
+            "motorTempC": 35,
+            "controllerTempC": 30,
+            "powerKw": 1.1,
+            "vibrationLevel": 0.1,
+            "healthState": "normal",
+            "activeCalls": [],
+            "stopQueue": [],
+            "etaSeconds": 0
           }
         }
       }
@@ -65,10 +105,124 @@
             "status": "moving",
             "currentFloor": 9,
             "targetFloor": 12,
+            "positionMeters": 24,
+            "floorProgress": 0.3,
+            "speedMps": 1.2,
+            "accelerationMps2": 0.1,
             "direction": "up",
             "doorState": "closed",
+            "doorOpenPercent": 0,
+            "loadKg": 400,
+            "ratedLoadKg": 1000,
             "loadPercentage": 40,
-            "healthState": "normal"
+            "mode": "normal",
+            "brakeState": "released",
+            "motorState": "running",
+            "controllerState": "normal",
+            "healthState": "normal",
+            "stopQueue": [12],
+            "etaSeconds": 12
+          }
+        }
+      }
+    }
+  },
+  {
+    "eventId": "partial-door-a",
+    "description": "Partial merge-style door movement for elevator A inside L72",
+    "thing": {
+      "thingId": "org.example:L72-ELEV-A",
+      "features": {
+        "elevator": {
+          "properties": {
+            "doorState": "opening",
+            "doorOpenPercent": 45
+          }
+        }
+      }
+    }
+  },
+  {
+    "eventId": "fault-warning-c",
+    "description": "Fault warning update for maintenance elevator C",
+    "thing": {
+      "thingId": "org.example:L72-ELEV-C",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-c"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "fault",
+            "currentFloor": 5,
+            "targetFloor": 5,
+            "direction": "stationary",
+            "doorState": "blocked",
+            "doorOpenPercent": 70,
+            "loadKg": 0,
+            "ratedLoadKg": 1000,
+            "loadPercentage": 0,
+            "mode": "maintenance",
+            "brakeState": "engaged",
+            "motorState": "fault",
+            "controllerState": "fault",
+            "motorTempC": 44,
+            "controllerTempC": 48,
+            "powerKw": 0.7,
+            "vibrationLevel": 0.66,
+            "healthState": "critical",
+            "faultCode": "DOOR-BLOCKED",
+            "faultSeverity": "critical",
+            "lastFaultAt": "2026-05-06T01:20:00.000Z",
+            "activeCalls": [],
+            "stopQueue": [],
+            "etaSeconds": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "eventId": "command-sim-call-a",
+    "description": "Command simulation target state for elevator A call to floor 12",
+    "thing": {
+      "thingId": "org.example:L72-ELEV-A",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-a"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "moving",
+            "currentFloor": 4,
+            "targetFloor": 12,
+            "positionMeters": 9.8,
+            "floorProgress": 0.6,
+            "speedMps": 1.3,
+            "direction": "up",
+            "doorState": "closed",
+            "doorOpenPercent": 0,
+            "loadKg": 260,
+            "ratedLoadKg": 1000,
+            "loadPercentage": 26,
+            "mode": "normal",
+            "brakeState": "released",
+            "motorState": "running",
+            "controllerState": "normal",
+            "healthState": "normal",
+            "activeCalls": [
+              {
+                "floor": 12,
+                "direction": "up",
+                "type": "hall"
+              }
+            ],
+            "stopQueue": [12],
+            "etaSeconds": 24
           }
         }
       }

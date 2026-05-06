@@ -8,7 +8,7 @@ export class RiskPublisher {
     this.sessions.publish({
       eventId: `evt-${warning.riskWarningId}`,
       eventType: 'elevator.risk.updated',
-      schemaVersion: '1.0.0',
+      schemaVersion: '1.1.0',
       dataClass: 'telemetry',
       occurredAt: new Date().toISOString(),
       payload: warning

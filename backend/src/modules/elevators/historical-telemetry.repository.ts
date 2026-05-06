@@ -1,9 +1,14 @@
 export interface HistoricalTelemetryPoint {
   elevatorId: string;
+  buildingId?: string;
   recordedAt: string;
   currentFloor?: number;
   direction?: string;
   doorState?: string;
+  positionMeters?: number;
+  speedMps?: number;
+  doorOpenPercent?: number;
+  loadKg?: number;
   loadPercentage?: number;
   tripCount?: number;
 }

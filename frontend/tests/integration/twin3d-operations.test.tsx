@@ -60,7 +60,7 @@ describe('twin3d operations runtime', () => {
 
     expect(state.assets).toHaveLength(2);
     expect(state.visibleAssets.map((asset) => asset.elevatorId)).toEqual(['A', 'B']);
-    expect(renderToStaticMarkup(<TwinScene />)).toContain('Twin Scene');
+    expect(renderToStaticMarkup(<TwinScene />)).toContain('Mô hình Twin 3D');
   });
 
   it('shows empty-scene behavior explicitly when no projections exist', () => {
@@ -90,7 +90,7 @@ describe('twin3d operations runtime', () => {
     );
 
     expect(state.visibleAssets).toHaveLength(0);
-    expect(renderToStaticMarkup(<TwinScene />)).toContain('Twin Scene');
+    expect(renderToStaticMarkup(<TwinScene />)).toContain('Mô hình Twin 3D');
   });
 
   it('reports dense scene samples when projection count grows', () => {
@@ -98,6 +98,36 @@ describe('twin3d operations runtime', () => {
       frameBudgetExceeded: true,
       projectionCount: 12,
       density: 'dense'
+    });
+  });
+
+  it('derives live movement animation targets from enhanced state', () => {
+    const state = deriveTwinSceneState(
+      [
+        {
+          elevatorId: 'org.example:L72-ELEV-A',
+          buildingId: 'L72',
+          shaftId: 'shaft-a',
+          status: 'moving',
+          currentFloor: 4,
+          targetFloor: 8,
+          positionMeters: 12.6,
+          direction: 'up',
+          doorState: 'opening',
+          doorOpenPercent: 45,
+          healthState: 'normal',
+          stale: false
+        }
+      ],
+      'org.example:L72-ELEV-A',
+      'selected'
+    );
+
+    expect(state.visibleAssets[0]).toMatchObject({
+      worldPosition: expect.objectContaining({ y: 12.6 }),
+      doorOpenRatio: 0.45,
+      animationDurationMs: 650,
+      isSelected: true
     });
   });
 });

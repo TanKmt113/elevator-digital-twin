@@ -28,6 +28,18 @@ export function recordMalformedEventRejected(): void {
   incrementMetric('twin_malformed_events_rejected_total');
 }
 
+export function recordHydrationFailure(): void {
+  incrementMetric('twin_hydration_failures_total');
+}
+
+export function recordNormalizationFailure(): void {
+  incrementMetric('twin_normalization_failures_total');
+}
+
+export function recordCommandPolicyRejection(): void {
+  incrementMetric('twin_command_policy_rejections_total');
+}
+
 export function recordOutOfOrderEventRejected(): void {
   incrementMetric('twin_out_of_order_events_rejected_total');
 }
