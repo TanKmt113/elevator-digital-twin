@@ -124,13 +124,337 @@ paths:
           description: Local Ditto dataset seeded successfully
         '502':
           description: Ditto rejected the seed request or was unavailable
+  /api/v1/auth/login:
+    post:
+      summary: Exchange admin user credentials for a backend JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResult'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Invalid credentials
+  /api/v1/admin/users:
+    get:
+      summary: List admin users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [items]
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Platform admin role required
+    post:
+      summary: Create an admin user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AdminUser'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Platform admin role required
+        '409':
+          description: User already exists
+  /api/v1/buildings/{buildingId}/elevators/things:
+    post:
+      summary: Create a Ditto Thing for an elevator in a building scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BuildingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateElevatorThingRequest'
+      responses:
+        '201':
+          description: Thing created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ThingMutationResult'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Provisioning role or building scope forbidden
+        '409':
+          description: Thing already exists
+        '502':
+          description: Ditto rejected the request
+  /api/v1/buildings/{buildingId}/elevators/things/{thingId}:
+    get:
+      summary: Read an elevator Ditto Thing in building scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BuildingId'
+        - $ref: '#/components/parameters/ThingId'
+      responses:
+        '200':
+          description: Thing found
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Provisioning role or building scope forbidden
+        '404':
+          description: Thing not found in building scope
+    patch:
+      summary: Merge-patch elevator Thing properties
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BuildingId'
+        - $ref: '#/components/parameters/ThingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                properties:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Thing updated
+        '400':
+          description: Invalid request body
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Provisioning role or building scope forbidden
+        '404':
+          description: Thing not found in building scope
+        '502':
+          description: Ditto rejected the request
+  /api/v1/buildings/{buildingId}/elevators/things/{thingId}/archive:
+    post:
+      summary: Soft-archive an elevator Ditto Thing
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/BuildingId'
+        - $ref: '#/components/parameters/ThingId'
+      responses:
+        '200':
+          description: Thing archived
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Provisioning role or building scope forbidden
+        '404':
+          description: Thing not found in building scope
+        '502':
+          description: Ditto rejected the request
 components:
+  parameters:
+    BuildingId:
+      in: path
+      name: buildingId
+      required: true
+      schema:
+        type: string
+    ThingId:
+      in: path
+      name: thingId
+      required: true
+      schema:
+        type: string
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    ApiEnvelope:
+      type: object
+      required: [success, data, error]
+      properties:
+        success:
+          type: boolean
+        data:
+          nullable: true
+        error:
+          nullable: true
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              nullable: true
+    LoginResult:
+      type: object
+      required: [token, tokenType, expiresIn, user]
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: string
+        user:
+          type: object
+          required: [userId, email, roles, buildings]
+          properties:
+            userId:
+              type: string
+            email:
+              type: string
+              format: email
+            roles:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminRole'
+            buildings:
+              type: array
+              items:
+                type: string
+    AdminRole:
+      type: string
+      enum: [platform_admin, building_admin, operator, viewer]
+    AdminUser:
+      type: object
+      required: [userId, email, status, roles, buildings, createdAt]
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [active, disabled, pending]
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminRole'
+        buildings:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: string
+          format: date-time
+    CreateAdminUserRequest:
+      type: object
+      required: [email, password, roles]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        roles:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/AdminRole'
+        buildingIds:
+          type: array
+          items:
+            type: string
+    CreateElevatorThingRequest:
+      type: object
+      required: [thingId, shaftId]
+      properties:
+        thingId:
+          type: string
+        shaftId:
+          type: string
+        policyId:
+          type: string
+        properties:
+          type: object
+          additionalProperties: true
+    ThingMutationResult:
+      type: object
+      required: [thingId, buildingId]
+      properties:
+        thingId:
+          type: string
+        buildingId:
+          type: string
+        created:
+          type: boolean
+        updated:
+          type: boolean
+        archived:
+          type: boolean
     NormalizedElevatorState:
       type: object
       required:

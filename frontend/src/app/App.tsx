@@ -8,6 +8,7 @@ import {
   deriveSceneRuntimeState
 } from './dashboard-state';
 import { AlertsPage } from './pages/alerts-page';
+import { AdminPage } from './pages/admin-page';
 import { AnalyticsPage } from './pages/analytics-page';
 import { FleetPage } from './pages/fleet-page';
 import { OverviewPage } from './pages/overview-page';
@@ -44,6 +45,7 @@ export function App(): React.JSX.Element {
         <Route path="scene" element={<ScenePage />} />
         <Route path="alerts" element={<AlertsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to={DEFAULT_ADMIN_ROUTE.path} replace />} />
     </Routes>

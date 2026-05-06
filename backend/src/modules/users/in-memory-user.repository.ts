@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { hashPassword, hashPasswordSync } from '../auth/password.js';
-import type { CanonicalRole } from '../auth/auth.types.js';
-import type { UserRecord, UserStatus } from './user.model.js';
+import type { UserRecord } from './user.model.js';
+import type { CreateUserInput, UserRepository } from './user.repository.js';
 
-export class InMemoryUserRepository {
+export class InMemoryUserRepository implements UserRepository {
   private readonly users = new Map<string, UserRecord>();
   private readonly byEmail = new Map<string, string>();
 
@@ -28,13 +28,7 @@ export class InMemoryUserRepository {
     this.byEmail.set(email.toLowerCase(), rec.userId);
   }
 
-  async createUser(input: {
-    email: string;
-    password: string;
-    roles: CanonicalRole[];
-    buildingIds: string[];
-    status?: UserStatus;
-  }): Promise<UserRecord> {
+  async createUser(input: CreateUserInput): Promise<UserRecord> {
     const normalized = input.email.trim().toLowerCase();
     if (this.byEmail.has(normalized)) {
       throw new Error('USER_EXISTS');
@@ -55,23 +49,23 @@ export class InMemoryUserRepository {
     return rec;
   }
 
-  findByEmail(email: string): UserRecord | undefined {
+  async findByEmail(email: string): Promise<UserRecord | undefined> {
     const id = this.byEmail.get(email.trim().toLowerCase());
     return id ? this.users.get(id) : undefined;
   }
 
-  getById(userId: string): UserRecord | undefined {
+  async getById(userId: string): Promise<UserRecord | undefined> {
     return this.users.get(userId);
   }
 
-  list(): UserRecord[] {
+  async list(): Promise<UserRecord[]> {
     return [...this.users.values()];
   }
 
-  updateUser(
+  async updateUser(
     userId: string,
     patch: Partial<Pick<UserRecord, 'status' | 'roles' | 'buildingIds'>>
-  ): UserRecord | undefined {
+  ): Promise<UserRecord | undefined> {
     const cur = this.users.get(userId);
     if (!cur) {
       return undefined;

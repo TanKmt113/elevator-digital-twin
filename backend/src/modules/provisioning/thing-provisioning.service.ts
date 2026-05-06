@@ -1,6 +1,6 @@
 import type { DittoClient, DittoThing } from '../../integrations/ditto/ditto-client.js';
 import { DittoRequestError } from '../../integrations/ditto/ditto-client.js';
-import type { InMemoryAuditRepository } from '../audit/audit.repository.js';
+import type { AuditRepository } from '../audit/audit.repository.js';
 import type { ElevatorThingPatchInput, ElevatorThingProvisionInput } from './elevator-thing.schema.js';
 
 const defaultElevatorProperties = (): Record<string, unknown> => ({
@@ -63,7 +63,7 @@ function buildThing(
 export class ThingProvisioningService {
   constructor(
     private readonly ditto: DittoClient,
-    private readonly audit: InMemoryAuditRepository,
+    private readonly audit: AuditRepository,
     private readonly defaultPolicyId: string
   ) {}
 
@@ -75,7 +75,7 @@ export class ThingProvisioningService {
   ): Promise<{ thingId: string; buildingId: string; created: boolean }> {
     const existing = await this.ditto.getThingOrNull(input.thingId);
     if (existing) {
-      this.audit.append({
+      await this.audit.append({
         actorUserId,
         action: 'thing.create',
         resourceType: 'ditto_thing',
@@ -91,7 +91,7 @@ export class ThingProvisioningService {
     }
     const thing = buildThing(buildingId, input, this.defaultPolicyId);
     await this.ditto.upsertThing(input.thingId, thing);
-    this.audit.append({
+    await this.audit.append({
       actorUserId,
       action: 'thing.create',
       resourceType: 'ditto_thing',
@@ -131,7 +131,7 @@ export class ThingProvisioningService {
       return;
     }
     await this.ditto.mergePatchThing(thingId, merge);
-    this.audit.append({
+    await this.audit.append({
       actorUserId,
       action: 'thing.update',
       resourceType: 'ditto_thing',
@@ -153,7 +153,7 @@ export class ThingProvisioningService {
     await this.ditto.mergePatchThing(thingId, {
       attributes: { archivedAt: new Date().toISOString() }
     });
-    this.audit.append({
+    await this.audit.append({
       actorUserId,
       action: 'thing.archive',
       resourceType: 'ditto_thing',

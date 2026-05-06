@@ -15,7 +15,12 @@ export interface AuditRecord {
   createdAt: string;
 }
 
-export class InMemoryAuditRepository {
+export interface AuditRepository {
+  append(entry: Omit<AuditRecord, 'auditId' | 'createdAt'> & { auditId?: string }): Promise<AuditRecord> | AuditRecord;
+  listRecent(limit?: number): Promise<AuditRecord[]> | AuditRecord[];
+}
+
+export class InMemoryAuditRepository implements AuditRepository {
   private readonly records: AuditRecord[] = [];
 
   append(entry: Omit<AuditRecord, 'auditId' | 'createdAt'> & { auditId?: string }): AuditRecord {

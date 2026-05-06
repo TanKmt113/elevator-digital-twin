@@ -27,6 +27,10 @@ export interface EnvConfig {
   apiRateLimitLoginRpm: number;
   /** Max mutating provisioning requests per IP per minute (create/patch/archive). */
   apiRateLimitProvisionRpm: number;
+  /** Selects admin user/audit persistence. Use `postgres` with `ADMIN_POSTGRES_URL` in deployments. */
+  adminPersistence: 'memory' | 'postgres';
+  /** PostgreSQL connection string for admin users and audit records. */
+  adminPostgresUrl?: string;
 }
 
 let envLoaded = false;
@@ -85,6 +89,8 @@ export function loadEnv(): EnvConfig {
     apiRateLimitDisabled:
       process.env.API_RATE_LIMIT_DISABLED === 'true' || process.env.NODE_ENV === 'test',
     apiRateLimitLoginRpm: Number(process.env.API_V1_LOGIN_RPM ?? '30'),
-    apiRateLimitProvisionRpm: Number(process.env.API_V1_PROVISION_RPM ?? '120')
+    apiRateLimitProvisionRpm: Number(process.env.API_V1_PROVISION_RPM ?? '120'),
+    adminPersistence: process.env.ADMIN_PERSISTENCE === 'postgres' ? 'postgres' : 'memory',
+    adminPostgresUrl: process.env.ADMIN_POSTGRES_URL
   };
 }

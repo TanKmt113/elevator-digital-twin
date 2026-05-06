@@ -60,10 +60,7 @@ export async function apiGet<T>(path: string, token?: string): Promise<T> {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => undefined);
-    const message =
-      typeof payload === 'object' && payload && 'message' in payload && typeof payload.message === 'string'
-        ? payload.message
-        : `Request failed with status ${response.status}`;
+    const message = extractErrorMessage(payload, response.status);
     throw new ApiError(message, response.status, payload);
   }
 
@@ -82,14 +79,47 @@ export async function apiPost<T>(path: string, body: unknown, token?: string): P
 
   if (!response.ok) {
     const payload = await response.json().catch(() => undefined);
-    const message =
-      typeof payload === 'object' && payload && 'message' in payload && typeof payload.message === 'string'
-        ? payload.message
-        : `Request failed with status ${response.status}`;
+    const message = extractErrorMessage(payload, response.status);
     throw new ApiError(message, response.status, payload);
   }
 
   return response.json() as Promise<T>;
+}
+
+export async function apiPatch<T>(path: string, body: unknown, token?: string): Promise<T> {
+  const response = await fetch(buildApiUrl(path), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => undefined);
+    throw new ApiError(extractErrorMessage(payload, response.status), response.status, payload);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+function extractErrorMessage(payload: unknown, status: number): string {
+  if (
+    typeof payload === 'object' &&
+    payload &&
+    'error' in payload &&
+    typeof payload.error === 'object' &&
+    payload.error &&
+    'message' in payload.error &&
+    typeof payload.error.message === 'string'
+  ) {
+    return payload.error.message;
+  }
+  if (typeof payload === 'object' && payload && 'message' in payload && typeof payload.message === 'string') {
+    return payload.message;
+  }
+  return `Request failed with status ${status}`;
 }
 
 export async function fetchElevatorBootstrap(

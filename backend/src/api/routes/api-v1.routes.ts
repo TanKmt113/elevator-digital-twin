@@ -7,8 +7,8 @@ import { authenticateJwt, hasBuildingScope, type AuthenticatedRequest } from '..
 import { requirePlatformAdmin, requireThingProvisioningRole } from '../../modules/auth/rbac.js';
 import { verifyPassword } from '../../modules/auth/password.js';
 import { signUserAccessToken } from '../../modules/auth/jwt-sign.js';
-import { InMemoryAuditRepository } from '../../modules/audit/audit.repository.js';
-import { InMemoryUserRepository } from '../../modules/users/in-memory-user.repository.js';
+import type { AuditRepository } from '../../modules/audit/audit.repository.js';
+import type { UserRepository } from '../../modules/users/user.repository.js';
 import {
   adminCreateUserBodySchema,
   elevatorThingPatchBodySchema,
@@ -34,8 +34,8 @@ function correlationId(req: AuthenticatedRequest): string {
 }
 
 export interface ApiV1RouterDeps {
-  userRepository: InMemoryUserRepository;
-  auditRepository: InMemoryAuditRepository;
+  userRepository: UserRepository;
+  auditRepository: AuditRepository;
   dittoClient: DittoClient;
   defaultElevatorPolicyId: string;
   onThingMutated?: () => Promise<unknown>;
@@ -65,7 +65,7 @@ export function createApiV1Router(deps: ApiV1RouterDeps): Router {
       jsonError(res, 400, 'VALIDATION_ERROR', 'Invalid request body', parsed.error.flatten());
       return;
     }
-    const user = deps.userRepository.findByEmail(parsed.data.email);
+    const user = await deps.userRepository.findByEmail(parsed.data.email);
     const okPass = user?.passwordHash
       ? await verifyPassword(parsed.data.password, user.passwordHash)
       : false;
@@ -73,7 +73,7 @@ export function createApiV1Router(deps: ApiV1RouterDeps): Router {
       jsonError(res, 401, 'UNAUTHENTICATED', 'Invalid credentials');
       return;
     }
-    deps.userRepository.touchLogin(user.userId);
+    await deps.userRepository.touchLogin(user.userId);
     const token = signUserAccessToken(user);
     jsonSuccess(res, 200, {
       token,
@@ -90,8 +90,8 @@ export function createApiV1Router(deps: ApiV1RouterDeps): Router {
 
   const admin = Router();
   admin.use(authenticateJwt, requirePlatformAdmin);
-  admin.get('/users', (_req, res) => {
-    const rows = deps.userRepository.list().map((u) => ({
+  admin.get('/users', async (_req, res) => {
+    const rows = (await deps.userRepository.list()).map((u) => ({
       userId: u.userId,
       email: u.email,
       status: u.status,
@@ -115,7 +115,7 @@ export function createApiV1Router(deps: ApiV1RouterDeps): Router {
         roles: parsed.data.roles,
         buildingIds: parsed.data.buildingIds ?? []
       });
-      deps.auditRepository.append({
+      await deps.auditRepository.append({
         actorUserId: req.user?.userId ?? 'unknown',
         action: 'user.create',
         resourceType: 'user',

@@ -25,6 +25,10 @@ import { createDevAuthRoutes } from './routes/dev-auth.routes.js';
 import { createApiV1Router } from './routes/api-v1.routes.js';
 import { InMemoryUserRepository } from '../modules/users/in-memory-user.repository.js';
 import { InMemoryAuditRepository } from '../modules/audit/audit.repository.js';
+import { PostgresUserRepository } from '../modules/users/postgres-user.repository.js';
+import { PostgresAuditRepository } from '../modules/audit/postgres-audit.repository.js';
+import type { UserRepository } from '../modules/users/user.repository.js';
+import type { AuditRepository } from '../modules/audit/audit.repository.js';
 import { ElevatorStatePublisher } from '../modules/realtime/publishers/elevator-state.publisher.js';
 import { EventRouter } from '../modules/realtime/event-router.js';
 import { DittoLiveConsumer } from '../integrations/ditto/ditto-live-consumer.js';
@@ -35,14 +39,14 @@ interface CreateAppOptions {
   dittoClient?: DittoClient;
   seedAnalytics?: boolean;
   bootstrapTwin?: boolean;
-  userRepository?: InMemoryUserRepository;
-  auditRepository?: InMemoryAuditRepository;
+  userRepository?: UserRepository;
+  auditRepository?: AuditRepository;
 }
 
-async function bootstrapAdminFromEnv(repo: InMemoryUserRepository): Promise<void> {
+async function bootstrapAdminFromEnv(repo: UserRepository): Promise<void> {
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
-  if (!email || !password || repo.list().length > 0) {
+  if (!email || !password || (await repo.list()).length > 0) {
     return;
   }
   try {
@@ -128,11 +132,23 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(express.json());
 
   const dittoClient = options.dittoClient ?? new DittoClient();
-  const auditRepository = options.auditRepository ?? new InMemoryAuditRepository();
-  const userRepository = options.userRepository ?? new InMemoryUserRepository();
+  const usePostgres =
+    settings.env.adminPersistence === 'postgres' &&
+    Boolean(settings.env.adminPostgresUrl) &&
+    process.env.NODE_ENV !== 'test';
+  const auditRepository =
+    options.auditRepository ??
+    (usePostgres
+      ? new PostgresAuditRepository(settings.env.adminPostgresUrl as string)
+      : new InMemoryAuditRepository());
+  const userRepository =
+    options.userRepository ??
+    (usePostgres
+      ? new PostgresUserRepository(settings.env.adminPostgresUrl as string)
+      : new InMemoryUserRepository());
   if (!options.userRepository) {
     if (process.env.NODE_ENV === 'test') {
-      userRepository.seedTestPlatformAdmin();
+      void userRepository.seedTestPlatformAdmin();
     } else {
       void bootstrapAdminFromEnv(userRepository);
     }

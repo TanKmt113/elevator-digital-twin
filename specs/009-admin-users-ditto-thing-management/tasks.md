@@ -45,9 +45,9 @@
 ## Phase 6: Polish / follow-ups (P3+)
 
 - [X] T023 [P] Rate limiting for `/api/v1/auth/login` and provisioning mutations in `backend/src/api/middleware/memory-rate-limit.ts` and `backend/src/api/routes/api-v1.routes.ts` (`API_V1_LOGIN_RPM`, `API_V1_PROVISION_RPM`, `API_RATE_LIMIT_DISABLED`)
-- [ ] T024 [P] PostgreSQL-backed `UserRepository` + audit persistence (replace in-memory)
-- [ ] T025 [P] Frontend admin module under `frontend/src/modules/admin/` per plan
-- [ ] T026 Contract/OpenAPI publish for `/api/v1/*` in `specs/004-ditto-end-to-end/contracts/backend-api.yaml` or new bundle
+- [X] T024 [P] PostgreSQL-backed `UserRepository` + audit persistence (replace in-memory)
+- [X] T025 [P] Frontend admin module under `frontend/src/modules/admin/` per plan
+- [X] T026 Contract/OpenAPI publish for `/api/v1/*` in `specs/004-ditto-end-to-end/contracts/backend-api.yaml` or new bundle
 
 ## Dependencies
 
