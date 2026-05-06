@@ -1,4 +1,5 @@
 import type { RiskWarning } from '../../../contracts/risk.js';
+import { recordRiskPublished } from '../../../observability/risk.metrics.js';
 import { RealtimeSessionManager } from '../ws-server.js';
 
 export class RiskPublisher {
@@ -9,9 +10,10 @@ export class RiskPublisher {
       eventId: `evt-${warning.riskWarningId}`,
       eventType: 'elevator.risk.updated',
       schemaVersion: '1.1.0',
-      dataClass: 'telemetry',
+      dataClass: 'alarm',
       occurredAt: new Date().toISOString(),
       payload: warning
     });
+    recordRiskPublished();
   }
 }

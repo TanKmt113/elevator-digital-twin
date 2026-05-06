@@ -82,7 +82,7 @@ export function TwinCameraController({
       dampingFactor={0.08}
       enablePan
       minDistance={4}
-      maxDistance={72}
+      maxDistance={160}
       zoomSpeed={0.85}
       maxPolarAngle={Math.PI / 2.05}
     />

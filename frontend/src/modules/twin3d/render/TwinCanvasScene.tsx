@@ -61,7 +61,7 @@ export function TwinCanvasScene({
 
   return (
     <div className="ops-twin-canvas-shell">
-      <Canvas dpr={canvasDpr} camera={{ fov: 40, position: [12, 12, 12] }} shadows>
+      <Canvas dpr={canvasDpr} camera={{ fov: 52, position: [24, 36, 78] }} shadows>
         <color attach="background" args={['#071018']} />
         <TwinLightingRig />
         <TwinStageGeometry floorCount={floorCount} shaftCount={shaftCount} />

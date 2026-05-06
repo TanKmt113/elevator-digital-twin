@@ -1,5 +1,46 @@
 import React from 'react';
-import { useRiskStore, type RiskWarningViewModel } from '../../../store/risk-store';
+import { useRiskStore, type RiskDriverViewModel, type RiskLevel, type RiskWarningViewModel } from '../../../store/risk-store';
+
+const riskLevelLabels: Record<RiskLevel, string> = {
+  low: 'Thấp',
+  moderate: 'Trung bình',
+  high: 'Cao',
+  critical: 'Tới hạn'
+};
+
+const verificationLabels: Record<NonNullable<RiskWarningViewModel['verificationStatus']>, string> = {
+  verified: 'Đã xác minh',
+  unverified: 'Chưa xác minh',
+  failed: 'Không đạt'
+};
+
+function isStructuredDriver(driver: string | RiskDriverViewModel | undefined): driver is RiskDriverViewModel {
+  return Boolean(driver && typeof driver === 'object' && 'label' in driver);
+}
+
+export function deriveRiskLevelLabel(level?: RiskLevel): string {
+  return level ? riskLevelLabels[level] : 'Không rõ';
+}
+
+export function deriveRiskDriverLabel(driver: string | RiskDriverViewModel | undefined): string {
+  if (!driver) {
+    return 'Không rõ nguyên nhân';
+  }
+
+  if (isStructuredDriver(driver)) {
+    return driver.label;
+  }
+
+  const fallback: Record<string, string> = {
+    usage: 'Mức sử dụng cao',
+    temperature: 'Nhiệt độ cao',
+    vibration: 'Rung động bất thường',
+    overload: 'Quá tải',
+    fault: 'Lỗi đang hoạt động',
+    door: 'Sự cố cửa'
+  };
+  return fallback[driver] ?? driver;
+}
 
 export function deriveRiskVerificationState(warning?: RiskWarningViewModel): {
   label: string;
@@ -20,7 +61,7 @@ export function deriveRiskVerificationState(warning?: RiskWarningViewModel): {
   }
 
   return {
-    label: 'Đã xác minh',
+    label: verificationLabels[warning.verificationStatus ?? 'verified'],
     toneClass: 'bg-emerald-400/10 text-emerald-100'
   };
 }
@@ -50,16 +91,26 @@ export function RiskWarningPanel(): React.JSX.Element {
             <div className="flex items-center justify-between gap-3">
               <strong className="text-base font-semibold text-slate-100">{warning.elevatorId}</strong>
               <span className="rounded-full bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100">
-                {warning.riskLevel}
+                {deriveRiskLevelLabel(warning.riskLevel)}
               </span>
             </div>
             <p className="mt-2 text-sm text-slate-300">Khung rủi ro: {warning.predictedWindowHours} giờ</p>
+            {warning.drivers?.length ? (
+              <ul className="mt-3 grid gap-2 text-sm text-slate-200">
+                {warning.drivers.map((driver, index) => (
+                  <li key={isStructuredDriver(driver) ? driver.driverId : `${driver}-${index}`}>
+                    {deriveRiskDriverLabel(driver)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
               <span className={`rounded-full px-2.5 py-1 font-semibold ${verification.toneClass}`}>
                 {verification.label}
               </span>
-              {warning.modelVersion ? <span>Model {warning.modelVersion}</span> : null}
-              {warning.validationRunId ? <span>Run {warning.validationRunId}</span> : null}
+              {warning.modelVersion ? <span>Luật {warning.modelVersion}</span> : null}
+              {warning.validationRunId ? <span>Lượt kiểm tra {warning.validationRunId}</span> : null}
+              {warning.modelTrace?.ruleIds?.length ? <span>Trace {warning.modelTrace.ruleIds.join(', ')}</span> : null}
             </div>
           </article>
             );

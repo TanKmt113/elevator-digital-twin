@@ -32,7 +32,7 @@ export function deriveCameraAnchor(
       : assets.reduce((sum, asset) => sum + asset.worldPosition.x, 0) / assets.length;
 
   return {
-    position: [centerX + 1.6, Math.max(10.5, maxY * 0.62 + 3.4), 21.5],
-    target: [centerX, Math.max(4.6, maxY * 0.5), -0.7]
+    position: [centerX + 6, Math.max(34, maxY * 1.05 + 14), 78],
+    target: [centerX, Math.max(12, maxY * 0.38), -2.2]
   };
 }

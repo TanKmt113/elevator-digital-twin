@@ -165,6 +165,34 @@ describe('twin3d binding', () => {
     expect(anchor.position[1]).toBeGreaterThan(anchor.target[1]);
   });
 
+  it('uses a zoomed-out overview camera for whole-shaft observation', () => {
+    const assets = [
+      mapElevatorStateToScene({
+        elevatorId: 'E1',
+        currentFloor: 1,
+        direction: 'stationary',
+        doorState: 'open',
+        healthState: 'normal',
+        status: 'idle',
+        stale: false
+      }),
+      mapElevatorStateToScene({
+        elevatorId: 'E2',
+        currentFloor: 32,
+        direction: 'down',
+        doorState: 'closed',
+        healthState: 'normal',
+        status: 'moving',
+        stale: false
+      })
+    ];
+
+    const anchor = deriveCameraAnchor(assets, 'overview');
+    expect(anchor.position[2]).toBeGreaterThanOrEqual(78);
+    expect(anchor.position[1]).toBeGreaterThanOrEqual(45);
+    expect(anchor.target[1]).toBeLessThan(anchor.position[1]);
+  });
+
   it('keeps scene selection synchronized with the selected elevator context', () => {
     useElevatorStore.setState({
       elevators: {

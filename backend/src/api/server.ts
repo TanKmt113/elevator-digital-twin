@@ -16,6 +16,7 @@ import { AlertPublisher } from '../modules/realtime/publishers/alert.publisher.j
 import { ElevatorHistoryService } from '../modules/elevators/elevator-history.service.js';
 import { createElevatorHistoryRoutes } from './routes/elevator-history.routes.js';
 import { RiskAnalyticsService } from '../modules/analytics/risk-analytics.service.js';
+import { RiskEngineService } from '../modules/analytics/risk-engine.service.js';
 import { createAnalyticsRoutes } from './routes/analytics.routes.js';
 import { RiskPublisher } from '../modules/realtime/publishers/risk.publisher.js';
 import { DittoClient } from '../integrations/ditto/ditto-client.js';
@@ -158,6 +159,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const alertsService = new AlertsService();
   const historyService = new ElevatorHistoryService();
   const riskAnalyticsService = new RiskAnalyticsService();
+  const riskEngineService = new RiskEngineService();
   const eventRouter = new EventRouter();
   app.get('/openapi.yaml', (_req, res) => {
     res.type('application/yaml').send(getOpenApiSpec());
@@ -298,6 +300,16 @@ export function createApp(options: CreateAppOptions = {}) {
         ...routed,
         payload: saved
       });
+      for (const warning of riskEngineService.evaluate(saved)) {
+        try {
+          riskPublisher.publish(riskAnalyticsService.ingest(warning));
+        } catch (error) {
+          logger.error('risk_warning_generation_failed', {
+            elevatorId: saved.elevatorId,
+            message: error instanceof Error ? error.message : 'unknown_error'
+          });
+        }
+      }
       publishSynchronizationState(saved.buildingId);
     },
     () => {

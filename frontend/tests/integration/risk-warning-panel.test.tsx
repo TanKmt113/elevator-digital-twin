@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { deriveRiskVerificationState } from '../../src/modules/analytics/components/RiskWarningPanel';
+import {
+  deriveRiskDriverLabel,
+  deriveRiskLevelLabel,
+  deriveRiskVerificationState
+} from '../../src/modules/analytics/components/RiskWarningPanel';
 import { useRiskStore } from '../../src/store/risk-store';
+import { structuredRiskWarningFixture } from '../fixtures/risk-warning.fixtures';
 
 describe('risk warning panel state', () => {
   it('stores predictive warnings with model metadata for rendering', () => {
@@ -29,5 +34,13 @@ describe('risk warning panel state', () => {
         generatedAt: new Date().toISOString()
       }).label
     ).toBe('Chưa xác minh');
+  });
+
+  it('derives Vietnamese labels for structured drivers and risk levels', () => {
+    useRiskStore.getState().upsertWarning(structuredRiskWarningFixture);
+
+    const warning = useRiskStore.getState().warnings[structuredRiskWarningFixture.riskWarningId];
+    expect(deriveRiskLevelLabel(warning?.riskLevel)).toBe('Tới hạn');
+    expect(deriveRiskDriverLabel(warning?.drivers?.[0])).toBe('Phát hiện kẹt cửa');
   });
 });
