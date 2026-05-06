@@ -327,4 +327,127 @@ describe('DittoClient', () => {
     expect(accepted).not.toHaveBeenCalled();
     consumer.stop();
   });
+
+  it('hydrates CloudEvent-wrapped Ditto websocket events', async () => {
+    const accepted = vi.fn();
+    const consumer = new DittoLiveConsumer(
+      {
+        subscribe() {
+          return () => undefined;
+        },
+        getRealtimeUrl() {
+          return 'ws://127.0.0.1:65535/ws/2';
+        },
+        createAuthorizationHeaders() {
+          return {};
+        },
+        async getThing(thingId) {
+          expect(thingId).toBe('org.example:L72-ELEV-A');
+          return {
+            thingId,
+            attributes: { buildingId: 'L72' },
+            features: {
+              elevator: {
+                properties: {
+                  currentFloor: 15,
+                  status: 'moving',
+                  direction: 'up',
+                  doorState: 'closed',
+                  healthState: 'normal'
+                }
+              }
+            }
+          };
+        }
+      },
+      accepted
+    );
+
+    await (consumer as unknown as { handleIncomingPayload(payload: unknown): Promise<void> }).handleIncomingPayload({
+      id: 'cloud-event-1',
+      source: '/things/org.example%3AL72-ELEV-A',
+      time: '2026-05-06T01:15:00.000Z',
+      data: {
+        topic: 'org.example/L72-ELEV-A/things/twin/events/modified',
+        path: '/features/elevator/properties/currentFloor',
+        value: 15
+      }
+    });
+
+    expect(accepted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: 'cloud-event-1',
+        occurredAt: '2026-05-06T01:15:00.000Z',
+        payload: expect.objectContaining({
+          elevatorId: 'org.example:L72-ELEV-A',
+          currentFloor: 15
+        })
+      })
+    );
+  });
+
+  it('hydrates partial Ditto merge events before normalization', async () => {
+    const accepted = vi.fn();
+    const consumer = new DittoLiveConsumer(
+      {
+        subscribe() {
+          return () => undefined;
+        },
+        getRealtimeUrl() {
+          return 'ws://127.0.0.1:65535/ws/2';
+        },
+        createAuthorizationHeaders() {
+          return {};
+        },
+        async getThing(thingId) {
+          expect(thingId).toBe('org.example:L72-ELEV-A');
+          return {
+            thingId,
+            attributes: { buildingId: 'L72' },
+            features: {
+              elevator: {
+                properties: {
+                  currentFloor: 4,
+                  status: 'moving',
+                  direction: 'up',
+                  doorState: 'closed',
+                  healthState: 'normal'
+                }
+              }
+            }
+          };
+        }
+      },
+      accepted
+    );
+
+    await (consumer as unknown as { handleIncomingPayload(payload: unknown): Promise<void> }).handleIncomingPayload({
+      topic: 'org.example/L72-ELEV-A/things/twin/events/merged',
+      path: '/',
+      value: {
+        thingId: 'org.example:L72-ELEV-A',
+        features: {
+          elevator: {
+            properties: {
+              currentFloor: 4
+            }
+          }
+        }
+      },
+      revision: 10,
+      timestamp: '2026-05-06T01:18:13.576427121Z'
+    });
+
+    expect(accepted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'elevator.state.changed',
+        occurredAt: '2026-05-06T01:18:13.576427121Z',
+        payload: expect.objectContaining({
+          elevatorId: 'org.example:L72-ELEV-A',
+          buildingId: 'L72',
+          currentFloor: 4
+        })
+      })
+    );
+  });
 });

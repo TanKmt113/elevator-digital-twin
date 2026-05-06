@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import { settings } from '../../config/settings.js';
+import { logger } from '../../observability/logger.js';
 import {
   DITTO_ELEVATOR_FIELDS,
   type DittoClient,
@@ -30,9 +31,55 @@ function parseThingIdFromTopic(topic: string | undefined): string | undefined {
   return segments.length > 1 && segments[0] && segments[1] ? `${segments[0]}:${segments[1]}` : undefined;
 }
 
+function parseThingIdFromSource(source: string | undefined): string | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  const match = source.match(/\/things\/([^/?#]+)/);
+  return match?.[1] ? decodeURIComponent(match[1]) : undefined;
+}
+
+function hasBuildingScope(thing: DittoThing): boolean {
+  return typeof thing.attributes?.buildingId === 'string';
+}
+
+function summarizePayload(payload: unknown): unknown {
+  if (typeof payload === 'string') {
+    return payload.length > 1000 ? `${payload.slice(0, 1000)}...[truncated]` : payload;
+  }
+
+  if (Array.isArray(payload)) {
+    return payload.slice(0, 5).map((item) => summarizePayload(item));
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  const summary: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
+    if (typeof value === 'string') {
+      summary[key] = value.length > 500 ? `${value.slice(0, 500)}...[truncated]` : value;
+    } else if (Array.isArray(value)) {
+      summary[key] = value.slice(0, 5).map((item) => summarizePayload(item));
+    } else if (value && typeof value === 'object') {
+      summary[key] = summarizePayload(value);
+    } else {
+      summary[key] = value;
+    }
+  }
+
+  return summary;
+}
+
 function getEventTime(payload: Record<string, unknown>): string {
+  const headers = payload.headers && typeof payload.headers === 'object'
+    ? (payload.headers as Record<string, unknown>)
+    : undefined;
   const candidate =
     payload.timestamp ??
+    headers?.timestamp ??
     payload.modified ??
     payload['_modified'] ??
     payload.time ??
@@ -47,17 +94,19 @@ async function resolveThingFromPayload(
   client: Pick<DittoClient, 'getThing'>,
   payload: Record<string, unknown>
 ): Promise<DittoThing | null> {
-  if (isDittoThing(payload)) {
+  if (isDittoThing(payload) && hasBuildingScope(payload)) {
     return payload;
   }
 
-  if (isDittoThing(payload.value)) {
+  if (isDittoThing(payload.value) && hasBuildingScope(payload.value)) {
     return payload.value;
   }
 
   const thingId =
     (typeof payload.thingId === 'string' ? payload.thingId : undefined) ??
-    parseThingIdFromTopic(typeof payload.topic === 'string' ? payload.topic : undefined);
+    (isDittoThing(payload.value) ? payload.value.thingId : undefined) ??
+    parseThingIdFromTopic(typeof payload.topic === 'string' ? payload.topic : undefined) ??
+    parseThingIdFromSource(typeof payload.source === 'string' ? payload.source : undefined);
 
   if (!thingId) {
     return null;
@@ -157,7 +206,7 @@ export class DittoLiveConsumer {
       });
       this.socket.on('message', (message) => {
         const text = message.toString();
-        if (text.endsWith(':ACK')) {
+        if (text.trim().endsWith(':ACK')) {
           return;
         }
 
@@ -198,26 +247,36 @@ export class DittoLiveConsumer {
   }
 
   private async handleIncomingPayload(payload: unknown): Promise<void> {
-    const parsed =
-      typeof payload === 'string'
-        ? this.parseJson(payload)
-        : payload && typeof payload === 'object'
-          ? (payload as Record<string, unknown>)
-          : null;
+    const payloads = this.parsePayloads(payload);
+    if (payloads.length === 0) {
+      this.logMalformed('parse_failed', payload);
+      this.onMalformedEvent?.();
+      return;
+    }
 
+    for (const parsed of payloads) {
+      await this.handleParsedPayload(parsed);
+    }
+  }
+
+  private async handleParsedPayload(payload: Record<string, unknown>): Promise<void> {
+    const parsed = this.unwrapPayload(payload);
     if (!parsed) {
+      this.logMalformed('unsupported_wrapper', payload);
       this.onMalformedEvent?.();
       return;
     }
 
     const thing = await resolveThingFromPayload(this.client, parsed);
     if (!thing) {
+      this.logMalformed('thing_resolution_failed', parsed);
       this.onMalformedEvent?.();
       return;
     }
 
     const normalized = normalizeLiveThing(parsed, thing);
     if (!normalized) {
+      this.logMalformed('normalization_failed', parsed);
       this.onMalformedEvent?.();
       return;
     }
@@ -225,11 +284,85 @@ export class DittoLiveConsumer {
     this.onAcceptedEvent(normalized);
   }
 
-  private parseJson(payload: string): Record<string, unknown> | null {
-    try {
-      return JSON.parse(payload) as Record<string, unknown>;
-    } catch {
-      return null;
+  private parsePayloads(payload: unknown): Record<string, unknown>[] {
+    if (Array.isArray(payload)) {
+      return payload.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'));
     }
+
+    const parsed =
+      typeof payload === 'string'
+        ? this.parseTextPayloads(payload)
+        : payload && typeof payload === 'object'
+          ? [payload as Record<string, unknown>]
+          : [];
+
+    return parsed;
+  }
+
+  private parseTextPayloads(payload: string): Record<string, unknown>[] {
+    const text = payload.trim();
+    if (!text || text.endsWith(':ACK')) {
+      return [];
+    }
+
+    const candidates = [text, ...text.split(/\r?\n/).map((line) => line.trim())];
+    for (const candidate of candidates) {
+      if (!candidate || candidate.endsWith(':ACK')) {
+        continue;
+      }
+
+      const jsonText = candidate.startsWith('data:') ? candidate.slice(5).trim() : candidate;
+      try {
+        const parsed = JSON.parse(jsonText) as unknown;
+        if (Array.isArray(parsed)) {
+          return parsed.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'));
+        }
+
+        if (parsed && typeof parsed === 'object') {
+          return [parsed as Record<string, unknown>];
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return [];
+  }
+
+  private unwrapPayload(payload: Record<string, unknown>): Record<string, unknown> | null {
+    if (payload.topic || payload.thingId || isDittoThing(payload)) {
+      return payload;
+    }
+
+    const data = payload.data;
+    if (typeof data === 'string') {
+      const parsed = this.parseTextPayloads(data)[0];
+      return parsed
+        ? {
+            ...parsed,
+            id: typeof payload.id === 'string' ? payload.id : parsed.id,
+            time: typeof payload.time === 'string' ? payload.time : parsed.time,
+            source: typeof payload.source === 'string' ? payload.source : parsed.source
+          }
+        : null;
+    }
+
+    if (data && typeof data === 'object') {
+      return {
+        ...(data as Record<string, unknown>),
+        id: typeof payload.id === 'string' ? payload.id : (data as Record<string, unknown>).id,
+        time: typeof payload.time === 'string' ? payload.time : (data as Record<string, unknown>).time,
+        source: typeof payload.source === 'string' ? payload.source : (data as Record<string, unknown>).source
+      };
+    }
+
+    return null;
+  }
+
+  private logMalformed(reason: string, payload: unknown): void {
+    logger.error('ditto_live_event_malformed_payload', {
+      reason,
+      payload: summarizePayload(payload)
+    });
   }
 }

@@ -13,7 +13,7 @@ import {
   type TwinSceneRuntimeState
 } from '../store/realtime-store';
 import { useSessionStore } from '../store/session-store';
-import { ApiError, fetchElevatorBootstrap } from '../services/api/client';
+import { ApiError, fetchElevatorBootstrap, requestDevOperatorToken } from '../services/api/client';
 import { RealtimeClient } from '../services/realtime/ws-client';
 import { handleRealtimeEvent } from '../services/realtime/elevator-events';
 
@@ -166,6 +166,8 @@ export function App(): React.JSX.Element {
   const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
   const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
   const token = useSessionStore((state) => state.token);
+  const role = useSessionStore((state) => state.role);
+  const setSession = useSessionStore((state) => state.setSession);
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
   const featuredElevator =
@@ -217,6 +219,25 @@ export function App(): React.JSX.Element {
     });
     return response;
   }, [hasWebglSupport, selectedBuildingId, token]);
+
+  React.useEffect(() => {
+    if (token) {
+      return;
+    }
+
+    let cancelled = false;
+    void requestDevOperatorToken(selectedBuildingId, role ?? 'operator')
+      .then((session) => {
+        if (!cancelled) {
+          setSession(session.token, session.role);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [role, selectedBuildingId, setSession, token]);
 
   React.useEffect(() => {
     let cancelled = false;

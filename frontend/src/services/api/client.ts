@@ -32,6 +32,14 @@ export class ApiError extends Error {
   }
 }
 
+export interface DevOperatorTokenResponse {
+  token: string;
+  role: string;
+  buildingId: string;
+  tokenType: string;
+  expiresIn: string;
+}
+
 function getApiBaseUrl(): string {
   return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 }
@@ -62,10 +70,44 @@ export async function apiGet<T>(path: string, token?: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function apiPost<T>(path: string, body: unknown, token?: string): Promise<T> {
+  const response = await fetch(buildApiUrl(path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => undefined);
+    const message =
+      typeof payload === 'object' && payload && 'message' in payload && typeof payload.message === 'string'
+        ? payload.message
+        : `Request failed with status ${response.status}`;
+    throw new ApiError(message, response.status, payload);
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export async function fetchElevatorBootstrap(
   buildingId: string,
   token?: string
 ): Promise<ElevatorBootstrapResponse> {
   const query = new URLSearchParams({ buildingId });
   return apiGet<ElevatorBootstrapResponse>(`/elevators?${query.toString()}`, token);
+}
+
+export async function requestDevOperatorToken(
+  buildingId: string,
+  role = 'operator',
+  userId = 'operator-local'
+): Promise<DevOperatorTokenResponse> {
+  return apiPost<DevOperatorTokenResponse>('/dev/auth/operator-token', {
+    userId,
+    buildingId,
+    role
+  });
 }
