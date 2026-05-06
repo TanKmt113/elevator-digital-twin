@@ -33,6 +33,19 @@ export function normalizeTwinBootstrapProjection(
   });
 }
 
+export function normalizeTwinLiveProjection(
+  projection: DittoElevatorThingProjection,
+  occurredAt: string
+): ElevatorTwin | null {
+  const twin = normalizeTwinBootstrapProjection(projection);
+  return twin
+    ? {
+        ...twin,
+        lastEventAt: occurredAt
+      }
+    : null;
+}
+
 export function normalizeElevatorState(payload: Partial<ElevatorTwin> & Pick<ElevatorTwin, 'elevatorId' | 'buildingId'>): NormalizedEvent<ElevatorTwin> {
   return {
     eventId: `evt-${payload.elevatorId}-${Date.now()}`,
@@ -61,9 +74,10 @@ function normalizeStatus(value: unknown): ElevatorTwin['status'] {
     value === 'door_open' ||
     value === 'maintenance' ||
     value === 'fault' ||
-    value === 'offline'
+    value === 'offline' ||
+    value === 'unknown'
     ? value
-    : 'idle';
+    : 'unknown';
 }
 
 function normalizeDirection(value: unknown): ElevatorTwin['direction'] {

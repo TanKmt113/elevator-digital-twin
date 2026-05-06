@@ -1,0 +1,73 @@
+{
+  "datasetId": "local-l72-elevators",
+  "buildingId": "L72",
+  "policyId": "org.example:l72-elevator-policy",
+  "elevators": [
+    {
+      "thingId": "org.example:L72-ELEV-A",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-a"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "idle",
+            "currentFloor": 1,
+            "targetFloor": 1,
+            "direction": "stationary",
+            "doorState": "open",
+            "loadPercentage": 22,
+            "healthState": "normal",
+            "lastUpdatedAt": "2026-05-04T10:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "thingId": "org.example:L72-ELEV-B",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-b"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "moving",
+            "currentFloor": 12,
+            "targetFloor": 18,
+            "direction": "up",
+            "doorState": "closed",
+            "loadPercentage": 61,
+            "healthState": "normal",
+            "lastUpdatedAt": "2026-05-04T10:01:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "thingId": "org.example:L72-ELEV-C",
+      "attributes": {
+        "buildingId": "L72",
+        "deviceType": "elevator",
+        "shaftId": "shaft-c"
+      },
+      "features": {
+        "elevator": {
+          "properties": {
+            "status": "maintenance",
+            "currentFloor": 5,
+            "targetFloor": 5,
+            "direction": "stationary",
+            "doorState": "open",
+            "loadPercentage": 0,
+            "healthState": "warning",
+            "lastUpdatedAt": "2026-05-04T10:02:00.000Z"
+          }
+        }
+      }
+    }
+  ]
+}

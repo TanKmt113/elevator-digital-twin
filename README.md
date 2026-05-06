@@ -13,19 +13,21 @@ Implementation scaffold for the Keangnam Landmark 72 smart building digital twin
 
 - Raw Ditto HTTP API contract: [docs/ditto-api-2.yml](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-api-2.yml)
 - Project-specific integration notes: [docs/ditto-integration.md](/home/tandev/WorkDev/elevator-digital-twin/docs/ditto-integration.md)
+- Backend Swagger UI: `http://localhost:3000/docs`
 
-## Phase 2 Hardening
+## Phase 7 Ditto Realtime Synchronization
 
-- Active phase-2 feature: [specs/002-dashboard-hardening/spec.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/spec.md)
-- Active phase-2 implementation plan: [specs/002-dashboard-hardening/plan.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/plan.md)
-- Active phase-2 task list: [specs/002-dashboard-hardening/tasks.md](/home/tandev/WorkDev/elevator-digital-twin/specs/002-dashboard-hardening/tasks.md)
+- Active phase-7 feature: [specs/007-ditto-realtime-sync/spec.md](specs/007-ditto-realtime-sync/spec.md)
+- Active phase-7 implementation plan: [specs/007-ditto-realtime-sync/plan.md](specs/007-ditto-realtime-sync/plan.md)
+- Active phase-7 task list: [specs/007-ditto-realtime-sync/tasks.md](specs/007-ditto-realtime-sync/tasks.md)
 
-## Phase 2 Validation
+## Phase 7 Validation
 
-Run the dashboard hardening checks by workspace:
+Run the realtime synchronization checks by workspace:
 
-- Backend: `cd backend && npm run validate:phase2`
-- Frontend: `cd frontend && npm run validate:phase2`
-- AI service: `cd ai-service && python3 -m pytest tests/test_risk_pipeline.py`
+- Backend: `cd backend && npm run validate:phase7`
+- Frontend: `cd frontend && npm run validate:phase7`
 
-Predictive warning outputs must include `riskWarningId`, `elevatorId`, `modelVersion`, `validationRunId`, and `modelTrace` before the backend accepts them for dashboard display.
+This phase validates live Ditto-to-dashboard synchronization on top of the existing Ditto-backed backend, including accepted live propagation, rejected-event handling, reconnect or resync behavior, and degraded-state visibility without starting or depending on the AI service.
+
+The frontend runtime remains backend-mediated in this phase: operator views consume `/elevators` bootstrap and backend-managed realtime state rather than calling Ditto directly.

@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: Digital Twin and 3D Operations API Delta
+  version: 3.0.0
+  description: Contract additions and tightened behavior for Digital Twin bootstrap, synchronization readiness, and 3D dashboard projection.
+paths:
+  /elevators:
+    get:
+      summary: List elevator operational summaries for one building
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elevator summaries scoped to the requested building, including synchronization metadata
+        '400':
+          description: Missing buildingId scope
+  /elevators/{elevatorId}:
+    get:
+      summary: Get one normalized elevator state in the active building scope
+      parameters:
+        - in: path
+          name: elevatorId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Normalized elevator state for detail and 3D projection
+        '400':
+          description: Missing buildingId scope
+        '404':
+          description: Elevator not found in authorized building scope
+  /health:
+    get:
+      summary: Report backend health and Twin synchronization readiness
+      responses:
+        '200':
+          description: Health status including Twin bootstrap, realtime state, stale state, and degraded state

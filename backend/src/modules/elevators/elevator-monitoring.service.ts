@@ -24,9 +24,15 @@ function createInitialSynchronizationState(staleThresholdMs: number): RealtimeSy
     connectionState: 'connecting',
     bootstrapStatus: 'idle',
     dataState: 'loading',
+    dittoHttpState: 'connecting',
+    dittoLiveState: 'connecting',
+    frontendRealtimeState: 'connecting',
     staleThresholdMs,
+    activeSessions: 0,
     duplicateEventsDropped: 0,
-    outOfOrderEventsRejected: 0
+    outOfOrderEventsRejected: 0,
+    outOfScopeEventsRejected: 0,
+    malformedEventsRejected: 0
   };
 }
 
@@ -49,6 +55,8 @@ export class ElevatorMonitoringService {
         bootstrapStatus: 'failed',
         connectionState: 'degraded',
         dataState: 'degraded',
+        dittoHttpState: 'degraded',
+        dittoLiveState: 'degraded',
         lastFailureReason: 'ditto_client_unavailable'
       };
       recordTwinBootstrapFailed();
@@ -62,12 +70,14 @@ export class ElevatorMonitoringService {
       bootstrapStatus: 'loading',
       dataState: 'loading',
       connectionState: 'connecting',
+      dittoHttpState: 'connecting',
       lastFailureReason: undefined
     };
 
     try {
       const things = await this.dittoClient.listThings({
-        fields: DITTO_ELEVATOR_FIELDS
+        fields: DITTO_ELEVATOR_FIELDS,
+        timeout: `${settings.bootstrapTimeoutMs}ms`
       });
 
       const hydratedTwins = things
@@ -79,18 +89,20 @@ export class ElevatorMonitoringService {
       this.bootstrapSnapshot = {
         snapshotId: `bootstrap-${completedAt}`,
         buildingId: hydratedTwins[0]?.buildingId ?? 'unknown',
+        source: 'twin',
         requestedAt,
         completedAt,
-        status: hydratedTwins.length > 0 ? 'completed' : 'partial',
+        status: hydratedTwins.length > 0 ? 'completed' : 'empty',
         elevators: hydratedTwins,
         missingElevatorIds: hydratedTwins.length > 0 ? undefined : []
       };
       this.synchronizationState = {
         ...this.synchronizationState,
         buildingId: hydratedTwins[0]?.buildingId,
-        bootstrapStatus: hydratedTwins.length > 0 ? 'completed' : 'partial',
+        bootstrapStatus: hydratedTwins.length > 0 ? 'completed' : 'empty',
         dataState: hydratedTwins.length > 0 ? 'ready' : 'empty',
         connectionState: hydratedTwins.length > 0 ? 'live' : 'degraded',
+        dittoHttpState: 'live',
         lastBootstrapAt: completedAt,
         lastLiveEventAt: hydratedTwins[0]?.lastEventAt
       };
@@ -106,11 +118,14 @@ export class ElevatorMonitoringService {
         bootstrapStatus: 'failed',
         dataState: 'degraded',
         connectionState: 'degraded',
+        dittoHttpState: 'degraded',
+        dittoLiveState: 'degraded',
         lastFailureReason: error instanceof Error ? error.message : 'unknown_bootstrap_failure'
       };
       this.bootstrapSnapshot = {
         snapshotId: `bootstrap-failed-${requestedAt}`,
         buildingId: 'unknown',
+        source: 'twin',
         requestedAt,
         completedAt: new Date().toISOString(),
         status: 'failed',
@@ -123,6 +138,10 @@ export class ElevatorMonitoringService {
     }
   }
 
+  async refreshFromDitto(): Promise<ElevatorTwin[]> {
+    return this.bootstrapFromDitto();
+  }
+
   upsert(twin: ElevatorTwin): ElevatorTwin {
     const saved = this.repository.save({
       ...twin,
@@ -133,9 +152,48 @@ export class ElevatorMonitoringService {
       buildingId: saved.buildingId,
       dataState: this.repository.list().length > 0 ? 'ready' : 'empty',
       connectionState: this.stalenessPolicy.connectionStateFor(saved.lastEventAt),
+      dittoLiveState: 'live',
       lastLiveEventAt: saved.lastEventAt
     };
     return saved;
+  }
+
+  setFrontendRealtimeState(connectionState: RealtimeSynchronizationState['frontendRealtimeState'], activeSessions: number): void {
+    this.synchronizationState = {
+      ...this.synchronizationState,
+      frontendRealtimeState: connectionState,
+      activeSessions
+    };
+  }
+
+  setDittoLiveState(
+    connectionState: RealtimeSynchronizationState['dittoLiveState'],
+    lastFailureReason?: string
+  ): void {
+    this.synchronizationState = {
+      ...this.synchronizationState,
+      dittoLiveState: connectionState,
+      lastFailureReason: lastFailureReason ?? this.synchronizationState.lastFailureReason
+    };
+  }
+
+  setRejectionStats(stats: {
+    duplicateEventsDropped?: number;
+    outOfOrderEventsRejected?: number;
+    outOfScopeEventsRejected?: number;
+    malformedEventsRejected?: number;
+  }): void {
+    this.synchronizationState = {
+      ...this.synchronizationState,
+      duplicateEventsDropped:
+        stats.duplicateEventsDropped ?? this.synchronizationState.duplicateEventsDropped,
+      outOfOrderEventsRejected:
+        stats.outOfOrderEventsRejected ?? this.synchronizationState.outOfOrderEventsRejected,
+      outOfScopeEventsRejected:
+        stats.outOfScopeEventsRejected ?? this.synchronizationState.outOfScopeEventsRejected,
+      malformedEventsRejected:
+        stats.malformedEventsRejected ?? this.synchronizationState.malformedEventsRejected
+    };
   }
 
   list(): ElevatorTwin[] {

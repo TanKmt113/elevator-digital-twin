@@ -4,6 +4,8 @@ import { ElevatorStatusBadge } from './ElevatorStatusBadge';
 
 export function ElevatorList(): React.JSX.Element {
   const elevators = Object.values(useElevatorStore((state) => state.elevators));
+  const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
+  const selectElevator = useElevatorStore((state) => state.selectElevator);
 
   return (
     <section className="ops-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
@@ -25,9 +27,15 @@ export function ElevatorList(): React.JSX.Element {
           </article>
         ) : null}
         {elevators.map((elevator) => (
-          <article
+          <button
+            type="button"
             key={elevator.elevatorId}
-            className="ops-list-item grid gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto]"
+            onClick={() => selectElevator(elevator.elevatorId, 'list', elevator.buildingId)}
+            className={`ops-list-item grid gap-3 rounded-2xl border px-4 py-4 text-left md:grid-cols-[minmax(0,1fr)_auto] ${
+              selectedElevatorId === elevator.elevatorId
+                ? 'border-cyan-300/50 bg-cyan-300/10'
+                : 'border-white/10 bg-white/[0.03]'
+            }`}
           >
             <div className="grid gap-2">
               <div className="flex items-center gap-3">
@@ -44,7 +52,7 @@ export function ElevatorList(): React.JSX.Element {
               <p>Health</p>
               <p className="font-medium capitalize text-slate-200">{elevator.healthState}</p>
             </div>
-          </article>
+          </button>
         ))}
       </div>
     </section>

@@ -19,3 +19,19 @@ export function recordTwinBootstrapFailed(): void {
 export function recordSynchronizationDegraded(): void {
   incrementMetric('twin_synchronization_degraded_total');
 }
+
+export function recordOutOfScopeEventRejected(): void {
+  incrementMetric('twin_out_of_scope_events_rejected_total');
+}
+
+export function recordMalformedEventRejected(): void {
+  incrementMetric('twin_malformed_events_rejected_total');
+}
+
+export function recordOutOfOrderEventRejected(): void {
+  incrementMetric('twin_out_of_order_events_rejected_total');
+}
+
+export function recordDuplicateEventDropped(): void {
+  incrementMetric('twin_duplicate_events_dropped_total');
+}

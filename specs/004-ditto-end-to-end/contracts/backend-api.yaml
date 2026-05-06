@@ -1,0 +1,254 @@
+openapi: 3.1.0
+info:
+  title: Ditto End-to-End Digital Twin Runtime API
+  version: 4.0.0
+  description: Backend-mediated API contracts for Twin bootstrap, scoped elevator state, synchronization health, and developer validation support.
+paths:
+  /elevators:
+    get:
+      summary: List normalized elevator state for one building
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Building-scoped elevator state and synchronization metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NormalizedElevatorState'
+                  meta:
+                    type: object
+                    required: [synchronization]
+                    properties:
+                      synchronization:
+                        $ref: '#/components/schemas/SynchronizationHealth'
+        '400':
+          description: Missing or invalid building scope
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Role or building scope forbidden
+  /elevators/{elevatorId}:
+    get:
+      summary: Get one normalized elevator state in the active building scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: elevatorId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Normalized elevator state for detail and 3D projection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NormalizedElevatorState'
+        '400':
+          description: Missing or invalid building scope
+        '401':
+          description: Authentication required or invalid
+        '403':
+          description: Role or building scope forbidden
+        '404':
+          description: Elevator not found in authorized building scope
+  /health:
+    get:
+      summary: Report backend, Ditto, bootstrap, and realtime synchronization health
+      responses:
+        '200':
+          description: Runtime health state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, synchronization]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, degraded]
+                  synchronization:
+                    $ref: '#/components/schemas/SynchronizationHealth'
+                  bootstrap:
+                    $ref: '#/components/schemas/TwinBootstrapRun'
+  /dev/auth/operator-token:
+    post:
+      summary: Issue a local validation operator token when developer auth is enabled
+      description: This endpoint is for local validation only and must be disabled outside development environments.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, buildingId]
+              properties:
+                userId:
+                  type: string
+                buildingId:
+                  type: string
+                role:
+                  type: string
+                  enum: [operator, admin, maintenance]
+                  default: operator
+      responses:
+        '200':
+          description: Local validation token
+        '404':
+          description: Developer auth disabled
+  /dev/ditto/seed:
+    post:
+      summary: Seed the local Ditto dataset into policy and elevator Things
+      description: This endpoint is for local validation only. It loads the repository's local Ditto seed dataset and upserts the corresponding policy and Things through the Ditto HTTP API.
+      responses:
+        '200':
+          description: Local Ditto dataset seeded successfully
+        '502':
+          description: Ditto rejected the seed request or was unavailable
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    NormalizedElevatorState:
+      type: object
+      required:
+        - elevatorId
+        - buildingId
+        - schemaVersion
+        - deviceType
+        - status
+        - currentFloor
+        - direction
+        - doorState
+        - healthState
+        - lastEventAt
+        - stale
+      properties:
+        elevatorId:
+          type: string
+        buildingId:
+          type: string
+        schemaVersion:
+          type: string
+        deviceType:
+          type: string
+          enum: [elevator]
+        status:
+          type: string
+          enum: [idle, moving, door_open, maintenance, fault, offline, unknown]
+        currentFloor:
+          type: integer
+        targetFloor:
+          type: integer
+        direction:
+          type: string
+          enum: [up, down, stationary, unknown]
+        doorState:
+          type: string
+          enum: [open, closed, opening, closing, blocked, unknown]
+        loadPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+        healthState:
+          type: string
+          enum: [normal, warning, critical, unknown]
+        lastEventAt:
+          type: string
+          format: date-time
+        stale:
+          type: boolean
+    TwinBootstrapRun:
+      type: object
+      required: [runId, buildingId, requestedAt, status, admittedElevatorIds]
+      properties:
+        runId:
+          type: string
+        buildingId:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [loading, completed, partial, empty, failed]
+        admittedElevatorIds:
+          type: array
+          items:
+            type: string
+        rejectedThingIds:
+          type: array
+          items:
+            type: string
+        failureReason:
+          type: string
+    SynchronizationHealth:
+      type: object
+      required:
+        - bootstrapStatus
+        - dittoHttpState
+        - dittoLiveState
+        - frontendRealtimeState
+        - activeSessions
+        - duplicateEventsDropped
+        - outOfOrderEventsRejected
+        - outOfScopeEventsRejected
+        - malformedEventsRejected
+      properties:
+        buildingId:
+          type: string
+        bootstrapStatus:
+          type: string
+          enum: [idle, loading, completed, partial, empty, failed]
+        dittoHttpState:
+          type: string
+          enum: [unknown, reachable, degraded]
+        dittoLiveState:
+          type: string
+          enum: [disconnected, connecting, live, stale, degraded]
+        frontendRealtimeState:
+          type: string
+          enum: [no_sessions, live, degraded]
+        lastBootstrapAt:
+          type: string
+          format: date-time
+        lastLiveEventAt:
+          type: string
+          format: date-time
+        activeSessions:
+          type: integer
+        duplicateEventsDropped:
+          type: integer
+        outOfOrderEventsRejected:
+          type: integer
+        outOfScopeEventsRejected:
+          type: integer
+        malformedEventsRejected:
+          type: integer
+        lastFailureReason:
+          type: string

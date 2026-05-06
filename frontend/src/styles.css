@@ -195,7 +195,6 @@
 }
 
 .ops-icon-button {
-  width: 34px;
   height: 34px;
   border: 1px solid rgba(210, 230, 226, 0.18);
   border-radius: 6px;
@@ -204,9 +203,160 @@
   font-weight: 700;
 }
 
+.ops-icon-button.is-active {
+  border-color: rgba(125, 211, 199, 0.58);
+  background: rgba(125, 211, 199, 0.18);
+}
+
+.ops-icon-button[disabled] {
+  opacity: 0.45;
+}
+
 .ops-twin-stage {
   min-height: 240px;
-  align-content: start;
+  align-content: stretch;
+  background:
+    linear-gradient(180deg, rgba(29, 54, 62, 0.22), rgba(4, 11, 16, 0.5)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(125, 211, 199, 0.05) 0,
+      rgba(125, 211, 199, 0.05) 1px,
+      transparent 1px,
+      transparent 92px
+    );
+}
+
+.ops-twin-panel-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  border-radius: 0;
+  padding: 20px;
+  overflow: auto;
+}
+
+.ops-twin-panel-fullscreen::backdrop {
+  background: rgba(3, 10, 16, 0.88);
+}
+
+.ops-twin-grid-fullscreen {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: stretch;
+}
+
+.ops-twin-panel:not(.ops-twin-panel-fullscreen) {
+  min-height: clamp(520px, 66vh, 760px);
+}
+
+.ops-twin-panel:not(.ops-twin-panel-fullscreen) .ops-twin-grid {
+  align-items: stretch;
+}
+
+.ops-twin-panel:not(.ops-twin-panel-fullscreen) .ops-twin-stage {
+  min-height: clamp(400px, 54vh, 620px);
+}
+
+.ops-twin-panel:not(.ops-twin-panel-fullscreen) .ops-twin-overlay {
+  min-height: clamp(400px, 54vh, 620px);
+}
+
+.ops-twin-stage-fullscreen {
+  min-height: calc(100vh - 132px);
+}
+
+.ops-twin-stage-has-scene {
+  height: 100%;
+}
+
+.ops-twin-canvas-shell {
+  height: 100%;
+  min-height: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 199, 0.1);
+  background:
+    radial-gradient(circle at top, rgba(18, 67, 85, 0.35), transparent 44%),
+    linear-gradient(180deg, rgba(8, 20, 24, 0.96), rgba(7, 16, 24, 0.96));
+}
+
+.ops-twin-canvas-shell > div,
+.ops-twin-canvas-shell canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ops-twin-stage-has-scene .ops-twin-canvas-shell {
+  min-height: 100%;
+}
+
+.ops-twin-render-fallback {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.ops-twin-fallback-card {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(210, 230, 226, 0.12);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #c9d8d6;
+}
+
+.ops-twin-fallback-card.is-selected {
+  border-color: rgba(125, 211, 199, 0.5);
+  background: rgba(125, 211, 199, 0.12);
+}
+
+.ops-twin-car {
+  position: relative;
+  min-height: 122px;
+  overflow: hidden;
+}
+
+.ops-twin-car::after {
+  content: '';
+  position: absolute;
+  inset: auto 12px 12px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(125, 211, 199, 0.12), rgba(108, 199, 232, 0.46));
+}
+
+.ops-scene-tone {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ops-scene-tone-green {
+  background: rgba(74, 222, 128, 0.14);
+  color: #b4f0c6;
+}
+
+.ops-scene-tone-yellow {
+  background: rgba(250, 204, 21, 0.14);
+  color: #f7e0a2;
+}
+
+.ops-scene-tone-red {
+  background: rgba(248, 113, 113, 0.14);
+  color: #f6b1b1;
+}
+
+.ops-scene-tone-gray {
+  background: rgba(148, 163, 184, 0.16);
+  color: #d0dae6;
+}
+
+.ops-twin-overlay-stack {
+  max-height: 220px;
+  overflow: auto;
 }
 
 @media (max-width: 960px) {
@@ -224,6 +374,26 @@
   .ops-main-grid,
   .ops-field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ops-twin-grid-fullscreen {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-twin-panel:not(.ops-twin-panel-fullscreen) {
+    min-height: auto;
+  }
+
+  .ops-twin-panel:not(.ops-twin-panel-fullscreen) .ops-twin-stage,
+  .ops-twin-panel:not(.ops-twin-panel-fullscreen) .ops-twin-overlay,
+  .ops-twin-canvas-shell,
+  .ops-twin-canvas-shell canvas {
+    min-height: 60vh;
+    height: 60vh;
+  }
+
+  .ops-twin-stage-fullscreen {
+    min-height: 60vh;
   }
 
   .ops-health {

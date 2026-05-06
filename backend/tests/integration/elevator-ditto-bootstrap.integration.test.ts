@@ -3,7 +3,7 @@ import { DittoClient, type DittoThing } from '../../src/integrations/ditto/ditto
 import { ElevatorMonitoringService } from '../../src/modules/elevators/elevator-monitoring.service.js';
 
 class FakeDittoClient extends DittoClient {
-  constructor(private readonly things: DittoThing[]) {
+  constructor(private things: DittoThing[]) {
     super({
       httpUrl: 'http://localhost:8080',
       wsUrl: 'ws://localhost:8080/ws/2',
@@ -13,6 +13,10 @@ class FakeDittoClient extends DittoClient {
 
   override async listThings(): Promise<DittoThing[]> {
     return this.things;
+  }
+
+  setThings(things: DittoThing[]): void {
+    this.things = things;
   }
 }
 
@@ -70,9 +74,13 @@ describe('elevator Ditto bootstrap', () => {
       dataState: 'ready',
       connectionState: 'live'
     });
+    expect(service.getBootstrapSnapshot()).toMatchObject({
+      source: 'twin',
+      status: 'completed'
+    });
   });
 
-  it('marks synchronization degraded when bootstrap returns no admitted elevators', async () => {
+  it('marks synchronization degraded and empty when bootstrap returns no admitted elevators', async () => {
     const service = new ElevatorMonitoringService(undefined, undefined, new FakeDittoClient([
       {
         thingId: 'org.example:missing-building',
@@ -90,9 +98,66 @@ describe('elevator Ditto bootstrap', () => {
     await service.bootstrapFromDitto();
 
     expect(service.getSynchronizationState()).toMatchObject({
-      bootstrapStatus: 'partial',
+      bootstrapStatus: 'empty',
       dataState: 'empty',
       connectionState: 'degraded'
+    });
+    expect(service.getBootstrapSnapshot()).toMatchObject({
+      source: 'twin',
+      status: 'empty',
+      elevators: []
+    });
+  });
+
+  it('refreshes existing in-memory elevator state from the latest Ditto thing payloads', async () => {
+    const client = new FakeDittoClient([
+      {
+        thingId: 'org.example:L72-ELEV-A',
+        attributes: { buildingId: 'L72' },
+        features: {
+          elevator: {
+            properties: {
+              status: 'idle',
+              currentFloor: 1,
+              direction: 'stationary',
+              doorState: 'open',
+              healthState: 'normal'
+            }
+          }
+        }
+      }
+    ]);
+    const service = new ElevatorMonitoringService(undefined, undefined, client);
+
+    await service.bootstrapFromDitto();
+    expect(service.listByBuilding('L72')[0]?.currentFloor).toBe(1);
+
+    client.setThings([
+      {
+        thingId: 'org.example:L72-ELEV-A',
+        attributes: { buildingId: 'L72' },
+        features: {
+          elevator: {
+            properties: {
+              status: 'moving',
+              currentFloor: 3,
+              targetFloor: 3,
+              direction: 'up',
+              doorState: 'closed',
+              healthState: 'normal'
+            }
+          }
+        }
+      }
+    ]);
+
+    await service.refreshFromDitto();
+
+    expect(service.listByBuilding('L72')[0]).toMatchObject({
+      elevatorId: 'org.example:L72-ELEV-A',
+      currentFloor: 3,
+      status: 'moving',
+      targetFloor: 3
     });
   });
 });

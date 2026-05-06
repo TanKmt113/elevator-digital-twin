@@ -6,7 +6,16 @@ import { AlertPanel } from '../modules/alerts/components/AlertPanel';
 import { RiskWarningPanel } from '../modules/analytics/components/RiskWarningPanel';
 import { TwinScene } from '../modules/twin3d/components/TwinScene';
 import { useElevatorStore } from '../store/elevator-store';
-import { useRealtimeStore, type DashboardDataState, type RealtimeConnectionState } from '../store/realtime-store';
+import {
+  useRealtimeStore,
+  type DashboardDataState,
+  type RealtimeConnectionState,
+  type TwinSceneRuntimeState
+} from '../store/realtime-store';
+import { useSessionStore } from '../store/session-store';
+import { ApiError, fetchElevatorBootstrap, requestDevOperatorToken } from '../services/api/client';
+import { RealtimeClient } from '../services/realtime/ws-client';
+import { handleRealtimeEvent } from '../services/realtime/elevator-events';
 
 export const DASHBOARD_SECTION_TITLES = [
   'Operations Dashboard',
@@ -15,6 +24,21 @@ export const DASHBOARD_SECTION_TITLES = [
   'Alerts',
   'Predictive Warnings'
 ] as const;
+
+interface BootstrapSynchronizationState {
+  bootstrapStatus?: string;
+  dittoHttpState?: 'connecting' | 'live' | 'degraded';
+  dittoLiveState?: string;
+  frontendRealtimeState?: string;
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  activeSessions?: number;
+  duplicateEventsDropped?: number;
+  outOfOrderEventsRejected?: number;
+  outOfScopeEventsRejected?: number;
+  malformedEventsRejected?: number;
+  lastFailureReason?: string;
+}
 
 export function deriveAppShellState(
   connectionState: RealtimeConnectionState,
@@ -49,6 +73,14 @@ export function deriveAppShellState(
     };
   }
 
+  if (connectionState === 'resyncing') {
+    return {
+      bannerTone: 'info',
+      title: 'Resynchronizing live state',
+      message: 'Refreshing the latest accepted backend snapshot before normal live delivery resumes.'
+    };
+  }
+
   return {
     bannerTone: 'neutral',
     title: 'Twin synchronization is live',
@@ -56,19 +88,230 @@ export function deriveAppShellState(
   };
 }
 
+export function deriveRealtimeStateFromBootstrap(
+  synchronization: BootstrapSynchronizationState,
+  elevatorCount: number
+): {
+  connectionState: RealtimeConnectionState;
+  dataState: DashboardDataState;
+  lastBootstrapAt?: string;
+  lastLiveEventAt?: string;
+  duplicateEventsDropped: number;
+  outOfOrderEventsRejected: number;
+  staleMessage?: string;
+} {
+  const connectionState =
+    synchronization.dittoLiveState === 'live'
+      ? 'live'
+      : synchronization.dittoLiveState === 'stale'
+        ? 'stale'
+        : synchronization.dittoLiveState === 'degraded'
+          ? 'degraded'
+          : 'connecting';
+
+  const dataState =
+    synchronization.bootstrapStatus === 'failed' || synchronization.bootstrapStatus === 'partial'
+      ? 'degraded'
+      : elevatorCount === 0 || synchronization.bootstrapStatus === 'empty'
+        ? 'empty'
+        : 'ready';
+
+  return {
+    connectionState,
+    dataState,
+    lastBootstrapAt: synchronization.lastBootstrapAt,
+    lastLiveEventAt: synchronization.lastLiveEventAt,
+    duplicateEventsDropped: synchronization.duplicateEventsDropped ?? 0,
+    outOfOrderEventsRejected: synchronization.outOfOrderEventsRejected ?? 0,
+    staleMessage: synchronization.lastFailureReason
+  };
+}
+
+export function deriveSceneRuntimeState(
+  connectionState: RealtimeConnectionState,
+  dataState: DashboardDataState,
+  projectionCount: number,
+  hasWebglSupport = true
+): TwinSceneRuntimeState {
+  if (!hasWebglSupport) {
+    return 'unavailable';
+  }
+
+  if (dataState === 'loading') {
+    return 'loading';
+  }
+
+  if (dataState === 'empty' || projectionCount === 0) {
+    return 'empty';
+  }
+
+  if (connectionState === 'stale' || connectionState === 'resyncing') {
+    return 'stale';
+  }
+
+  if (dataState === 'degraded' || connectionState === 'degraded') {
+    return 'degraded';
+  }
+
+  return 'ready';
+}
+
 export function App(): React.JSX.Element {
-  const elevators = Object.values(useElevatorStore((state) => state.elevators));
+  const realtimeClientRef = React.useRef<RealtimeClient | null>(null);
+  const elevatorRecord = useElevatorStore((state) => state.elevators);
+  const selectedBuildingId = useElevatorStore((state) => state.selectedBuildingId);
   const connectionState = useRealtimeStore((state) => state.connectionState);
   const dataState = useRealtimeStore((state) => state.dataState);
   const staleMessage = useRealtimeStore((state) => state.staleMessage);
+  const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
+  const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
+  const token = useSessionStore((state) => state.token);
+  const role = useSessionStore((state) => state.role);
+  const setSession = useSessionStore((state) => state.setSession);
+  const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
-  const featuredElevator = elevators[0];
+  const featuredElevator =
+    elevators.find((elevator) => elevator.elevatorId === selectedElevatorId) ?? elevators[0];
   const toneClasses = {
     info: 'border-sky-400/30 bg-sky-400/10 text-sky-100',
     warning: 'border-amber-300/30 bg-amber-300/10 text-amber-50',
     critical: 'border-rose-400/30 bg-rose-400/10 text-rose-50',
     neutral: 'border-white/10 bg-white/5 text-slate-100'
   } as const;
+
+  const hydrateBootstrap = React.useCallback(async () => {
+    const response = await fetchElevatorBootstrap(selectedBuildingId, token);
+    useElevatorStore.getState().replaceElevators(response.items, selectedBuildingId);
+    const realtimeState = deriveRealtimeStateFromBootstrap(
+      response.meta.synchronization,
+      response.items.length
+    );
+
+    useRealtimeStore.getState().applySynchronizationState({
+      ...realtimeState,
+      dittoHttpState: response.meta.synchronization.dittoHttpState,
+      dittoLiveState:
+        response.meta.synchronization.dittoLiveState === 'connecting' ||
+        response.meta.synchronization.dittoLiveState === 'live' ||
+        response.meta.synchronization.dittoLiveState === 'stale' ||
+        response.meta.synchronization.dittoLiveState === 'degraded' ||
+        response.meta.synchronization.dittoLiveState === 'resyncing'
+          ? response.meta.synchronization.dittoLiveState
+          : undefined,
+      frontendRealtimeState:
+        response.meta.synchronization.frontendRealtimeState === 'connecting' ||
+        response.meta.synchronization.frontendRealtimeState === 'live' ||
+        response.meta.synchronization.frontendRealtimeState === 'stale' ||
+        response.meta.synchronization.frontendRealtimeState === 'degraded' ||
+        response.meta.synchronization.frontendRealtimeState === 'resyncing'
+          ? response.meta.synchronization.frontendRealtimeState
+          : undefined,
+      activeSessions: response.meta.synchronization.activeSessions,
+      outOfScopeEventsRejected: response.meta.synchronization.outOfScopeEventsRejected,
+      malformedEventsRejected: response.meta.synchronization.malformedEventsRejected,
+      sceneRuntime: deriveSceneRuntimeState(
+        realtimeState.connectionState,
+        realtimeState.dataState,
+        response.items.length,
+        hasWebglSupport
+      ),
+      projectionCount: response.items.length
+    });
+    return response;
+  }, [hasWebglSupport, selectedBuildingId, token]);
+
+  React.useEffect(() => {
+    if (token) {
+      return;
+    }
+
+    let cancelled = false;
+    void requestDevOperatorToken(selectedBuildingId, role ?? 'operator')
+      .then((session) => {
+        if (!cancelled) {
+          setSession(session.token, session.role);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [role, selectedBuildingId, setSession, token]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    useRealtimeStore.getState().setDataState('loading');
+    useRealtimeStore.getState().setConnectionState('connecting');
+    useRealtimeStore.getState().setStaleMessage(undefined);
+
+    void hydrateBootstrap()
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        const message =
+          error instanceof ApiError
+            ? error.status === 401
+              ? 'Backend requires an operator token for elevator bootstrap.'
+              : error.status === 403
+                ? 'Current token does not have access to the selected building.'
+                : error.message
+            : error instanceof Error
+              ? error.message
+              : 'Unable to load elevator bootstrap from backend.';
+
+        useElevatorStore.getState().replaceElevators([], selectedBuildingId);
+        useRealtimeStore.getState().applySynchronizationState({
+          connectionState: 'degraded',
+          dataState: 'degraded',
+          staleMessage: message,
+          sceneRuntime: 'degraded',
+          projectionCount: 0
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrateBootstrap, selectedBuildingId]);
+
+  React.useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const realtimeClient = new RealtimeClient();
+    realtimeClientRef.current = realtimeClient;
+
+    const disposeMessage = realtimeClient.onMessage((payload) => {
+      handleRealtimeEvent(payload as Parameters<typeof handleRealtimeEvent>[0], {
+        onResyncRequired: () => {
+          void hydrateBootstrap().catch(() => {
+            useRealtimeStore.getState().setConnectionState('degraded');
+          });
+        }
+      });
+    });
+    const disposeConnection = realtimeClient.onConnectionState((state) => {
+      useRealtimeStore.getState().setConnectionState(state);
+    });
+
+    realtimeClient.connect(selectedBuildingId, token);
+
+    return () => {
+      disposeMessage();
+      disposeConnection();
+      realtimeClient.disconnect();
+      realtimeClientRef.current = null;
+    };
+  }, [hydrateBootstrap, selectedBuildingId, token]);
 
   return (
     <main className="ops-shell mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">

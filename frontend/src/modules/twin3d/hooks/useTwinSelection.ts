@@ -1,13 +1,20 @@
-import { useState } from 'react';
+import { useElevatorStore } from '../../../store/elevator-store';
 
 export function useTwinSelection() {
-  const [selectedElevatorId, setSelectedElevatorId] = useState<string | undefined>();
-  const [hoveredElevatorId, setHoveredElevatorId] = useState<string | undefined>();
+  const selectedElevatorId = useElevatorStore((state) => state.selectedElevatorId);
+  const selectElevator = useElevatorStore((state) => state.selectElevator);
+  const sceneFocusMode = useElevatorStore((state) => state.sceneFocusMode);
+  const setSceneFocusMode = useElevatorStore((state) => state.setSceneFocusMode);
+  const cameraTransitionState = useElevatorStore((state) => state.cameraTransitionState);
+  const setCameraTransitionState = useElevatorStore((state) => state.setCameraTransitionState);
 
   return {
     selectedElevatorId,
-    hoveredElevatorId,
-    selectElevator: setSelectedElevatorId,
-    hoverElevator: setHoveredElevatorId
+    sceneFocusMode,
+    cameraTransitionState,
+    selectElevator: (elevatorId: string | undefined) => selectElevator(elevatorId, '3d'),
+    focusOverview: () => setSceneFocusMode('overview'),
+    focusSelected: () => setSceneFocusMode('selected'),
+    setCameraTransitionState
   };
 }

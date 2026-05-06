@@ -4,9 +4,10 @@ export type ElevatorStatus =
   | 'door_open'
   | 'maintenance'
   | 'fault'
-  | 'offline';
+  | 'offline'
+  | 'unknown';
 
-export type TwinBootstrapStatus = 'idle' | 'loading' | 'completed' | 'partial' | 'failed';
+export type TwinBootstrapStatus = 'idle' | 'loading' | 'completed' | 'partial' | 'empty' | 'failed';
 
 export type RealtimeConnectionState =
   | 'connecting'
@@ -34,6 +35,7 @@ export interface ElevatorTwin {
 export interface TwinBootstrapSnapshot {
   snapshotId: string;
   buildingId: string;
+  source: 'twin';
   requestedAt: string;
   completedAt?: string;
   status: TwinBootstrapStatus;
@@ -47,10 +49,16 @@ export interface RealtimeSynchronizationState {
   connectionState: RealtimeConnectionState;
   bootstrapStatus: TwinBootstrapStatus;
   dataState: 'loading' | 'ready' | 'empty' | 'degraded';
+  dittoHttpState?: 'connecting' | 'live' | 'degraded';
+  dittoLiveState?: RealtimeConnectionState;
+  frontendRealtimeState?: RealtimeConnectionState;
   lastBootstrapAt?: string;
   lastLiveEventAt?: string;
   staleThresholdMs: number;
+  activeSessions?: number;
   duplicateEventsDropped: number;
   outOfOrderEventsRejected: number;
+  outOfScopeEventsRejected: number;
+  malformedEventsRejected: number;
   lastFailureReason?: string;
 }
