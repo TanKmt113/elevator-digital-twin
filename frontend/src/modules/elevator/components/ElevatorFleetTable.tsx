@@ -2,6 +2,7 @@ import React from 'react';
 import { useElevatorStore } from '../../../store/elevator-store';
 import { ElevatorDetailDrawer } from './ElevatorDetailDrawer';
 import { ElevatorStatusBadge } from './ElevatorStatusBadge';
+import { translateDirection, translateDoorState, translateHealthState } from './elevator-labels';
 
 function formatCell(value: unknown, fallback = '—'): string {
   if (value === undefined || value === null || value === '') {
@@ -99,10 +100,10 @@ export function ElevatorFleetTable(): React.JSX.Element {
                       </td>
                       <td>{row.currentFloor}</td>
                       <td>{formatCell(row.targetFloor)}</td>
-                      <td className="capitalize">{row.direction}</td>
-                      <td className="capitalize">{row.doorState}</td>
+                      <td>{translateDirection(row.direction)}</td>
+                      <td>{translateDoorState(row.doorState)}</td>
                       <td>{formatCell(row.loadPercentage, 'n/a')}</td>
-                      <td className="capitalize">{row.healthState}</td>
+                      <td>{translateHealthState(row.healthState)}</td>
                       <td className="max-w-[140px] truncate text-slate-400" title={row.lastEventAt}>
                         {formatCell(row.lastEventAt)}
                       </td>

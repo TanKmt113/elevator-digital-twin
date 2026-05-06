@@ -11,10 +11,12 @@ import { AlertsPage } from './pages/alerts-page';
 import { AdminPage } from './pages/admin-page';
 import { AnalyticsPage } from './pages/analytics-page';
 import { FleetPage } from './pages/fleet-page';
+import { LoginPage } from './pages/login-page';
 import { OverviewPage } from './pages/overview-page';
 import { ScenePage } from './pages/scene-page';
 import { DEFAULT_ADMIN_ROUTE } from './routes';
 import { useDashboardRealtime } from './use-dashboard-realtime';
+import { useSessionStore } from '../store/session-store';
 
 export {
   DASHBOARD_SECTION_TITLES,
@@ -23,22 +25,33 @@ export {
   deriveSceneRuntimeState
 };
 
-export function App(): React.JSX.Element {
+function ProtectedShell(): React.JSX.Element {
+  const token = useSessionStore((state) => state.token);
+  if (!token) {
+    return <Navigate to="/login" replace state={{ from: window.location.pathname }} />;
+  }
+  return <AuthenticatedShell />;
+}
+
+function AuthenticatedShell(): React.JSX.Element {
   const { elevators, role, selectedBuildingId, shellState, staleMessage } = useDashboardRealtime();
 
   return (
+    <AdminLayout
+      elevators={elevators}
+      role={role}
+      selectedBuildingId={selectedBuildingId}
+      shellState={shellState}
+      staleMessage={staleMessage}
+    />
+  );
+}
+
+export function App(): React.JSX.Element {
+  return (
     <Routes>
-      <Route
-        element={
-          <AdminLayout
-            elevators={elevators}
-            role={role}
-            selectedBuildingId={selectedBuildingId}
-            shellState={shellState}
-            staleMessage={staleMessage}
-          />
-        }
-      >
+      <Route path="login" element={<LoginPage />} />
+      <Route element={<ProtectedShell />}>
         <Route index element={<Navigate to={DEFAULT_ADMIN_ROUTE.path} replace />} />
         <Route path="overview" element={<OverviewPage />} />
         <Route path="fleet" element={<FleetPage />} />

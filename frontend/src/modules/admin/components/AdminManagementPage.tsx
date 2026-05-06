@@ -1,17 +1,43 @@
 import React, { useMemo, useState } from 'react';
 import {
-  archiveElevatorThing,
   createAdminUser,
   createElevatorThing,
   listAdminUsers,
-  loginAdmin,
-  patchElevatorThing,
   type AdminRole,
-  type AdminUser,
-  type LoginResult
+  type AdminUser
 } from '../services/admin-api';
+import { useSessionStore } from '../../../store/session-store';
 
 const roleOptions: AdminRole[] = ['platform_admin', 'building_admin', 'operator', 'viewer'];
+const roleLabels: Record<AdminRole, string> = {
+  platform_admin: 'Quản trị nền tảng',
+  building_admin: 'Quản trị tòa nhà',
+  operator: 'Vận hành',
+  viewer: 'Theo dõi'
+};
+const statusLabels: Record<string, string> = {
+  active: 'Đang hoạt động',
+  disabled: 'Đã khóa',
+  pending: 'Chờ kích hoạt'
+};
+
+function statusLabel(status: string): string {
+  return statusLabels[status.toLowerCase()] ?? 'Không xác định';
+}
+
+function statusToneClass(status: string): string {
+  const normalized = status.toLowerCase();
+  if (normalized === 'active') {
+    return 'ops-scene-tone-green';
+  }
+  if (normalized === 'pending') {
+    return 'ops-scene-tone-yellow';
+  }
+  if (normalized === 'disabled') {
+    return 'ops-scene-tone-red';
+  }
+  return 'ops-scene-tone-gray';
+}
 
 function splitCsv(value: string): string[] {
   return value
@@ -20,24 +46,14 @@ function splitCsv(value: string): string[] {
     .filter(Boolean);
 }
 
-function parseProperties(value: string): Record<string, unknown> {
-  if (!value.trim()) {
-    return {};
-  }
-  const parsed = JSON.parse(value) as unknown;
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Properties must be a JSON object');
-  }
-  return parsed as Record<string, unknown>;
-}
-
 export function AdminManagementPage(): React.JSX.Element {
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('test-admin-pass');
-  const [session, setSession] = useState<LoginResult | undefined>();
+  const token = useSessionStore((state) => state.token);
+  const roles = useSessionStore((state) => state.roles);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [message, setMessage] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showThingModal, setShowThingModal] = useState(false);
 
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
@@ -48,13 +64,15 @@ export function AdminManagementPage(): React.JSX.Element {
   const [thingId, setThingId] = useState('org.example:L72-ELEV-NEW');
   const [shaftId, setShaftId] = useState('shaft-new');
   const [policyId, setPolicyId] = useState('');
-  const [patchJson, setPatchJson] = useState('{"status":"maintenance"}');
 
-  const token = session?.token;
-  const canManageUsers = useMemo(
-    () => session?.user.roles.includes('platform_admin') ?? false,
-    [session]
-  );
+  const canManageUsers = useMemo(() => roles.includes('platform_admin'), [roles]);
+
+  React.useEffect(() => {
+    if (!token || !canManageUsers) {
+      return;
+    }
+    void refreshUsers(token).catch(() => undefined);
+  }, [canManageUsers, token]);
 
   async function run(action: () => Promise<string | void>): Promise<void> {
     setBusy(true);
@@ -65,7 +83,7 @@ export function AdminManagementPage(): React.JSX.Element {
         setMessage(result);
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Request failed');
+      setMessage(error instanceof Error ? error.message : 'Yêu cầu thất bại');
     } finally {
       setBusy(false);
     }
@@ -89,48 +107,86 @@ export function AdminManagementPage(): React.JSX.Element {
       <section className="ops-panel">
         <div className="ops-panel-head">
           <div>
-            <p className="ops-label">API v1</p>
-            <h3 className="ops-panel-title">Quản trị người dùng và Twin Things</h3>
+            <p className="ops-label">Người dùng</p>
+            <h3 className="ops-panel-title">Tài khoản người dùng</h3>
           </div>
-          {session ? <span className="ops-count-chip">{session.user.email}</span> : null}
+          <div className="admin-button-row admin-button-row-inline">
+            <button
+              className="admin-secondary-button"
+              type="button"
+              disabled={!token || busy}
+              onClick={() => void refreshUsers()}
+            >
+              Làm mới
+            </button>
+            <button
+              className="admin-action-button"
+              type="button"
+              disabled={!token || busy || !canManageUsers}
+              onClick={() => setShowUserModal(true)}
+            >
+              Thêm người dùng
+            </button>
+            <button
+              className="admin-action-button"
+              type="button"
+              disabled={!token || busy}
+              onClick={() => setShowThingModal(true)}
+            >
+              Thêm Thing
+            </button>
+          </div>
         </div>
-
-        <form
-          className="admin-form admin-login-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void run(async () => {
-              const next = await loginAdmin(email, password);
-              setSession(next);
-              await refreshUsers(next.token);
-              return 'Signed in';
-            });
-          }}
-        >
-          <label>
-            Email
-            <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" />
-          </label>
-          <label>
-            Password
-            <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
-          </label>
-          <button className="admin-action-button" type="submit" disabled={busy}>
-            Sign in
-          </button>
-        </form>
         {message ? <p className="admin-message">{message}</p> : null}
+
+        <div className="admin-table-wrap">
+          <table className="admin-user-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Trạng thái</th>
+                <th>Vai trò</th>
+                <th>Tòa nhà</th>
+                <th>Lần đăng nhập cuối</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.userId}>
+                  <td>
+                    <strong>{user.email}</strong>
+                  </td>
+                  <td>
+                    <span className={`ops-scene-tone ${statusToneClass(user.status)}`}>
+                      {statusLabel(user.status)}
+                    </span>
+                  </td>
+                  <td>{user.roles.map((role) => roleLabels[role] ?? role).join(', ')}</td>
+                  <td>{user.buildings.length > 0 ? user.buildings.join(', ') : 'Tất cả'}</td>
+                  <td>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('vi-VN') : 'Chưa đăng nhập'}</td>
+                </tr>
+              ))}
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5}>Chưa có dữ liệu người dùng</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <div className="admin-management-grid">
-        <section className="ops-panel">
+      {showUserModal ? (
+        <div className="admin-modal-root" role="dialog" aria-modal="true" aria-label="Thêm người dùng">
+          <button className="admin-modal-backdrop" type="button" onClick={() => setShowUserModal(false)} />
+          <section className="admin-modal-panel ops-panel">
           <div className="ops-panel-head">
             <div>
-              <p className="ops-label">Users</p>
-              <h3 className="ops-panel-title">Platform accounts</h3>
+              <p className="ops-label">Người dùng</p>
+              <h3 className="ops-panel-title">Thêm tài khoản</h3>
             </div>
-            <button className="admin-secondary-button" type="button" disabled={!token || busy} onClick={() => void refreshUsers()}>
-              Refresh
+            <button className="admin-secondary-button" type="button" onClick={() => setShowUserModal(false)}>
+              Đóng
             </button>
           </div>
 
@@ -140,10 +196,10 @@ export function AdminManagementPage(): React.JSX.Element {
               event.preventDefault();
               void run(async () => {
                 if (!token) {
-                  return 'Sign in first';
+                  return 'Vui lòng đăng nhập trước';
                 }
                 if (!canManageUsers) {
-                  return 'Current user is not platform_admin';
+                  return 'Tài khoản hiện tại không có quyền quản trị nền tảng';
                 }
                 await createAdminUser(token, {
                   email: newUserEmail,
@@ -154,16 +210,17 @@ export function AdminManagementPage(): React.JSX.Element {
                 await refreshUsers(token);
                 setNewUserEmail('');
                 setNewUserPassword('');
-                return 'User created';
+                setShowUserModal(false);
+                return 'Đã tạo người dùng';
               });
             }}
           >
             <label>
-              New email
+              Email mới
               <input value={newUserEmail} onChange={(event) => setNewUserEmail(event.target.value)} type="email" />
             </label>
             <label>
-              Temporary password
+              Mật khẩu tạm thời
               <input
                 value={newUserPassword}
                 onChange={(event) => setNewUserPassword(event.target.value)}
@@ -172,7 +229,7 @@ export function AdminManagementPage(): React.JSX.Element {
               />
             </label>
             <fieldset className="admin-role-set">
-              <legend>Roles</legend>
+              <legend>Vai trò</legend>
               {roleOptions.map((role) => (
                 <label key={role}>
                   <input
@@ -180,44 +237,40 @@ export function AdminManagementPage(): React.JSX.Element {
                     checked={newUserRoles.includes(role)}
                     onChange={() => toggleRole(role)}
                   />
-                  {role}
+                  {roleLabels[role]}
                 </label>
               ))}
             </fieldset>
             <label>
-              Buildings
+              Tòa nhà
               <input value={newUserBuildings} onChange={(event) => setNewUserBuildings(event.target.value)} />
             </label>
             <button className="admin-action-button" type="submit" disabled={!token || busy}>
-              Create user
+              Tạo người dùng
             </button>
           </form>
 
-          <div className="admin-user-list">
-            {users.map((user) => (
-              <article className="ops-list-item" key={user.userId}>
-                <div>
-                  <strong>{user.email}</strong>
-                  <p className="ops-muted">{user.roles.join(', ')}</p>
-                </div>
-                <span className="ops-scene-tone ops-scene-tone-gray">{user.status}</span>
-              </article>
-            ))}
-            {users.length === 0 ? <p className="ops-empty-inline">No users loaded</p> : null}
-          </div>
-        </section>
+          </section>
+        </div>
+      ) : null}
 
-        <section className="ops-panel">
+      {showThingModal ? (
+        <div className="admin-modal-root" role="dialog" aria-modal="true" aria-label="Thêm Thing">
+          <button className="admin-modal-backdrop" type="button" onClick={() => setShowThingModal(false)} />
+          <section className="admin-modal-panel ops-panel">
           <div className="ops-panel-head">
             <div>
               <p className="ops-label">Ditto Things</p>
-              <h3 className="ops-panel-title">Elevator provisioning</h3>
+              <h3 className="ops-panel-title">Thêm Thing thang máy</h3>
             </div>
+            <button className="admin-secondary-button" type="button" onClick={() => setShowThingModal(false)}>
+              Đóng
+            </button>
           </div>
 
           <form className="admin-form">
             <label>
-              Building
+              Tòa nhà
               <input value={buildingId} onChange={(event) => setBuildingId(event.target.value)} />
             </label>
             <label>
@@ -225,16 +278,12 @@ export function AdminManagementPage(): React.JSX.Element {
               <input value={thingId} onChange={(event) => setThingId(event.target.value)} />
             </label>
             <label>
-              Shaft
+              Trục thang
               <input value={shaftId} onChange={(event) => setShaftId(event.target.value)} />
             </label>
             <label>
               Policy ID
-              <input value={policyId} onChange={(event) => setPolicyId(event.target.value)} placeholder="default" />
-            </label>
-            <label className="admin-wide-field">
-              Patch properties
-              <textarea value={patchJson} onChange={(event) => setPatchJson(event.target.value)} rows={4} />
+              <input value={policyId} onChange={(event) => setPolicyId(event.target.value)} placeholder="mặc định" />
             </label>
             <div className="admin-button-row">
               <button
@@ -244,55 +293,21 @@ export function AdminManagementPage(): React.JSX.Element {
                 onClick={() =>
                   void run(async () => {
                     if (!token) {
-                      return 'Sign in first';
+                      return 'Vui lòng đăng nhập trước';
                     }
                     const result = await createElevatorThing(token, { buildingId, thingId, shaftId, policyId });
-                    return `Created ${result.thingId}`;
+                    setShowThingModal(false);
+                    return `Đã tạo ${result.thingId}`;
                   })
                 }
               >
-                Create
-              </button>
-              <button
-                className="admin-secondary-button"
-                type="button"
-                disabled={!token || busy}
-                onClick={() =>
-                  void run(async () => {
-                    if (!token) {
-                      return 'Sign in first';
-                    }
-                    const result = await patchElevatorThing(token, {
-                      buildingId,
-                      thingId,
-                      properties: parseProperties(patchJson)
-                    });
-                    return `Updated ${result.thingId}`;
-                  })
-                }
-              >
-                Patch
-              </button>
-              <button
-                className="admin-danger-button"
-                type="button"
-                disabled={!token || busy}
-                onClick={() =>
-                  void run(async () => {
-                    if (!token) {
-                      return 'Sign in first';
-                    }
-                    const result = await archiveElevatorThing(token, { buildingId, thingId });
-                    return `Archived ${result.thingId}`;
-                  })
-                }
-              >
-                Archive
+                Tạo Thing
               </button>
             </div>
           </form>
-        </section>
-      </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

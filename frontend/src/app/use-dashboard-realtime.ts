@@ -1,5 +1,5 @@
 import React from 'react';
-import { ApiError, fetchElevatorBootstrap, requestDevOperatorToken } from '../services/api/client';
+import { ApiError, fetchElevatorBootstrap } from '../services/api/client';
 import { handleRealtimeEvent } from '../services/realtime/elevator-events';
 import { RealtimeClient } from '../services/realtime/ws-client';
 import { useElevatorStore, type ElevatorViewModel } from '../store/elevator-store';
@@ -27,7 +27,6 @@ export function useDashboardRealtime(): {
   const hasWebglSupport = useRealtimeStore((state) => state.hasWebglSupport);
   const token = useSessionStore((state) => state.token);
   const role = useSessionStore((state) => state.role);
-  const setSession = useSessionStore((state) => state.setSession);
   const elevators = React.useMemo(() => Object.values(elevatorRecord), [elevatorRecord]);
   const shellState = deriveAppShellState(connectionState, dataState, elevators.length);
   const hydrateBootstrap = React.useCallback(async () => {
@@ -72,25 +71,10 @@ export function useDashboardRealtime(): {
   }, [hasWebglSupport, selectedBuildingId, token]);
 
   React.useEffect(() => {
-    if (token) {
+    if (!token) {
       return;
     }
 
-    let cancelled = false;
-    void requestDevOperatorToken(selectedBuildingId, role ?? 'operator')
-      .then((session) => {
-        if (!cancelled) {
-          setSession(session.token, session.role);
-        }
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [role, selectedBuildingId, setSession, token]);
-
-  React.useEffect(() => {
     let cancelled = false;
     useRealtimeStore.getState().setDataState('loading');
     useRealtimeStore.getState().setConnectionState('connecting');
@@ -131,7 +115,7 @@ export function useDashboardRealtime(): {
     return () => {
       cancelled = true;
     };
-  }, [hydrateBootstrap, selectedBuildingId]);
+  }, [hydrateBootstrap, selectedBuildingId, token]);
 
   React.useEffect(() => {
     if (!token) {

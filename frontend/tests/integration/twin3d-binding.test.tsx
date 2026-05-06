@@ -135,7 +135,7 @@ describe('twin3d binding', () => {
       stale: false
     };
 
-    expect(renderToStaticMarkup(<ElevatorStatusBadge status={elevator.status} stale={elevator.stale} />)).toContain('moving');
+    expect(renderToStaticMarkup(<ElevatorStatusBadge status={elevator.status} stale={elevator.stale} />)).toContain('Đang chạy');
     expect(
       renderToStaticMarkup(
         <TwinDetailOverlay

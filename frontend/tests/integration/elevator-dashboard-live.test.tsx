@@ -109,7 +109,7 @@ describe('elevator dashboard live updates', () => {
 
     expect(markup).toContain('Dữ liệu Twin chưa đầy đủ');
     expect(markup).toContain('Dữ liệu trực tiếp đã cũ');
-    expect(markup).toContain('unknown');
+    expect(markup).toContain('Không xác định');
   });
 
   it('merges partial enhanced frontend updates with the last accepted state', () => {

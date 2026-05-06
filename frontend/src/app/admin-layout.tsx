@@ -1,8 +1,9 @@
 import React from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ADMIN_ROUTES } from './routes';
 import { DASHBOARD_SECTION_TITLES, deriveAppShellState } from './dashboard-state';
 import type { ElevatorViewModel } from '../store/elevator-store';
+import { useSessionStore } from '../store/session-store';
 
 function isIdleHealthySync(
   shellState: ReturnType<typeof deriveAppShellState>,
@@ -31,6 +32,8 @@ export function AdminLayout({
   staleMessage
 }: AdminLayoutProps): React.JSX.Element {
   const location = useLocation();
+  const navigate = useNavigate();
+  const clearSession = useSessionStore((state) => state.clearSession);
   const isOverviewRoute =
     location.pathname === '/overview' || location.pathname === '/' || location.pathname === '';
   const showFullSyncBanner = isOverviewRoute;
@@ -80,6 +83,16 @@ export function AdminLayout({
           <div className="admin-topbar-actions">
             <span className="ops-scope-pill">{role ?? 'operator'}</span>
             <span className="ops-scope-pill">{selectedBuildingId}</span>
+            <button
+              className="admin-secondary-button"
+              type="button"
+              onClick={() => {
+                clearSession();
+                navigate('/login', { replace: true });
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 

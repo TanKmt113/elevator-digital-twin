@@ -2,10 +2,16 @@ import React from 'react';
 import type { ElevatorViewModel } from '../../../store/elevator-store';
 import { ElevatorCommandPanel } from './ElevatorCommandPanel';
 import { ElevatorHistoryPanel } from './ElevatorHistoryPanel';
+import {
+  translateDirection,
+  translateDoorState,
+  translateElevatorStatus,
+  translateHealthState
+} from './elevator-labels';
 
 function formatValue(value: unknown, unit = ''): string {
   if (value === undefined || value === null || value === '') {
-    return 'unknown';
+    return 'Không xác định';
   }
 
   return `${String(value)}${unit}`;
@@ -81,17 +87,17 @@ export function ElevatorDetailPanel({
       </div>
       <div className="ops-detail-grid mt-4 grid gap-3">
         <DetailSection title="Trạng thái">
-          <DetailRow label="Tình trạng" value={<span className="capitalize">{elevator.status}</span>} />
+          <DetailRow label="Tình trạng" value={translateElevatorStatus(elevator.status)} />
           <DetailRow label="Tầng" value={`${elevator.currentFloor} -> ${formatValue(elevator.targetFloor)}`} />
           <DetailRow label="Vị trí" value={formatValue(elevator.positionMeters, ' m')} />
           <DetailRow label="Tiến độ tầng" value={formatValue(elevator.floorProgress)} />
           <DetailRow label="Tốc độ" value={formatValue(elevator.speedMps, ' m/s')} />
-          <DetailRow label="Hướng" value={<span className="capitalize">{elevator.direction}</span>} />
+          <DetailRow label="Hướng" value={translateDirection(elevator.direction)} />
           <DetailRow label="Chế độ" value={<span className="capitalize">{formatValue(elevator.mode)}</span>} />
           <DetailRow label="Sự kiện cuối" value={formatValue(elevator.lastEventAt)} />
         </DetailSection>
         <DetailSection title="Cửa & tải">
-          <DetailRow label="Cửa" value={<span className="capitalize">{elevator.doorState}</span>} />
+          <DetailRow label="Cửa" value={translateDoorState(elevator.doorState)} />
           <DetailRow label="Độ mở cửa" value={formatValue(elevator.doorOpenPercent, '%')} />
           <DetailRow label="Vật cản cửa" value={formatValue(elevator.doorObstruction)} />
           <DetailRow label="Chu kỳ cửa" value={formatValue(elevator.doorCycleCount)} />
@@ -111,7 +117,7 @@ export function ElevatorDetailPanel({
           <DetailRow label="Rung động" value={formatValue(elevator.vibrationLevel)} />
         </DetailSection>
         <DetailSection title="Lỗi & cuộc gọi">
-          <DetailRow label="Sức khỏe" value={<span className="capitalize">{elevator.healthState}</span>} />
+          <DetailRow label="Sức khỏe" value={translateHealthState(elevator.healthState)} />
           <DetailRow label="Mã lỗi" value={formatValue(elevator.faultCode)} />
           <DetailRow label="Mức độ" value={<span className="capitalize">{formatValue(elevator.faultSeverity)}</span>} />
           <DetailRow label="Lỗi gần nhất" value={formatValue(elevator.lastFaultAt)} />
@@ -119,7 +125,7 @@ export function ElevatorDetailPanel({
             label="Cuộc gọi đang chờ"
             value={
               elevator.activeCalls?.length
-                ? elevator.activeCalls.map((call) => `${call.floor} ${call.direction ?? 'unknown'}`).join(', ')
+                ? elevator.activeCalls.map((call) => `${call.floor} ${translateDirection(call.direction)}`).join(', ')
                 : 'không có'
             }
           />

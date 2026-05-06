@@ -1,4 +1,5 @@
 import { apiGet, apiPatch, apiPost } from '../../../services/api/client';
+import { requestDevOperatorToken } from '../../../services/api/client';
 
 export type AdminRole = 'platform_admin' | 'building_admin' | 'operator' | 'viewer';
 
@@ -41,6 +42,21 @@ export interface AdminThingResult {
 export async function loginAdmin(email: string, password: string): Promise<LoginResult> {
   const body = await apiPost<ApiEnvelope<LoginResult>>('/api/v1/auth/login', { email, password });
   return body.data;
+}
+
+export async function requestDevAdminSession(buildingId: string): Promise<LoginResult> {
+  const dev = await requestDevOperatorToken(buildingId, 'admin', 'admin-local');
+  return {
+    token: dev.token,
+    tokenType: dev.tokenType,
+    expiresIn: dev.expiresIn,
+    user: {
+      userId: 'admin-local',
+      email: 'admin-local@dev.local',
+      roles: ['platform_admin'],
+      buildings: [buildingId]
+    }
+  };
 }
 
 export async function listAdminUsers(token: string): Promise<AdminUser[]> {
