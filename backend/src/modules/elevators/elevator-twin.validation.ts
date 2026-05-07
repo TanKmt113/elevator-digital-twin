@@ -5,8 +5,9 @@ export interface ElevatorTwinValidationResult {
   errors: string[];
 }
 
-const PERCENT_FIELDS = ['doorOpenPercent', 'loadPercentage'] as const;
+const PERCENT_FIELDS = ['doorOpenPercent'] as const;
 const FRACTION_FIELDS = ['floorProgress'] as const;
+const LOAD_PERCENTAGE_MAX = 200;
 const FINITE_FIELDS = [
   'currentFloor',
   'targetFloor',
@@ -41,6 +42,7 @@ export function validateElevatorTwinForPublication(twin: ElevatorTwin): Elevator
   for (const field of PERCENT_FIELDS) {
     validateRangeField(twin, field, 0, 100, errors);
   }
+  validateRangeField(twin, 'loadPercentage', 0, LOAD_PERCENTAGE_MAX, errors);
   for (const field of FRACTION_FIELDS) {
     validateRangeField(twin, field, 0, 1, errors);
   }

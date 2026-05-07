@@ -38,6 +38,7 @@ export interface RiskWarningViewModel {
 interface RiskStoreState {
   warnings: Record<string, RiskWarningViewModel>;
   upsertWarning: (warning: RiskWarningViewModel) => void;
+  replaceWarnings: (warnings: RiskWarningViewModel[]) => void;
 }
 
 export const useRiskStore = create<RiskStoreState>((set) => ({
@@ -48,5 +49,9 @@ export const useRiskStore = create<RiskStoreState>((set) => ({
         ...state.warnings,
         [warning.riskWarningId]: warning
       }
-    }))
+    })),
+  replaceWarnings: (warnings) =>
+    set({
+      warnings: Object.fromEntries(warnings.map((warning) => [warning.riskWarningId, warning]))
+    })
 }));

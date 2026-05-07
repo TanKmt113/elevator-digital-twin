@@ -14,6 +14,14 @@ const verificationLabels: Record<NonNullable<RiskWarningViewModel['verificationS
   failed: 'Không đạt'
 };
 
+const riskTypeLabels: Record<string, string> = {
+  door: 'Cửa',
+  fault: 'Lỗi',
+  thermal: 'Nhiệt',
+  vibration: 'Rung động',
+  overload: 'Quá tải'
+};
+
 function isStructuredDriver(driver: string | RiskDriverViewModel | undefined): driver is RiskDriverViewModel {
   return Boolean(driver && typeof driver === 'object' && 'label' in driver);
 }
@@ -42,6 +50,37 @@ export function deriveRiskDriverLabel(driver: string | RiskDriverViewModel | und
   return fallback[driver] ?? driver;
 }
 
+function deriveRiskTypeLabel(type?: string): string {
+  return type ? riskTypeLabels[type] ?? type : 'Không rõ';
+}
+
+function formatRiskDrivers(warning: RiskWarningViewModel): string {
+  if (!warning.drivers?.length) {
+    return 'Không rõ nguyên nhân';
+  }
+
+  return warning.drivers.map((driver) => deriveRiskDriverLabel(driver)).join(', ');
+}
+
+function formatTimestamp(value?: string): string {
+  if (!value) {
+    return '—';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
+
 export function deriveRiskVerificationState(warning?: RiskWarningViewModel): {
   label: string;
   toneClass: string;
@@ -67,55 +106,82 @@ export function deriveRiskVerificationState(warning?: RiskWarningViewModel): {
 }
 
 export function RiskWarningPanel(): React.JSX.Element {
-  const warnings = Object.values(useRiskStore((state) => state.warnings));
+  const warningRecord = useRiskStore((state) => state.warnings);
+  const warnings = React.useMemo(
+    () =>
+      Object.values(warningRecord).sort(
+        (a, b) => Date.parse(b.updatedAt ?? b.generatedAt) - Date.parse(a.updatedAt ?? a.generatedAt)
+      ),
+    [warningRecord]
+  );
+
   return (
     <section className="ops-panel rounded-3xl border border-white/10 bg-slate-950/50 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">
-      <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-        Bảo trì dự đoán
-      </p>
-      <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Cảnh báo dự đoán</h2>
-      <div className="ops-list mt-4 grid gap-3">
+      <div className="ops-panel-head mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="ops-label text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+            Bảo trì dự đoán
+          </p>
+          <h2 className="ops-panel-title text-xl font-semibold text-slate-100">Bảng cảnh báo dự đoán</h2>
+        </div>
+        <span className="ops-count-chip rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-100">
+          {warnings.length} bản ghi
+        </span>
+      </div>
+
+      <div className="fleet-table-wrap overflow-x-auto rounded-xl border border-white/10">
         {warnings.length === 0 ? (
-          <article className="ops-empty rounded-2xl border border-dashed border-white/10 px-4 py-6 text-sm text-slate-400">
+          <p className="px-4 py-8 text-center text-sm text-slate-400">
             Hiện không có cảnh báo dự đoán nào.
-          </article>
+          </p>
         ) : null}
-        {warnings.map((warning) => (
-          (() => {
-            const verification = deriveRiskVerificationState(warning);
-            return (
-          <article
-            key={warning.riskWarningId}
-            className="ops-list-item rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <strong className="text-base font-semibold text-slate-100">{warning.elevatorId}</strong>
-              <span className="rounded-full bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100">
-                {deriveRiskLevelLabel(warning.riskLevel)}
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-slate-300">Khung rủi ro: {warning.predictedWindowHours} giờ</p>
-            {warning.drivers?.length ? (
-              <ul className="mt-3 grid gap-2 text-sm text-slate-200">
-                {warning.drivers.map((driver, index) => (
-                  <li key={isStructuredDriver(driver) ? driver.driverId : `${driver}-${index}`}>
-                    {deriveRiskDriverLabel(driver)}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
-              <span className={`rounded-full px-2.5 py-1 font-semibold ${verification.toneClass}`}>
-                {verification.label}
-              </span>
-              {warning.modelVersion ? <span>Luật {warning.modelVersion}</span> : null}
-              {warning.validationRunId ? <span>Lượt kiểm tra {warning.validationRunId}</span> : null}
-              {warning.modelTrace?.ruleIds?.length ? <span>Trace {warning.modelTrace.ruleIds.join(', ')}</span> : null}
-            </div>
-          </article>
-            );
-          })()
-        ))}
+        {warnings.length > 0 ? (
+          <table className="fleet-table w-full min-w-[980px] text-left text-sm text-slate-200">
+            <thead>
+              <tr>
+                <th scope="col">Mã thang</th>
+                <th scope="col">Loại</th>
+                <th scope="col">Mức</th>
+                <th scope="col">Nguyên nhân</th>
+                <th scope="col">Khung</th>
+                <th scope="col">Xác minh</th>
+                <th scope="col">Luật / Trace</th>
+                <th scope="col">Cập nhật</th>
+              </tr>
+            </thead>
+            <tbody>
+              {warnings.map((warning) => {
+                const verification = deriveRiskVerificationState(warning);
+                const trace = warning.modelTrace?.ruleIds?.join(', ');
+                return (
+                  <tr key={warning.riskWarningId}>
+                    <td className="font-semibold text-slate-100">{warning.elevatorId}</td>
+                    <td>{deriveRiskTypeLabel(warning.riskType)}</td>
+                    <td>
+                      <span className="rounded-full bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
+                        {deriveRiskLevelLabel(warning.riskLevel)}
+                      </span>
+                    </td>
+                    <td className="max-w-[260px] text-slate-100" title={formatRiskDrivers(warning)}>
+                      {formatRiskDrivers(warning)}
+                    </td>
+                    <td>{warning.predictedWindowHours} giờ</td>
+                    <td>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${verification.toneClass}`}>
+                        {verification.label}
+                      </span>
+                    </td>
+                    <td className="max-w-[220px] truncate text-slate-300" title={trace ?? warning.modelVersion}>
+                      {warning.modelVersion ?? '—'}
+                      {trace ? ` / ${trace}` : ''}
+                    </td>
+                    <td className="text-slate-400">{formatTimestamp(warning.updatedAt ?? warning.generatedAt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : null}
       </div>
     </section>
   );

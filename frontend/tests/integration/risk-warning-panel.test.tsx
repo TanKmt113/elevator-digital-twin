@@ -1,13 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   deriveRiskDriverLabel,
   deriveRiskLevelLabel,
   deriveRiskVerificationState
 } from '../../src/modules/analytics/components/RiskWarningPanel';
+import { handleRealtimeEvent } from '../../src/services/realtime/elevator-events';
 import { useRiskStore } from '../../src/store/risk-store';
 import { structuredRiskWarningFixture } from '../fixtures/risk-warning.fixtures';
 
 describe('risk warning panel state', () => {
+  beforeEach(() => {
+    useRiskStore.getState().replaceWarnings([]);
+  });
+
   it('stores predictive warnings with model metadata for rendering', () => {
     useRiskStore.getState().upsertWarning({
       riskWarningId: 'r1',
@@ -42,5 +47,18 @@ describe('risk warning panel state', () => {
     const warning = useRiskStore.getState().warnings[structuredRiskWarningFixture.riskWarningId];
     expect(deriveRiskLevelLabel(warning?.riskLevel)).toBe('Tới hạn');
     expect(deriveRiskDriverLabel(warning?.drivers?.[0])).toBe('Phát hiện kẹt cửa');
+  });
+
+  it('stores realtime risk warning updates from the websocket stream', () => {
+    handleRealtimeEvent({
+      eventId: 'evt-risk-1',
+      eventType: 'elevator.risk.updated',
+      payload: structuredRiskWarningFixture
+    });
+
+    expect(useRiskStore.getState().warnings[structuredRiskWarningFixture.riskWarningId]).toMatchObject({
+      riskLevel: 'critical',
+      modelVersion: 'risk-rules-v1'
+    });
   });
 });

@@ -33,7 +33,7 @@ import type { AuditRepository } from '../modules/audit/audit.repository.js';
 import { ElevatorStatePublisher } from '../modules/realtime/publishers/elevator-state.publisher.js';
 import { EventRouter } from '../modules/realtime/event-router.js';
 import { DittoLiveConsumer } from '../integrations/ditto/ditto-live-consumer.js';
-import type { RealtimeSynchronizationState } from '../contracts/elevator.js';
+import type { ElevatorTwin, RealtimeSynchronizationState } from '../contracts/elevator.js';
 import { recordMalformedEventRejected } from '../observability/elevator-monitoring.metrics.js';
 
 interface CreateAppOptions {
@@ -295,7 +295,14 @@ export function createApp(options: CreateAppOptions = {}) {
         return;
       }
 
-      const saved = monitoringService.upsert(routed.payload);
+      let saved: ElevatorTwin;
+      try {
+        saved = monitoringService.upsert(routed.payload);
+      } catch {
+        publishSynchronizationState();
+        return;
+      }
+
       elevatorStatePublisher.publishEvent({
         ...routed,
         payload: saved

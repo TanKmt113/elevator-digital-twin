@@ -96,6 +96,17 @@ describe('elevators contract', () => {
     expect(validateElevatorTwinForPublication(twin)).toEqual({ valid: true, errors: [] });
   });
 
+  it('accepts overload loadPercentage telemetry for risk evaluation', () => {
+    const twin = createElevatorTwin({
+      elevatorId: 'A',
+      buildingId: 'L72',
+      loadPercentage: 118,
+      lastEventAt: '2026-05-06T01:18:13.576Z'
+    });
+
+    expect(validateElevatorTwinForPublication(twin)).toEqual({ valid: true, errors: [] });
+  });
+
   it('enforces token building scope equality for elevator access', () => {
     const scopedPrincipal = normalizeJwtPayload({
       sub: 'operator-1',

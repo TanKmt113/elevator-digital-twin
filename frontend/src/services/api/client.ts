@@ -1,4 +1,5 @@
 import type { ElevatorViewModel } from '../../store/elevator-store';
+import type { RiskWarningViewModel } from '../../store/risk-store';
 
 interface SynchronizationHealth {
   bootstrapStatus?: string;
@@ -128,6 +129,10 @@ export async function fetchElevatorBootstrap(
 ): Promise<ElevatorBootstrapResponse> {
   const query = new URLSearchParams({ buildingId });
   return apiGet<ElevatorBootstrapResponse>(`/elevators?${query.toString()}`, token);
+}
+
+export async function fetchRiskWarnings(token?: string): Promise<{ items: RiskWarningViewModel[] }> {
+  return apiGet<{ items: RiskWarningViewModel[] }>('/analytics/risk', token);
 }
 
 export async function requestDevOperatorToken(

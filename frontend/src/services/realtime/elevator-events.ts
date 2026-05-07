@@ -1,5 +1,7 @@
 import type { ElevatorViewModel } from '../../store/elevator-store';
 import { useElevatorStore } from '../../store/elevator-store';
+import type { RiskWarningViewModel } from '../../store/risk-store';
+import { useRiskStore } from '../../store/risk-store';
 import {
   useRealtimeStore,
   type DashboardDataState,
@@ -10,7 +12,7 @@ import { deriveSceneRuntimeState } from '../../app/App';
 interface ElevatorStateEnvelope {
   eventId?: string;
   eventType: string;
-  payload: ElevatorViewModel | Record<string, unknown>;
+  payload: unknown;
 }
 
 const seenRealtimeEventIds = new Set<string>();
@@ -49,6 +51,13 @@ export function handleRealtimeEvent(
         deriveSceneRuntimeState('live', 'ready', projectionCount, useRealtimeStore.getState().hasWebglSupport),
         projectionCount
       );
+  }
+
+  if (event.eventType === 'elevator.risk.updated') {
+    if (event.eventId && !rememberRealtimeEvent(event.eventId)) {
+      return;
+    }
+    useRiskStore.getState().upsertWarning(event.payload as RiskWarningViewModel);
   }
 
   if (event.eventType === 'system.connection.state') {
